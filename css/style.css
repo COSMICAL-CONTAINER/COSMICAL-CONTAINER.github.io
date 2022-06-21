@@ -308,7 +308,7 @@ body {
   font-weight: bold;
 }
 #header {
-  height: 500px;
+  height: 300px;
   position: relative;
   border-bottom: 1px solid #ddd;
 }
@@ -1094,6 +1094,7 @@ a.article-title:hover {
   background: #2d2d2d;
   margin: 0 -20px;
   padding: 15px 20px;
+  border-radius: 10px;
   border-style: solid;
   border-color: #ddd;
   border-width: 1px 0;
