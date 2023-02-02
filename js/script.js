@@ -1,4 +1,31 @@
 (function($){
+
+  /*check up&down start*/
+  var directions
+  function scroll( fn ) {
+  var beforeScrollTop = $(this).scrollTop(),
+  fn = fn || function() {};
+  window.addEventListener("scroll", function() {
+      var afterScrollTop = $(this).scrollTop(),
+          delta = afterScrollTop - beforeScrollTop;
+      if( delta === 0 )
+      {
+          fn(delta = "stop");
+          return false;
+      }
+          fn( delta > 0 ? "down" : "up" );
+      beforeScrollTop = afterScrollTop;
+  }, false);
+  }
+  function fn(direction) {
+      directions = direction
+      console.log(direction); //down or up   
+  };
+  window.onscroll=function(){
+      scroll( fn );
+  }
+  /*check up&down end*/
+
   /*toTop start*/
   // When to show the scroll link
   // higher number = scroll link appears further down the page
@@ -15,6 +42,29 @@
     } else {
       $(scrollElem).stop().fadeTo(300, 0); // fade out
     }
+
+    //if scrollTop over half of the top pic
+    if(scrollTop < screen.height * 0.9)
+      if(scrollTop > screen.height / 2)
+      {
+          var x = $(window).scrollTop();
+          if(directions == "down")
+              $('html,body').stop().animate({scrollTop:$('#main').offset().top + 50}, 150);
+          else if(directions == "up")
+              $('html,body').stop().animate({scrollTop:$('#header').offset().top}, 150);
+          console.log("超过图片的一半大小啦")
+          console.log("top的值:" + $(window).scrollTop() + "屏幕高度:" + screen.height)
+          var box=document.getElementById("header");
+          var opacity = 2 *(screen.height - scrollTop) / screen.height;
+          box.setAttribute('style',  'opacity:'+ opacity + '; filter:alpha(opacity' + opacity * 100 + ')/* IE8 及其更早版本 */');
+      }
+      else
+      {
+        var box=document.getElementById("header");
+        var opacity = 2 *(screen.height - top) / screen.height;
+        box.setAttribute('style',  'opacity:1; filter:alpha(opacity 100)/* IE8 及其更早版本 */');
+      }
+
   });
 
   // Scroll to top animation on click

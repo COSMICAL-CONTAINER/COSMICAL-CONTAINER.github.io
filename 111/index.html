@@ -1,1 +1,64 @@
-hello world!
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>页面标题</title>
+    </head>
+    <body>
+        <!-- <div id = "box">123132123 </div> -->
+        <img id = "box" src="space.jpg" alt="1322"></p>
+        <img id = "box2" src="space.jpg" alt="1322"></p>
+        <div id = "box2" style="margin-top: 100%;">123132</div>
+        
+        <img src="space.jpg" alt="1322"></p>
+        <img src="space.jpg" alt="1322"></p>
+    </body>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script>
+        var directions
+        function scroll( fn ) {
+        var beforeScrollTop = $(this).scrollTop(),
+        fn = fn || function() {};
+        window.addEventListener("scroll", function() {
+            var afterScrollTop = $(this).scrollTop(),
+                delta = afterScrollTop - beforeScrollTop;
+            if( delta === 0 )
+            {
+                fn(delta = "stop");
+                return false;
+            }
+                fn( delta > 0 ? "down" : "up" );
+            beforeScrollTop = afterScrollTop;
+        }, false);
+        }
+        function fn(direction) {
+            directions = direction
+            console.log(direction); //down or up   
+        };
+        window.onscroll=function(){
+            scroll( fn );
+        }
+
+
+        //下面代码一开始就会执行
+        $(function(){
+            $(window).scroll(function(){
+                var top = $(window).scrollTop();
+                console.log(top)
+                if(top > screen.height / 2 && top < screen.height)
+                {
+                    var x = $(window).scrollTop();
+                    if(directions == "down")
+                        $('html,body').stop().animate({scrollTop:$('#box2').offset().top + 1}, 150);
+                    else if(directions == "up")
+                        $('html,body').stop().animate({scrollTop:$('#box').offset().top}, 150);
+                    console.log("超过图片的一半大小啦")
+                    console.log("屏幕高度" + screen.height)
+                    var box=document.getElementById("box");
+                    var opacity = 2 *(screen.height - top) / screen.height;
+                    box.setAttribute('style',  'opacity:'+ opacity + '; filter:alpha(opacity' + opacity * 100 + ')/* IE8 及其更早版本 */');
+                }
+            })
+        })
+    </script>
+
+</html>
