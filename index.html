@@ -72,6 +72,54 @@
     <div class="outer">
       <section id="main">
   
+    <article id="post-C-复刻printf函数1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/11/27/C-%E5%A4%8D%E5%88%BBprintf%E5%87%BD%E6%95%B01/" class="article-date">
+  <time datetime="2022-11-27T07:30:20.000Z" itemprop="datePublished">2022-11-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/11/27/C-%E5%A4%8D%E5%88%BBprintf%E5%87%BD%E6%95%B01/">C-复刻printf函数1</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>其实很久之前就想问C语言里面的printf()是怎么实现的，<br>主要是对printf()的参数比较感兴趣，<br>你想我们随便定义一个函数，都得确定参数的个数，<br>但是像printf()函数，可以根据第一个参数也就是字符串”%c %d %f %s”根据有多少个格式输入来确认参数的个数。<br>于是我去了解到了一种叫变参函数的东西，在stdarg.h里面定义有，在加上简单的字符串合成，最后用putchar()函数来输出，简单实现了My_printf();<br><img src="https://img-blog.csdnimg.cn/010b5f8f8ab04586b064091507c93133.png#pic_center" alt="在这里插入图片描述"><br>代码如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdarg.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">char</span> * <span class="title function_">int_to_str</span><span class="params">(<span class="type">int</span> num)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">My_printf</span><span class="params">(<span class="type">char</span> *fmt, ...)</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc,<span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">	My_printf(<span class="string">&quot;%s %d %c %s %f&quot;</span>,<span class="string">&quot;hello&quot;</span>,<span class="number">666</span>,<span class="string">&#x27;A&#x27;</span>,<span class="string">&quot;sadasd&quot;</span>,<span class="number">123.52</span>);</span><br><span class="line">	getchar();</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">char</span> * <span class="title function_">int_to_str</span><span class="params">(<span class="type">int</span> num)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">char</span> * str = (<span class="type">char</span> *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="type">char</span>) * <span class="number">20</span>);</span><br><span class="line">    itoa(num,str,<span class="number">10</span>);</span><br><span class="line">	<span class="keyword">return</span> str;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">My_printf</span><span class="params">(<span class="type">char</span> *format, ...)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> str_len；</span><br><span class="line"></span><br><span class="line">	va_list valist;</span><br><span class="line">	<span class="type">int</span> data_integer;</span><br><span class="line">	<span class="type">char</span> data_character;</span><br><span class="line">	<span class="type">char</span> * data_String;</span><br><span class="line">	<span class="type">double</span> data_float;</span><br><span class="line"></span><br><span class="line">	<span class="type">char</span> str[<span class="number">100</span>] = <span class="string">&quot;&quot;</span>;</span><br><span class="line">	<span class="type">char</span> * str_i = str;</span><br><span class="line"></span><br><span class="line">	va_start(valist, format);   	<span class="comment">//指针地址赋值--初始化</span></span><br><span class="line">	<span class="keyword">while</span>(*format) 					<span class="comment">//遍历fmt指针指向空间的值</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">//printf(&quot;%c&quot;,*fmt);</span></span><br><span class="line">		<span class="keyword">if</span>(*format == <span class="string">&#x27;%&#x27;</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">switch</span>(*(format + <span class="number">1</span>)) </span><br><span class="line">			&#123;</span><br><span class="line">				<span class="keyword">case</span> <span class="string">&#x27;s&#x27;</span>:              <span class="comment">/* string */</span></span><br><span class="line">					data_String = va_arg(valist, <span class="type">char</span> *);</span><br><span class="line">					<span class="comment">//printf(&quot;字符串:%s\n&quot;, data_String);</span></span><br><span class="line">					<span class="built_in">strcat</span>(str,data_String);</span><br><span class="line">					<span class="keyword">break</span>;</span><br><span class="line">				<span class="keyword">case</span> <span class="string">&#x27;d&#x27;</span>:              <span class="comment">/* int */</span></span><br><span class="line">					data_integer = va_arg(valist, <span class="type">int</span>);</span><br><span class="line">					<span class="comment">//printf(&quot;整型:%d\n&quot;, data_integer);</span></span><br><span class="line">					<span class="type">char</span> *temp = int_to_str(data_integer);</span><br><span class="line">					<span class="built_in">strcat</span>(str,temp);</span><br><span class="line">					<span class="built_in">free</span>(temp);</span><br><span class="line">					<span class="keyword">break</span>;</span><br><span class="line">				<span class="keyword">case</span> <span class="string">&#x27;f&#x27;</span>:              <span class="comment">/* float */</span></span><br><span class="line">					data_float = va_arg(valist, <span class="type">double</span>);</span><br><span class="line">					<span class="comment">// printf(&quot;浮点数:%lf\n&quot;, data_float);</span></span><br><span class="line">					<span class="type">char</span> temp_arr[<span class="number">20</span>];</span><br><span class="line">					<span class="built_in">sprintf</span>(temp_arr,<span class="string">&quot;%lf&quot;</span>,data_float);</span><br><span class="line">					<span class="built_in">strcat</span>(str,temp_arr);</span><br><span class="line">					<span class="keyword">break</span>;</span><br><span class="line">				<span class="keyword">case</span> <span class="string">&#x27;c&#x27;</span>:              <span class="comment">/* char */</span></span><br><span class="line">					data_character = (<span class="type">char</span>) va_arg(valist, <span class="type">int</span>);</span><br><span class="line">					<span class="comment">//printf(&quot;字符:%c\n&quot;, data_character);</span></span><br><span class="line">					<span class="type">int</span> str_len = <span class="built_in">strlen</span>(str);</span><br><span class="line">					str[str_len] = data_character;</span><br><span class="line">					str[str_len + <span class="number">1</span>] = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">					<span class="keyword">break</span>;</span><br><span class="line">				<span class="keyword">default</span>:</span><br><span class="line">					<span class="keyword">break</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			*format++;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">		&#123;</span><br><span class="line">			str_len = <span class="built_in">strlen</span>(str);</span><br><span class="line">			str[str_len] = *format;</span><br><span class="line">			str[str_len + <span class="number">1</span>] = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		*format++;</span><br><span class="line">	&#125;</span><br><span class="line">	va_end(valist); <span class="comment">//将ap指针置为NULL</span></span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> i = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">while</span>(str[i] != <span class="string">&#x27;\0&#x27;</span>)</span><br><span class="line">		<span class="built_in">putchar</span>(str[i++]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这个代码其实还是有很多的不足，比如说“%.2f”可以实现打印保留两位小数的浮点数，还比如“\n”可以实现换行打印。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      
+        <a data-url="https://cosmical-container.github.io/2022/11/27/C-%E5%A4%8D%E5%88%BBprintf%E5%87%BD%E6%95%B01/" data-id="clhd2iihl0002ts1t4gyyfs5e" class="article-share-link" data-share="baidu" data-title="C-复刻printf函数1">分享到</a>
+      
+
+      
+        <a href="https://cosmical-container.github.io/2022/11/27/C-%E5%A4%8D%E5%88%BBprintf%E5%87%BD%E6%95%B01/#ds-thread" class="article-comment-link">评论</a>
+      
+
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C%E8%AF%AD%E8%A8%80/" rel="tag">C语言</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-C-返回值为函数指针的函数" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2022/11/25/C-%E8%BF%94%E5%9B%9E%E5%80%BC%E4%B8%BA%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E7%9A%84%E5%87%BD%E6%95%B0/" class="article-date">
@@ -104,7 +152,7 @@
     </div>
     <footer class="article-footer">
       
-        <a data-url="https://cosmical-container.github.io/2022/11/25/C-%E8%BF%94%E5%9B%9E%E5%80%BC%E4%B8%BA%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E7%9A%84%E5%87%BD%E6%95%B0/" data-id="clfb3frpj00002s1tcv094z82" class="article-share-link" data-share="baidu" data-title="C-返回值为函数指针的函数">分享到</a>
+        <a data-url="https://cosmical-container.github.io/2022/11/25/C-%E8%BF%94%E5%9B%9E%E5%80%BC%E4%B8%BA%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E7%9A%84%E5%87%BD%E6%95%B0/" data-id="clhd2iihj0001ts1tb64sa0oy" class="article-share-link" data-share="baidu" data-title="C-返回值为函数指针的函数">分享到</a>
       
 
       
@@ -142,60 +190,17 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="之前搞的微信公众号"><a href="#之前搞的微信公众号" class="headerlink" title="之前搞的微信公众号"></a>之前搞的微信公众号</h2><h3 id="欢迎关注"><a href="#欢迎关注" class="headerlink" title="欢迎关注"></a>欢迎关注</h3><p><img src="/2022/06/21/Wechat-public-platform/Wechat_public_platform.png" alt="微信公众号"></p>
-<p><img src="/2022/06/21/Wechat-public-platform/2.gif" alt="1322"></p>
+<p><img src="/2022/06/21/Wechat-public-platform/3.gif" alt="3"></p>
 
       
     </div>
     <footer class="article-footer">
       
-        <a data-url="https://cosmical-container.github.io/2022/06/21/Wechat-public-platform/" data-id="clf3moi7b0006lw1t84vb1z0j" class="article-share-link" data-share="baidu" data-title="Wechat_public_platform">分享到</a>
+        <a data-url="https://cosmical-container.github.io/2022/06/21/Wechat-public-platform/" data-id="clhd2iihu000bts1tef4nb420" class="article-share-link" data-share="baidu" data-title="Wechat_public_platform">分享到</a>
       
 
       
         <a href="https://cosmical-container.github.io/2022/06/21/Wechat-public-platform/#ds-thread" class="article-comment-link">评论</a>
-      
-
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Hello-World-0" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2022/05/08/Hello-World-0/" class="article-date">
-  <time datetime="2022-05-08T06:28:04.000Z" itemprop="datePublished">2022-05-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/05/08/Hello-World-0/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="一个测试的网页"><a href="#一个测试的网页" class="headerlink" title="一个测试的网页"></a>一个测试的网页</h2><h3 id="真的是测试用的网页啦"><a href="#真的是测试用的网页啦" class="headerlink" title="真的是测试用的网页啦"></a>真的是测试用的网页啦</h3><p><a target="_blank" rel="noopener" href="https://www.baidu.com/">点击百度</a></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Hello World!&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-    <footer class="article-footer">
-      
-        <a data-url="https://cosmical-container.github.io/2022/05/08/Hello-World-0/" data-id="clf3moi710000lw1tca6o0jco" class="article-share-link" data-share="baidu" data-title="Hello World">分享到</a>
-      
-
-      
-        <a href="https://cosmical-container.github.io/2022/05/08/Hello-World-0/#ds-thread" class="article-comment-link">评论</a>
       
 
       
@@ -270,11 +275,54 @@
     </div>
     <footer class="article-footer">
       
-        <a data-url="https://cosmical-container.github.io/2022/05/08/C-Program1/" data-id="clf3moi770003lw1t7jxce6q3" class="article-share-link" data-share="baidu" data-title="C-Program1">分享到</a>
+        <a data-url="https://cosmical-container.github.io/2022/05/08/C-Program1/" data-id="clhd2iihe0000ts1t0xh7gzcp" class="article-share-link" data-share="baidu" data-title="C-Program1">分享到</a>
       
 
       
         <a href="https://cosmical-container.github.io/2022/05/08/C-Program1/#ds-thread" class="article-comment-link">评论</a>
+      
+
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Hello-World-0" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2022/05/08/Hello-World-0/" class="article-date">
+  <time datetime="2022-05-08T06:28:04.000Z" itemprop="datePublished">2022-05-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/05/08/Hello-World-0/">Hello World</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="一个测试的网页"><a href="#一个测试的网页" class="headerlink" title="一个测试的网页"></a>一个测试的网页</h2><h3 id="真的是测试用的网页啦"><a href="#真的是测试用的网页啦" class="headerlink" title="真的是测试用的网页啦"></a>真的是测试用的网页啦</h3><p><a target="_blank" rel="noopener" href="https://www.baidu.com/">点击百度</a></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Hello World!&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      
+        <a data-url="https://cosmical-container.github.io/2022/05/08/Hello-World-0/" data-id="clhd2iihm0003ts1t3o6b10tz" class="article-share-link" data-share="baidu" data-title="Hello World">分享到</a>
+      
+
+      
+        <a href="https://cosmical-container.github.io/2022/05/08/Hello-World-0/#ds-thread" class="article-comment-link">评论</a>
       
 
       
@@ -332,7 +380,7 @@
     </div>
     <footer class="article-footer">
       
-        <a data-url="https://cosmical-container.github.io/2021/07/13/VB-%E6%B3%A8%E5%86%8C%E8%A1%A8/" data-id="clf3moi7b0007lw1t61vsaxfy" class="article-share-link" data-share="baidu" data-title="VB6.0 操作注册表">分享到</a>
+        <a data-url="https://cosmical-container.github.io/2021/07/13/VB-%E6%B3%A8%E5%86%8C%E8%A1%A8/" data-id="clhd2iiht0009ts1tey1i0np8" class="article-share-link" data-share="baidu" data-title="VB6.0 操作注册表">分享到</a>
       
 
       
@@ -380,7 +428,7 @@
     </div>
     <footer class="article-footer">
       
-        <a data-url="https://cosmical-container.github.io/2020/08/20/VB-MouseLinker/" data-id="clf3moi770002lw1t83yfca5z" class="article-share-link" data-share="baidu" data-title="VB6.0 鼠标连点器">分享到</a>
+        <a data-url="https://cosmical-container.github.io/2020/08/20/VB-MouseLinker/" data-id="clhd2iihp0006ts1tb6uedbkp" class="article-share-link" data-share="baidu" data-title="VB6.0 鼠标连点器">分享到</a>
       
 
       
@@ -427,7 +475,7 @@
     </div>
     <footer class="article-footer">
       
-        <a data-url="https://cosmical-container.github.io/2020/01/15/VB-AI/" data-id="clf3moi750001lw1t7os7ajp6" class="article-share-link" data-share="baidu" data-title="VB6.0 调用网络API写的聊天机器人">分享到</a>
+        <a data-url="https://cosmical-container.github.io/2020/01/15/VB-AI/" data-id="clhd2iiho0005ts1t9w91h3m3" class="article-share-link" data-share="baidu" data-title="VB6.0 调用网络API写的聊天机器人">分享到</a>
       
 
       
@@ -475,7 +523,7 @@
     </div>
     <footer class="article-footer">
       
-        <a data-url="https://cosmical-container.github.io/2019/08/16/VB-%E4%BA%95%E5%AD%97%E6%A3%8B/" data-id="clf3moi790004lw1tahij3w68" class="article-share-link" data-share="baidu" data-title="VB6.0 井字棋">分享到</a>
+        <a data-url="https://cosmical-container.github.io/2019/08/16/VB-%E4%BA%95%E5%AD%97%E6%A3%8B/" data-id="clhd2iihq0007ts1t5pc8apjs" class="article-share-link" data-share="baidu" data-title="VB6.0 井字棋">分享到</a>
       
 
       
@@ -521,7 +569,7 @@
     </div>
     <footer class="article-footer">
       
-        <a data-url="https://cosmical-container.github.io/2019/05/02/VB-%E7%A6%81%E7%94%A8%E5%A4%8D%E5%88%B6%E7%B2%98%E8%B4%B4/" data-id="clf3moi7a0005lw1t2bac5rse" class="article-share-link" data-share="baidu" data-title="VB6.0 禁用复制粘贴">分享到</a>
+        <a data-url="https://cosmical-container.github.io/2019/05/02/VB-%E7%A6%81%E7%94%A8%E5%A4%8D%E5%88%B6%E7%B2%98%E8%B4%B4/" data-id="clhd2iihu000ats1tbq9lbbsf" class="article-share-link" data-share="baidu" data-title="VB6.0 禁用复制粘贴">分享到</a>
       
 
       
@@ -544,14 +592,28 @@
     
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C%E8%AF%AD%E8%A8%80/" rel="tag">C语言</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C%E8%AF%AD%E8%A8%80/" style="font-size: 10px;">C语言</a>
+    </div>
+  </div>
+
   
     
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">十一月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/06/">六月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">七月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">十一月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/06/">六月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">七月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -563,6 +625,10 @@
       <ul>
         
           <li>
+            <a href="/2022/11/27/C-%E5%A4%8D%E5%88%BBprintf%E5%87%BD%E6%95%B01/">C-复刻printf函数1</a>
+          </li>
+        
+          <li>
             <a href="/2022/11/25/C-%E8%BF%94%E5%9B%9E%E5%80%BC%E4%B8%BA%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E7%9A%84%E5%87%BD%E6%95%B0/">C-返回值为函数指针的函数</a>
           </li>
         
@@ -571,15 +637,11 @@
           </li>
         
           <li>
-            <a href="/2022/05/08/Hello-World-0/">Hello World</a>
-          </li>
-        
-          <li>
             <a href="/2022/05/08/C-Program1/">C-Program1</a>
           </li>
         
           <li>
-            <a href="/2021/07/13/VB-%E6%B3%A8%E5%86%8C%E8%A1%A8/">VB6.0 操作注册表</a>
+            <a href="/2022/05/08/Hello-World-0/">Hello World</a>
           </li>
         
       </ul>
