@@ -108,6 +108,48 @@ figure.highlight pre .attr { color: #9cdcfe; }
   color: #49b1f5;
 }
 
+/* CodeSnap 风格代码截图卡片（渲染在屏幕外，仅用于生成图片） */
+.codesnap-stage {
+  position: fixed;
+  left: -99999px;
+  top: 0;
+  padding: 24px;
+  background: transparent;
+}
+.codesnap-card {
+  display: inline-block;
+  min-width: 420px;
+  background: #1e1e1e;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .45);
+}
+.codesnap-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #252526;
+}
+.codesnap-titlebar .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.codesnap-titlebar .dot-red { background: #ff5f56; }
+.codesnap-titlebar .dot-yellow { background: #ffbd2e; }
+.codesnap-titlebar .dot-green { background: #27c93f; }
+.codesnap-file {
+  margin-left: 8px;
+  color: #9da5b4;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 13px;
+}
+.codesnap-card figure.highlight { margin: 0; }
+.codesnap-card figure.highlight td.code { padding: 14px 18px; }
+.codesnap-card figure.highlight pre { background: transparent; }
+
 /* 复制附加版权开关行 */
 .copyright-copy-toggle {
   margin-top: 8px;
