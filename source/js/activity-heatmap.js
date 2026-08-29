@@ -1,15 +1,18 @@
 // GitHub 风格贡献热力图：按年分行，覆盖从第一篇博文到今年的完整发布历史
+// 支持悬停查看当日发文，点击直达（多篇时弹出列表）
 (function () {
   var CELL = 13, GAP = 3, LBL_H = 20, LBL_W = 32;
   var MONTHS = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
   var LIGHT = ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'];
   var DARK = ['#2b3038', '#0e4429', '#006d32', '#26a641', '#39d353'];
 
+  var dayPosts = {};   // 'YYYY-MM-DD' -> [{t, u}]
+
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
   function fmt(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function level(c) { return c === 0 ? 0 : c === 1 ? 1 : c === 2 ? 2 : c <= 4 ? 3 : 4; }
 
-  function yearSvg(posts, byDay, titles, year, isCurrent) {
+  function yearSvg(year, isCurrent) {
     var start = new Date(year, 0, 1);
     start.setDate(start.getDate() - start.getDay()); // 对齐到周日
     var end = isCurrent ? new Date() : new Date(year, 11, 31);
@@ -35,11 +38,10 @@
     });
     days.forEach(function (dd, i) {
       var key = fmt(dd);
-      var cnt = byDay[key] || 0;
+      var cnt = (dayPosts[key] || []).length;
       var col = Math.floor(i / 7), row = i % 7;
-      var tip = key + ' · 发文 ' + cnt + ' 篇';
-      if (cnt && titles[key]) tip += '：' + titles[key].join('、');
-      svg += '<rect class="act-cell" data-lvl="' + level(cnt) + '" x="' + (LBL_W + col * (CELL + GAP)) +
+      var tip = key + ' · 发文 ' + cnt + ' 篇' + (cnt ? '，点击查看' : '');
+      svg += '<rect class="act-cell" data-lvl="' + level(cnt) + '" data-day="' + key + '" x="' + (LBL_W + col * (CELL + GAP)) +
         '" y="' + (LBL_H + row * (CELL + GAP)) + '" width="' + CELL + '" height="' + CELL +
         '" rx="2.5"><title>' + tip + '</title></rect>';
     });
@@ -47,10 +49,9 @@
   }
 
   function render(box, posts) {
-    var byDay = {}, titles = {}, years = {};
+    var years = {};
     posts.forEach(function (p) {
-      byDay[p.d] = (byDay[p.d] || 0) + 1;
-      (titles[p.d] = titles[p.d] || []).push(p.t);
+      (dayPosts[p.d] = dayPosts[p.d] || []).push(p);
       years[p.d.slice(0, 4)] = true;
     });
     var first = Number(posts[0].d.slice(0, 4));
@@ -59,7 +60,7 @@
     for (var y = last; y >= first; y--) {
       html += '<h3 style="margin:14px 0 6px;font-size:1.05em">' + y + ' 年' +
         (years[y] ? '' : ' <span style="opacity:.5;font-size:.8em">（暂无发布）</span>') + '</h3>';
-      html += yearSvg(posts, byDay, titles, y, y === last);
+      html += yearSvg(y, y === last);
     }
     box.innerHTML = html;
     applyTheme(box);
@@ -69,6 +70,28 @@
     var pal = document.documentElement.getAttribute('data-theme') === 'dark' ? DARK : LIGHT;
     box.querySelectorAll('.act-cell').forEach(function (r) {
       r.setAttribute('fill', pal[Number(r.getAttribute('data-lvl'))]);
+    });
+  }
+
+  // ---- 点击交互 ----
+  function closePopup() {
+    var p = document.getElementById('act-popup');
+    if (p) p.remove();
+  }
+
+  function showPopup(day, list) {
+    closePopup();
+    var p = document.createElement('div');
+    p.id = 'act-popup';
+    var items = list.map(function (post) {
+      return '<a href="' + post.u + '">' + post.t + '</a>';
+    }).join('');
+    p.innerHTML = '<div class="act-popup-card">' +
+      '<div class="act-popup-head"><span>' + day + ' · ' + list.length + ' 篇</span>' +
+      '<span class="act-popup-close" title="关闭">✕</span></div>' + items + '</div>';
+    document.body.appendChild(p);
+    p.addEventListener('click', function (e) {
+      if (e.target === p || e.target.classList.contains('act-popup-close')) closePopup();
     });
   }
 
@@ -89,6 +112,17 @@
           '</strong> 篇 · 最近一篇 <strong>' + posts[posts.length - 1].d + '</strong>';
       }
     }).catch(function () { box.innerHTML = '<p>动态加载失败</p>'; });
+
+    // 点击格子：单篇直达，多篇弹列表
+    box.addEventListener('click', function (e) {
+      var rect = e.target.closest('.act-cell');
+      if (!rect) return;
+      var list = dayPosts[rect.getAttribute('data-day')] || [];
+      if (!list.length) return;
+      if (list.length === 1) location.href = list[0].u;
+      else showPopup(rect.getAttribute('data-day'), list);
+    });
+
     var mo = new MutationObserver(function () { applyTheme(box); });
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }

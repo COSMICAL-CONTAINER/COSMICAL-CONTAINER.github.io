@@ -4,3 +4,74 @@
   font-size: 1.4em !important;
   line-height: 2.2;
 }
+
+/* 标签详情页：返回标签页按钮 */
+.back-to-tags {
+  display: inline-block;
+  margin: 2px 0 16px;
+  padding: 4px 16px;
+  border: 1px solid rgba(128, 133, 140, .45);
+  border-radius: 999px;
+  font-size: .85em;
+  color: inherit;
+  text-decoration: none;
+  transition: all .2s;
+}
+.back-to-tags:hover {
+  background: #49b1f5;
+  border-color: transparent;
+  color: #fff;
+}
+
+/* 动态页热力图：有文章的格子显示手型 */
+#activity-heatmap .act-cell:not([data-lvl="0"]) {
+  cursor: pointer;
+}
+
+/* 动态页：多篇弹出列表 */
+#act-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.act-popup-card {
+  background: #fff;
+  color: #4c4948;
+  border-radius: 12px;
+  padding: 16px 22px;
+  min-width: 280px;
+  max-width: 86vw;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
+}
+[data-theme="dark"] .act-popup-card {
+  background: #25272e;
+  color: #d0d0d0;
+}
+.act-popup-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.act-popup-close {
+  cursor: pointer;
+  opacity: .55;
+}
+.act-popup-close:hover {
+  opacity: 1;
+}
+.act-popup-card a {
+  display: block;
+  padding: 6px 0;
+  color: #49b1f5;
+  text-decoration: none;
+}
+.act-popup-card a:hover {
+  text-decoration: underline;
+}
