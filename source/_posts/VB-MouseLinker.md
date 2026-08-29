@@ -2,6 +2,8 @@
 title: VB6.0 鼠标连点器
 abbrlink: 4a40a691
 date: 2020-08-20 19:23:43
+tags:
+  - VB6.0
 ---
 
 # VB鼠标连点器

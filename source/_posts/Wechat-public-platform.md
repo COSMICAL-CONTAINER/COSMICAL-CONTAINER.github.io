@@ -1,7 +1,7 @@
 ---
 title: Wechat_public_platform
 tags:
-  - C语言
+  - 杂项
 abbrlink: 30e0d4c4
 date: 2022-06-21 13:00:34
 ---

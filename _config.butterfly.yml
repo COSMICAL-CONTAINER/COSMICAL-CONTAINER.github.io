@@ -131,6 +131,8 @@ darkmode:
 # ------- 注入 -------
 # 侧栏 WakaTime 编码统计卡片（inject 需要写完整标签）
 inject:
+  head:
+    - '<link rel="stylesheet" href="/css/custom.css">'
   bottom:
     - '<script src="/js/wakatime-card.js"></script>'
 

@@ -1,0 +1,6 @@
+/* 站点自定义样式 */
+/* 标签页：统一标签字号（主题默认按文章数在 1.2em~1.5em 间浮动，大小不一） */
+.tag-cloud-list a {
+  font-size: 1.4em !important;
+  line-height: 2.2;
+}
