@@ -1,0 +1,133 @@
+# Butterfly 主题配置（只写需要覆盖的项，其余沿用主题默认值）
+# 文档: https://butterfly.js.org/
+
+# ------- 导航 -------
+nav:
+  logo: /images/avatar.png
+  display_title: true
+  fixed: true
+
+menu:
+  首页: / || fas fa-home
+  归档: /archives/ || fas fa-archive
+  标签: /tags/ || fas fa-tags
+  动态: /activity/ || fas fa-calendar-alt
+  实验室: /lab/ || fas fa-flask
+
+# ------- 社交链接（同步自 GitHub 主页） -------
+social:
+  fab fa-github: https://github.com/COSMICAL-CONTAINER || Github || '#24292e'
+  fas fa-blog: https://blog.csdn.net/qq_28406527 || CSDN || '#fc5531'
+  fas fa-stopwatch: https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14 || WakaTime || '#6f42c1'
+
+# ------- 横幅（用本站星空图） -------
+index_img: /img/space.jpg
+archive_img: /img/space.jpg
+tag_img: /img/space.jpg
+default_top_img: /img/space.jpg
+
+# ------- 首页打字机副标题 -------
+subtitle:
+  enable: true
+  effect: true
+  source: false
+  sub:
+    - never give up
+    - 寰宇体的世界
+    - 从 VB6.0 到 C，从这里开始
+
+# ------- 文章封面（多张随机，不再千篇一律） -------
+cover:
+  index_enable: true
+  aside_enable: true
+  archives_enable: true
+  position: both
+  default_cover:
+    - /img/covers/cover-1-nebula.svg
+    - /img/covers/cover-2-ocean.svg
+    - /img/covers/cover-3-sunset.svg
+    - /img/covers/cover-4-forest.svg
+    - /img/covers/cover-5-midnight.svg
+    - /img/covers/cover-6-ember.svg
+    - /img/space.jpg
+
+favicon: /images/64.ico
+
+avatar:
+  img: /images/avatar.png
+  effect: false
+
+# ------- 本地搜索（无外部依赖） -------
+search:
+  use: local_search
+
+# ------- 代码块 -------
+code_blocks:
+  theme: darker
+  macStyle: true
+  copy: true
+  language: true
+  height_limit: false
+  word_wrap: false
+
+# ------- 页脚 -------
+footer:
+  owner:
+    enable: true
+    since: 2019
+
+# ------- 侧栏 -------
+aside:
+  card_author:
+    enable: true
+    description: never give up
+    button:
+      enable: false # 社交图标行里已有 GitHub，去掉独占一行的大按钮避免重复
+  card_announcement:
+    enable: true
+    content: 欢迎来到寰宇体的世界 ✨
+  card_categories:
+    enable: false # 文章暂无分类，避免空卡片
+  card_archives:
+    enable: true
+    type: monthly
+
+# ------- 访问统计 -------
+# 静态站没有真实统计能力，不蒜子在本地/未注册域名下会显示乱数，关闭
+busuanzi:
+  site_uv: false
+  site_pv: false
+  page_pv: false
+
+# ------- 首页横幅高度（默认全屏太高，卡片要滚一屏才见） -------
+index_top_img_height: 62vh
+
+# ------- 文章字数 / 阅读时长（hexo-wordcount） -------
+wordcount:
+  enable: true
+  post_wordcount: true
+  min2read: true
+  wordcount: true # 侧栏网站资讯里显示全站总字数
+
+# ------- 文章元信息 -------
+# updated 跟随 created，"更新于"与"发表于"完全重复，只显示发布时间
+post_meta:
+  post:
+    date_type: created
+
+# ------- 暗色模式 -------
+darkmode:
+  enable: true
+  button: true
+
+# ------- 注入 -------
+# 侧栏 WakaTime 编码统计卡片（inject 需要写完整标签）
+inject:
+  bottom:
+    - '<script src="/js/wakatime-card.js"></script>'
+
+# ------- CDN -------
+# 第三方库经 hexo-butterfly-extjs 打包到本地，不依赖外网 CDN
+CDN:
+  internal_provider: local
+  third_party_provider: local
