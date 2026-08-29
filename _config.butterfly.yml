@@ -100,6 +100,9 @@ post_copyright:
   license: CC BY-NC-SA 4.0
   license_url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh
 
+# ------- 图片灯箱（点击放大，带遮罩） -------
+lightbox: fancybox
+
 # ------- 访问统计 -------
 # 静态站没有真实统计能力，不蒜子在本地/未注册域名下会显示乱数，关闭
 busuanzi:

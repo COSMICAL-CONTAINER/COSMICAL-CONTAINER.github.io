@@ -151,8 +151,11 @@
     ctx.font = FONT_SIZE + 'px ' + FONT_FAMILY;
     ctx.textBaseline = 'middle';
 
-    // 纯白背景
-    ctx.fillStyle = '#ffffff';
+    // 渐变背景（CodeSnap 风格）
+    var grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    grad.addColorStop(0, '#667eea');
+    grad.addColorStop(1, '#764ba2');
+    ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // 卡片阴影 + 圆角主体
