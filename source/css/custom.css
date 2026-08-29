@@ -1,4 +1,14 @@
 /* 站点自定义样式 */
+/* 阅读字号整体放大（主题默认 14px 偏小） */
+:root {
+  --global-font-size: 16px;
+}
+
+/* 补全新版 highlight.js 的 token 配色（主题 darker 调色板缺 type/symbol 等） */
+figure.highlight pre .type { color: #ffcb6b; }
+figure.highlight pre .symbol { color: #82aaff; }
+figure.highlight pre .property { color: #89ddff; }
+
 /* 标签页：统一标签字号（主题默认按文章数在 1.2em~1.5em 间浮动，大小不一） */
 .tag-cloud-list a {
   font-size: 1.4em !important;
@@ -74,4 +84,29 @@
 }
 .act-popup-card a:hover {
   text-decoration: underline;
+}
+
+/* 代码工具栏：保存为图片按钮 */
+.copy-image-btn {
+  cursor: pointer;
+  margin-left: 8px;
+}
+.copy-image-btn:hover {
+  color: #49b1f5;
+}
+
+/* 复制附加版权开关行 */
+.copyright-copy-toggle {
+  margin-top: 8px;
+  font-size: .88em;
+  opacity: .85;
+}
+.copyright-copy-toggle label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.copyright-copy-toggle input {
+  cursor: pointer;
 }

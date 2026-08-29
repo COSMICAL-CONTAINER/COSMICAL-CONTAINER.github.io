@@ -134,8 +134,10 @@ inject:
   head:
     - '<link rel="stylesheet" href="/css/custom.css">'
   bottom:
+    - '<script src="/js/lib/html-to-image.js"></script>'
     - '<script src="/js/wakatime-card.js"></script>'
     - '<script src="/js/tag-back.js"></script>'
+    - '<script src="/js/enhance.js"></script>'
 
 # ------- CDN -------
 # 第三方库经 hexo-butterfly-extjs 打包到本地，不依赖外网 CDN
