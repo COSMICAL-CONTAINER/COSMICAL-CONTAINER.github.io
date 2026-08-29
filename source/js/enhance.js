@@ -151,6 +151,10 @@
     ctx.font = FONT_SIZE + 'px ' + FONT_FAMILY;
     ctx.textBaseline = 'middle';
 
+    // 纯白背景
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     // 卡片阴影 + 圆角主体
     var x = MARGIN, y = MARGIN, r = 10;
     ctx.save();
@@ -208,9 +212,11 @@
       var tools = fig.querySelector('.highlight-tools');
       if (!tools) { missing++; return; }
 
-      // 补齐主题复制按钮的悬浮提示
+      // 补齐主题按钮的悬浮提示
       var copyBtn = tools.querySelector('.copy-button');
       if (copyBtn && !copyBtn.getAttribute('title')) copyBtn.setAttribute('title', '复制代码');
+      var expandBtn = tools.querySelector('.expand');
+      if (expandBtn && !expandBtn.getAttribute('title')) expandBtn.setAttribute('title', '收起 / 展开代码');
 
       if (tools.querySelector('.copy-image-btn')) return;
       var btn = document.createElement('i');
@@ -219,6 +225,10 @@
       tools.appendChild(btn);
       btn.addEventListener('click', function () {
         if (btn.dataset.busy) return;
+        var target = fig.querySelector('table') || fig.querySelector('pre');
+        if (!target) return;
+        // 代码被收起时渲染会是空的，提示先展开
+        if (!target.offsetParent) { toast('请先展开代码块再生成图片'); return; }
         btn.dataset.busy = '1';
         btn.style.opacity = '.35';
         try {
