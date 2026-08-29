@@ -4,10 +4,23 @@
   --global-font-size: 16px;
 }
 
-/* 补全新版 highlight.js 的 token 配色（主题 darker 调色板缺 type/symbol 等） */
-figure.highlight pre .type { color: #ffcb6b; }
-figure.highlight pre .symbol { color: #82aaff; }
-figure.highlight pre .property { color: #89ddff; }
+/* 代码配色：VSCode Dark+ 风格（覆盖主题 darker 调色板，并补齐缺色的类） */
+figure.highlight pre { background: #1e1e1e; }
+figure.highlight pre .comment { color: #6a9955; font-style: italic; }
+figure.highlight pre .string { color: #ce9178; }
+figure.highlight pre .number { color: #b5cea8; }
+figure.highlight pre .keyword { color: #569cd6; }
+figure.highlight pre .type { color: #4ec9b0; }
+figure.highlight pre .params { color: #9cdcfe; }
+figure.highlight pre .meta { color: #c586c0; }
+figure.highlight pre .title,
+figure.highlight pre .function,
+figure.highlight pre .built_in { color: #dcdcaa; }
+figure.highlight pre .symbol,
+figure.highlight pre .property,
+figure.highlight pre .variable { color: #9cdcfe; }
+figure.highlight pre .tag { color: #569cd6; }
+figure.highlight pre .attr { color: #9cdcfe; }
 
 /* 标签页：统一标签字号（主题默认按文章数在 1.2em~1.5em 间浮动，大小不一） */
 .tag-cloud-list a {
@@ -109,4 +122,32 @@ figure.highlight pre .property { color: #89ddff; }
 }
 .copyright-copy-toggle input {
   cursor: pointer;
+}
+
+/* 复制成功的提示（主题默认黑底不明显，改为主题蓝） */
+.copy-notice {
+  background: #49b1f5 !important;
+  color: #fff !important;
+  padding: 4px 12px !important;
+  border-radius: 6px;
+  font-size: 13px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+}
+
+/* 增强 功能反馈 toast */
+#enhance-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 48px;
+  transform: translateX(-50%);
+  z-index: 100000;
+  background: #49b1f5;
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+  opacity: 0;
+  transition: opacity .3s;
+  pointer-events: none;
 }

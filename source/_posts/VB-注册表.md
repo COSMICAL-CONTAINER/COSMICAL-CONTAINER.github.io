@@ -33,7 +33,7 @@ tags:
 
 接下来我们用Vb6.0实现添加注册表的功能
 
-```plaintext
+```vb
 Dim WSH
 Set WSH = CreateObject("WSCRIPT.SHELL")
 WSH.RegWrite "HKEY_CLASSES_ROOT\Directory\Background\shell\test\test", "test"        '写入注册表
@@ -44,7 +44,7 @@ WSH.RegWrite "HKEY_CLASSES_ROOT\Directory\Background\shell\test\test", "test"   
 ![在这里插入图片描述](20210713105751571.png)  
 下面这个代码可以加入python到右键菜单中
 
-```plaintext
+```vb
 Dim WSH
 Set WSH = CreateObject("WSCRIPT.SHELL")
 WSH.RegWrite "D:\python\python.exe","D:\python\python.exe" 
@@ -57,7 +57,7 @@ WSH.RegWrite "D:\python\python.exe","D:\python\python.exe"
 其实挺方便的。  
 其实还可以做一个界面让用户自己输入自己想要运行的程序，代码如下：
 
-```plaintext
+```vb
 Private Sub Command_openfile1_Click()
 CommonDialog_exe.FileName = ""
 CommonDialog_exe.Filter = "可执行应用程序(*.exe)|*.exe"
