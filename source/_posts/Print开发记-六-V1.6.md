@@ -1,0 +1,528 @@
+---
+title: Print.h 开发记（六）V1.6
+tags:
+  - C语言
+series: C_Program-Print.h 开发记
+abbrlink: 6e9f2a48
+date: 2024-07-15 21:49:00
+---
+
+> 系列导航：[上一篇：Print.h 开发记（五）V1.5](/posts/5b7d3e60/)
+
+打印库成熟之后，最先"吃自己狗粮"的场景就是**调试**。V1.6 加入了一整套 debug 宏。
+
+## debug：打印变量名和它的值
+
+调试时最常写的就是 `printf("x = %d\n", x)`——变量名要手打两遍。`#` 字符串化运算符可以让宏自动完成：
+
+```c
+#define debug_valuename_to_str(value) #value
+#define debug(obj) print(LIGHT_GREEN("debug: "), debug_valuename_to_str(obj) " = ", obj, "\n")
+```
+
+`debug(count)` 展开后自动输出 `debug: count = 10`，变量改名也不用同步。
+
+## WARN_IF / ERR_IF / ERR_EXIT_IF
+
+三个按条件触发打印的宏，全部用 `do { } while(0)` 包裹——这是宏定义多语句的标准写法，保证在 if/else 里展开不出问题：
+
+```c
+#define WARN_IF(EXP)  \
+do                    \
+{                     \
+    if (EXP)          \
+        print(YELLOW("warning: "), #EXP "\n"); \
+}while(0)
+
+#define ERR_IF(EXP)   \
+do                    \
+{                     \
+    if (EXP)          \
+        print(RED("error: "), #EXP "\n"); \
+}while(0)
+
+#define ERR_EXIT_IF(EXP)\
+do                    \
+{                     \
+    if (EXP)          \
+    {                 \
+        print(RED("error: "), #EXP "\n"); \
+        exit(-1);\
+    }\
+}while(0)
+```
+
+- `WARN_IF(x < 0)`：条件成立打黄色警告
+- `ERR_IF`：红色错误提示
+- `ERR_EXIT_IF`：红色错误并直接退出程序
+
+配合库里的颜色宏，警告黄色、错误红色，终端里一眼可辨。
+
+
+## 测试程序 main.c（V1.6）
+
+```c main.c
+#include "Print.h"
+int main()
+{
+    char char_a = '0';
+    unsigned char char_b = '1';
+
+    short int sint_c = 2;
+    int int_d = 3;
+    unsigned int uint_e = 4;
+
+    long long ll_f = 5l;
+    unsigned long long ull_g = 6l;
+
+    float float_h = 7.7;
+    double double_i = 8.8f;
+
+    const char* ccharx_j = "999";
+    char* charx_k = "1234567890";
+
+    int *intx_l = &int_d;
+    long long *llx_m = &ll_f;
+    unsigned long long *ullx_n = &ull_g;
+
+    float *o = &float_h;
+    double *p = &double_i;
+
+    println(char_a, char_b, sint_c, int_d, uint_e, ll_f, ull_g, float_h, double_i);
+    println(ccharx_j, charx_k, intx_l, llx_m, ullx_n, o, p);
+
+    int num_array[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    char ccl_str[10] = "ccl";
+
+    println(GET_ARR_LEN(num_array));
+    printlnArr(num_array, printArrTypeSpace);
+
+    println(GET_ARR_LEN(ccl_str));
+    printlnArr(ccl_str, printArrTypeName);
+
+    println(GET_ARR_LEN("987654321"));
+
+    TestColor("ccl is a boy");
+    
+    TestColor(char_a);
+
+    print(RED(2));
+    println(YELLOW(3.3));
+    println(GREEN(3.3f));
+
+    // Note that void types cannot be printed
+    // 注意，不能打印void
+    // print();
+
+    debug(char_a);
+
+    WARN_IF(char_a == '0');
+    ERR_IF(2 == 2);
+    ERR_EXIT_IF(3 == 3);
+    WARN_IF(char_a == 1);
+
+    return 0;
+}
+```
+
+
+
+
+## V1.6 完整代码
+
+> 小插曲：这份文件头里的 `@version` 忘了从 1.5 改成 1.6，仓库历史里从没存在过 1.6 的版本号（1.5 直接跳到了 1.7）——以 `@see` 区的更新日志为准。
+
+```c Print.h
+/**
+ * @file Print.h
+ * @author Cosmical Containter
+ * @emile （联系方式已隐去） 
+ * @github https://github.com/COSMICAL-CONTAINER
+ * @brief Print anything you want!
+ * @version 1.5
+ * @date 2024-04-26
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ * @see
+ * V1.0 
+ * 完成基础功能，实现对基础类型char、short int、int、float、double、const char *、char *的打印
+ * 
+ * V1.1
+ * 修复bug
+ * 
+ * V1.2
+ * 加入unsigned long long 的打印格式
+ * 加入打印数组功能，可以自选数组中每两个元素的打印格式
+ * 加入不支持的格式错误处理
+ * 加入颜色打印代码
+ *
+ * V1.3
+ * 拓展颜色打印宏，现在可以支持输入字符串或变量了
+ *
+ * V1.4
+ * 拓展print与println宏，以前只能输出1个参数，现在可以输入最多10个参数了，做到了重载
+ *
+ * V1.5
+ * 实现对大部分基础类型的打印
+ * 完善注释
+ * 
+ * V1.6
+ * 加入debug宏，可以打印变量名以及变量的值
+ * 加入WARN_IF、ERR_IF、ERR_EXIT_IF宏，可以根据条件来测试打印
+ */
+
+#ifndef __Print_H__
+#define __Print_H__
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define PRINTMAXSTRLEN 100
+
+// 颜色宏代码
+// #define NONE(str)          str"\033[m"
+// #define RED(str)           "\033[0;32;31m"NONE(str)
+// #define LIGHT_RED(str)     "\033[1;31m"NONE(str)
+// #define GREEN(str)         "\033[0;32;32m"NONE(str)
+// #define LIGHT_GREEN(str)   "\033[1;32m"NONE(str)
+// #define BLUE(str)          "\033[0;32;34m"NONE(str)
+// #define LIGHT_BLUE(str)    "\033[1;34m"NONE(str)
+// #define DARY_GRAY(str)     "\033[1;30m"NONE(str)
+// #define CYAN(str)          "\033[0;36m"NONE(str)
+// #define LIGHT_CYAN(str)    "\033[1;36m"NONE(str)
+// #define PURPLE(str)        "\033[0;35m"NONE(str)
+// #define LIGHT_PURPLE(str)  "\033[1;35m"NONE(str)
+// #define YELLOW(str)        "\033[0;33m"NONE(str)
+// #define LIGHT_YELLOW(str)  "\033[1;33m"NONE(str)
+// #define LIGHT_GRAY(str)    "\033[0;37m"NONE(str)
+// #define WHITE(str)         "\033[1;37m"NONE(str)
+
+// 为了能够实现兼容字符串和变量的颜色打印，只能这样操作
+// RED(a) 与 RED("1") 兼容
+#define TOSTR(obj) (_Generic((obj),\
+    char:		        char2str,\
+    short int:	        short2str,\
+    int:		        int2str,\
+    float:		        float2str,\
+    double:		        double2str,\
+    const char*:        str2str,\
+	char *:		        str2str,\
+    unsigned long long: ulonglong2str,\
+    default:            print_error\
+    )(obj))
+
+#define RED(obj)           (str_comb(str_comb("\033[0;32;31m",TOSTR(obj)),"\033[m"))
+#define LIGHT_RED(obj)     (str_comb(str_comb("\033[1;31m"   ,TOSTR(obj)),"\033[m"))
+#define GREEN(obj)         (str_comb(str_comb("\033[0;32;32m",TOSTR(obj)),"\033[m"))
+#define LIGHT_GREEN(obj)   (str_comb(str_comb("\033[1;32m"   ,TOSTR(obj)),"\033[m"))
+#define BLUE(obj)          (str_comb(str_comb("\033[0;32;34m",TOSTR(obj)),"\033[m"))
+#define LIGHT_BLUE(obj)    (str_comb(str_comb("\033[1;34m"   ,TOSTR(obj)),"\033[m"))
+#define DARY_GRAY(obj)     (str_comb(str_comb("\033[1;30m"   ,TOSTR(obj)),"\033[m"))
+#define CYAN(obj)          (str_comb(str_comb("\033[0;36m"   ,TOSTR(obj)),"\033[m"))
+#define LIGHT_CYAN(obj)    (str_comb(str_comb("\033[1;36m"   ,TOSTR(obj)),"\033[m"))
+#define PURPLE(obj)        (str_comb(str_comb("\033[0;35m"   ,TOSTR(obj)),"\033[m"))
+#define LIGHT_PURPLE(obj)  (str_comb(str_comb("\033[1;35m"   ,TOSTR(obj)),"\033[m"))
+#define YELLOW(obj)        (str_comb(str_comb("\033[0;33m"   ,TOSTR(obj)),"\033[m"))
+#define LIGHT_YELLOW(obj)  (str_comb(str_comb("\033[1;33m"   ,TOSTR(obj)),"\033[m"))
+#define LIGHT_GRAY(obj)    (str_comb(str_comb("\033[0;37m"   ,TOSTR(obj)),"\033[m"))
+#define WHITE(obj)         (str_comb(str_comb("\033[1;37m"   ,TOSTR(obj)),"\033[m"))
+
+// 这是字符串合成函数
+const char* str_comb(const char *str1, const char *str2)
+{
+    static char str[PRINTMAXSTRLEN];
+    strcpy(str, str1);
+    strcat(str, str2);
+    return str;
+}
+
+// 下面是处理各种类型转字符串的函数
+const char* char2str(char ch)
+{
+    static char str[2];
+    str[0] = ch;
+    str[1] = '\0';
+    return str;
+}
+
+const char* short2str(short num)
+{
+    // short：2字节 -32,768 到 32,767
+    static char str[7];
+    sprintf(str, "%hd", num);
+    return str;
+}
+
+const char* int2str(int num)
+{
+    // int：2~4字节 -32,768 到 32,767 或 -2,147,483,648 到 2,147,483,647
+    static char str[12];
+    sprintf(str, "%d", num);
+    return str;
+}
+
+const char* float2str(float num)
+{
+    // float：4字节 1.2E-38 到 3.4E+38
+    static char str[12];
+    sprintf(str, "%f", num);
+    return str;
+}
+
+const char* double2str(double num)
+{
+    // double：8字节 2.3E-308 到 1.7E+308
+    static char str[21];
+    sprintf(str, "%lf", num);
+    return str;
+}
+
+const char* ulonglong2str(unsigned long long num)
+{
+    // unsigned long long：8字节 0 到 18,446,744,073,709,551,615
+    static char str[21];
+    sprintf(str, "%llu", num);
+    return str;
+}
+
+const char* str2str(const char* str)
+{
+    // 直接返回即可
+    return str;
+}
+
+// 颜色宏代码测试
+#define TestColor(obj)\
+{\
+    println(RED(obj));\
+    println(LIGHT_RED(obj));\
+    println(GREEN(obj));\
+    println(LIGHT_GREEN(obj));\
+    println(BLUE(obj));\
+    println(LIGHT_BLUE(obj));\
+    println(CYAN(obj));\
+    println(LIGHT_CYAN(obj));\
+    println(PURPLE(obj));\
+    println(LIGHT_PURPLE(obj));\
+    println(YELLOW(obj));\
+    println(LIGHT_YELLOW(obj));\
+    println(DARY_GRAY(obj));\
+    println(LIGHT_GRAY(obj));\
+    println(WHITE(obj));\
+}
+
+// 兼容Color两种写法
+#define TestColur TestColor
+
+// 原始打印宏，根据obj类型调用不同的打印函数
+#define _print(obj) (_Generic((obj),    \
+    char:		        print_char,     \
+    unsigned char:		print_uchar,    \
+                                        \
+    short int:	        print_short,    \
+    int:		        print_int,      \
+    unsigned int:		print_uint,     \
+                                        \
+    long long:          print_longlong, \
+    unsigned long long: print_ulonglong,\
+                                        \
+    float:		        print_float,    \
+    double:		        print_double,   \
+                                        \
+    const char*:        print_cstr,     \
+	char*:		        print_str,      \
+                                        \
+    int*:               print_p,        \
+    long long*:         print_p,        \
+    unsigned long long*:print_p,        \
+    float*:             print_p,        \
+    double*:            print_p,        \
+                                        \
+    default:            print_error     \
+    )(obj))
+
+// 原始打印换行宏，直接调用打印函数然后打印换行符
+#define _println(obj) _print(obj), _print("\n")
+
+// 获取参数个数，最多支持10个参数
+#define PrintMacroArgCount(...) _PrintMacroArgCount(__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
+#define _PrintMacroArgCount(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, COUNT, ...) COUNT
+
+// 宏黏贴
+#define PrintConcat(A, B) _PrintConcat(A, B)
+#define _PrintConcat(A, B) A##B
+
+// 打印宏的宏展开，最多支持10个参数
+// 原理: print(a, b, c); 展开后变成 _print(a), _print(b), _print(c);
+#define print(...) _print_(__VA_ARGS__)
+#define _print_(...) PrintConcat(_print_, PrintMacroArgCount(__VA_ARGS__))(__VA_ARGS__)
+#define _print_1(_0)                                           _print(_0)
+#define _print_2(_0, _1)                                       _print_1(_0), _print(_1)
+#define _print_3(_0, _1, _2)                                   _print_2(_0, _1), _print(_2)
+#define _print_4(_0, _1, _2, _3)                               _print_3(_0, _1, _2), _print(_3)
+#define _print_5(_0, _1, _2, _3, _4)                           _print_4(_0, _1, _2, _3), _print(_4)
+#define _print_6(_0, _1, _2, _3, _4, _5)                       _print_5(_0, _1, _2, _3, _4), _print(_5)
+#define _print_7(_0, _1, _2, _3, _4, _5, _6)                   _print_6(_0, _1, _2, _3, _4, _5), _print(_6)
+#define _print_8(_0, _1, _2, _3, _4, _5, _6, _7)               _print_7(_0, _1, _2, _3, _4, _5, _6), _print(_7)
+#define _print_9(_0, _1, _2, _3, _4, _5, _6, _7, _8)           _print_8(_0, _1, _2, _3, _4, _5, _6, _7), _print(_8)
+#define _print_10(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9)      _print_9(_0, _1, _2, _3, _4, _5, _6, _7, _8), _print(_9)
+
+// 打印并换行宏的宏展开，最多支持10个参数
+// 原理: println(a, b, c); 展开后变成 _println(a), _println(b), _println(c);
+#define println(...) _println_(__VA_ARGS__)
+#define _println_(...) PrintConcat(_println_, PrintMacroArgCount(__VA_ARGS__))(__VA_ARGS__)
+#define _println_1(_0)                                           _println(_0)
+#define _println_2(_0, _1)                                       _println_1(_0), _println(_1)
+#define _println_3(_0, _1, _2)                                   _println_2(_0, _1), _println(_2)
+#define _println_4(_0, _1, _2, _3)                               _println_3(_0, _1, _2), _println(_3)
+#define _println_5(_0, _1, _2, _3, _4)                           _println_4(_0, _1, _2, _3), _println(_4)
+#define _println_6(_0, _1, _2, _3, _4, _5)                       _println_5(_0, _1, _2, _3, _4), _println(_5)
+#define _println_7(_0, _1, _2, _3, _4, _5, _6)                   _println_6(_0, _1, _2, _3, _4, _5), _println(_6)
+#define _println_8(_0, _1, _2, _3, _4, _5, _6, _7)               _println_7(_0, _1, _2, _3, _4, _5, _6), _println(_7)
+#define _println_9(_0, _1, _2, _3, _4, _5, _6, _7, _8)           _println_8(_0, _1, _2, _3, _4, _5, _6, _7), _println(_8)
+#define _println_10(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9)      _println_9(_0, _1, _2, _3, _4, _5, _6, _7, _8), _println(_9)
+
+// 下面是打印各种类型的原始打印函数
+void print_char(char num)
+{
+    printf("%c", num);
+}
+
+void print_uchar(unsigned char num)
+{
+    printf("%c", num);
+}
+
+void print_short(short int num)
+{
+    printf("%hd", num);
+}
+
+void print_int(int num)
+{
+    printf("%d", num);
+}
+
+void print_uint(unsigned int num)
+{
+    printf("%u", num);
+}
+
+void print_longlong(long long num)
+{
+    printf("%lld", num);
+}
+
+void print_ulonglong(unsigned long long num)
+{
+    printf("%llu", num);
+}
+
+void print_float(float num)
+{
+    printf("%f", num);
+}
+
+void print_double(double num)
+{
+    printf("%lf", num);
+}
+
+void print_cstr(const char* str)
+{
+    printf("%s", str);
+}
+
+void print_str(char* str)
+{
+    printf("%s", str);
+}
+
+void print_p(void* obj)
+{
+    printf("%p", obj);
+}
+
+void print_error(void *data)
+{
+    _println(RED( "print error!" ));
+    _println(RED( "don't have this type to print!" ));
+}
+
+// debug宏
+#define debug_valuename_to_str(value) #value
+#define debug(obj) print(LIGHT_GREEN("debug: "), debug_valuename_to_str(obj)" = ", obj, "\n")
+
+#define WARN_IF(EXP)  \
+do                    \
+{                     \
+    if (EXP)          \
+        print(YELLOW("warning: "), #EXP "\n"); \
+}while(0)
+
+#define ERR_IF(EXP)   \
+do                    \
+{                     \
+    if (EXP)          \
+        print(RED("error: "), #EXP "\n"); \
+}while(0)
+
+#define ERR_EXIT_IF(EXP)\
+do                    \
+{                     \
+    if (EXP)          \
+    {                 \
+        print(RED("error: "), #EXP "\n"); \
+        exit(-1);\
+    }\
+}while(0)
+
+// 打印数组宏
+
+// 打印数组宏控制打印方式
+// 0: 数组元素之间用空格隔开
+#define printArrTypeSpace 0
+// 1: 数组元素之间用换行符隔开
+#define printArrTypeln    1
+// 2: 打印数组元素和元素下标
+#define printArrTypeName  2
+
+// 获取数组长度宏
+#define GET_ARR_LEN(arrobj) \
+	(_Generic((arrobj),\
+    char *:		  strlen((const char *)arrobj),\
+    default:      (sizeof(arrobj) / sizeof(arrobj[0]))\
+    ))
+
+// 打印数组宏， 其中type是数组的元素之间按照什么方式打印
+#define printArr(ArrName, type) {     \
+    for (int i = 0; i < GET_ARR_LEN(ArrName); i++)    \
+    {                                       \
+        if(type == printArrTypeName)        \
+        {                                   \
+            print(#ArrName);                \
+            print("[");                     \
+            print(i);                       \
+            print("] = ");                  \
+            println(ArrName[i]);            \
+        }                                   \
+        else                                \
+        {                                   \
+            print(ArrName[i]);              \
+            if(type)    print("\n");        \
+            else        print(" ");         \
+        }                                   \
+    }                                       \
+}
+
+#define printlnArr(ArrName, type) {printArr(ArrName, type); print("\n");}
+
+#endif // !__Print_H__
+```
+
+## 系列导航
+
+- 上一篇：[Print.h 开发记（五）V1.5](/posts/5b7d3e60/)
+- 下一篇：[V1.7/V1.8 字体宏与无参打印](/posts/7fa03b95/)
