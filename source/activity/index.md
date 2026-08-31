@@ -9,6 +9,6 @@ comments: false
 <div id="activity-heatmap" style="margin: 12px 0 8px"></div>
 <p id="activity-stats" style="opacity: .75; font-size: .9em"></p>
 
-<p style="opacity: .55; font-size: .82em">格子颜色越深，代表当天发布的文章越多。悬停查看当日发文，点击可直达文章。</p>
+<p style="opacity: .55; font-size: .82em">格子颜色越深，代表当天发布的文章越多。左右滑动查看全年，点击格子可直达文章。</p>
 
 <script src="/js/activity-heatmap.js"></script>
