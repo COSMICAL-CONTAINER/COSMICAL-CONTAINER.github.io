@@ -11,7 +11,7 @@
   var LINE_H = 21;
   var PAD = 26;          // 卡片内边距
   var MARGIN = 28;       // 卡片外透明留白（放阴影）
-  var BG = '#1e1e1e';
+  var BG = '#212121';
   var TITLE_BG = '#252526';
   var TEXT_COLOR = '#d4d4d4';
   // VSCode Dark+ token 配色
@@ -75,7 +75,8 @@
       var article = document.getElementById('article-container');
       if (!el || !article || !article.contains(el)) return;
       var text = sel.toString();
-      if (!text) return;
+      // 短内容（一行代码、一个变量名）多为自用，不附加版权；阈值可按需调整
+      if (!text || text.replace(/\s/g, '').length < 100) return;
       var suffix = '\n\n———————————————————\n' +
         '作者：' + SITE.author + '\n' +
         '原文链接：' + SITE.base + location.pathname + '\n' +
@@ -126,7 +127,8 @@
 
   function renderCodesnap(fig) {
     var lang = (fig.className.match(/highlight ([\w+#-]+)/) || [])[1] || 'txt';
-    var fname = 'main.' + (EXT_MAP[lang] || 'txt');
+    // 文件名优先取 md 里声明的代码标题（figcaption），无标题的片段回退按语言猜
+    var fname = getFigFilename(fig) || 'main.' + (EXT_MAP[lang] || 'txt');
     var lines = extractLines(fig);
 
     var canvas = document.createElement('canvas');
@@ -207,6 +209,54 @@
     return canvas.toDataURL('image/png');
   }
 
+  // ---- 代码块文件名标签（居中白字，不影响原有语言标签） ----
+  // 文件名由 md 直接声明（Hexo 原生代码标题语法 ```lang 文件名，渲染为 figcaption）。
+  // 这里只负责把 figcaption 文本搬到工具栏中央展示；纯片段代码块没有 figcaption，不加标签。
+  function getFigFilename(fig) {
+    var cap = fig.querySelector('figcaption span') || fig.querySelector('figcaption');
+    return cap ? cap.textContent.trim() : '';
+  }
+
+  function initCodeFilenames() {
+    if (!/^\/posts\//.test(location.pathname)) return;
+    document.querySelectorAll('#article-container figure.highlight').forEach(function (fig) {
+      if (fig.dataset.fileDone) return;
+      fig.dataset.fileDone = '1';
+
+      var filename = getFigFilename(fig);
+      if (!filename) return;
+      fig.classList.add('has-file-title');
+
+      var tools = fig.querySelector('.highlight-tools');
+      if (!tools) return;
+      var label = document.createElement('span');
+      label.className = 'code-filename-label';
+      label.textContent = filename;
+      tools.appendChild(label);
+    });
+  }
+
+  // ---- 文章标签（主题默认在文末，移动到顶部横幅标题下方） ----
+  function initTopTags() {
+    if (!/^\/posts\//.test(location.pathname)) return;
+    if (document.querySelector('.post-meta__tag-list.in-banner')) return;
+    // tag_share 由 Butterfly 脚本动态生成，轮询等待其出现
+    var tries = 0;
+    var timer = setInterval(function () {
+      var tagList = document.querySelector('.tag_share .post-meta__tag-list');
+      var postInfo = document.getElementById('post-info');
+      var meta = document.getElementById('post-meta');
+      var title = postInfo ? postInfo.querySelector('.post-title') : null;
+      if ((tagList && postInfo && meta && title) || ++tries >= 20) {
+        clearInterval(timer);
+        if (tagList && postInfo && meta && title && !tagList.classList.contains('in-banner')) {
+          tagList.classList.add('in-banner', 'top-tags-done');
+          postInfo.insertBefore(tagList, meta);   // 标题下方、发布时间上方
+        }
+      }
+    }, 300);
+  }
+
   // ---- 代码块「复制为图片」 ----
   function attachImageButtons() {
     var figs = document.querySelectorAll('#article-container figure.highlight');
@@ -263,6 +313,8 @@
 
   function init() {
     initCopyAppend();
+    initCodeFilenames();
+    initTopTags();
     if (attachImageButtons() > 0) {
       // Butterfly 的工具栏由其脚本在 DOMContentLoaded 后生成，轮询等待
       var tries = 0;

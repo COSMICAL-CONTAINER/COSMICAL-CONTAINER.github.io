@@ -12,7 +12,8 @@
     wrap.innerHTML =
       '<a href="https://wakatime.com/@' + WAKATIME_ID + '" target="_blank" rel="noopener">' +
         '<img src="https://wakatime.com/badge/user/' + WAKATIME_ID + '.svg" ' +
-             'alt="WakaTime 累计编码时长" style="max-width:92%;height:auto">' +
+             'alt="WakaTime 累计编码时长" style="max-width:92%;height:auto" ' +
+             'onerror="this.closest(\'.card-wakatime-badge\').style.display=\'none\'">' +
       '</a>';
     desc.parentElement.insertBefore(wrap, desc.nextSibling);
   }

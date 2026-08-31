@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npx hexo generate
+        run: npm run build
 
       - name: Publish to master
         uses: peaceiris/actions-gh-pages@v4

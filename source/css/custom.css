@@ -5,7 +5,8 @@
 }
 
 /* 代码配色：VSCode Dark+ 风格（覆盖主题 darker 调色板，并补齐缺色的类） */
-figure.highlight pre { background: #1e1e1e; }
+figure.highlight,
+figure.highlight pre { background: #212121; }
 figure.highlight pre .comment { color: #6a9955; font-style: italic; }
 figure.highlight pre .string { color: #ce9178; }
 figure.highlight pre .number { color: #b5cea8; }
@@ -31,7 +32,7 @@ figure.highlight pre .attr { color: #9cdcfe; }
 /* 标签详情页：返回标签页按钮 */
 .back-to-tags {
   display: inline-block;
-  margin: 2px 0 16px;
+  margin: 0 0 12px;
   padding: 4px 16px;
   border: 1px solid rgba(128, 133, 140, .45);
   border-radius: 999px;
@@ -97,6 +98,55 @@ figure.highlight pre .attr { color: #9cdcfe; }
 }
 .act-popup-card a:hover {
   text-decoration: underline;
+}
+
+/* 代码工具栏：居中文件名标签（白色文字，不影响原有语言标签） */
+.highlight-tools {
+  position: relative;
+}
+.code-filename-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255,255,255,.9);
+  font-family: Consolas, Menlo, monospace;
+  font-size: 16px;
+  font-weight: bold;
+  pointer-events: none;
+  white-space: nowrap;
+  width: max-content;
+  z-index: 3;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* md 里用 ```lang 文件名 声明的完整文件：文件名已由 JS 搬到工具栏中央展示，
+   原生 figcaption 在普通模式下藏起来；阅读模式主题会强制它显示，正好充当文件名标注 */
+#article-container figure.highlight figcaption {
+  display: none;
+}
+
+/* 手机窄屏：长文件名居中时缩小字号并截断，避免压到右侧按钮 */
+@media screen and (max-width: 768px) {
+  .code-filename-label {
+    font-size: 13px;
+    max-width: 52%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* 阅读模式：代码展开按钮的半透明深色渐变叠在浅色阅读背景上会变成一条突兀的灰线，
+   改成褪入当前阅读模式代码背景色的渐变，并把箭头的闪烁动画停掉 */
+body.read-mode {
+  --hlexpand-bg: linear-gradient(180deg, rgba(247, 247, 247, 0), rgba(247, 247, 247, .95));
+}
+[data-theme='dark'] body.read-mode {
+  --hlexpand-bg: linear-gradient(180deg, rgba(23, 23, 23, 0), rgba(23, 23, 23, .95));
+}
+body.read-mode .code-expand-btn i {
+  animation: none;
 }
 
 /* 代码工具栏：保存为图片按钮 */
@@ -174,6 +224,35 @@ figure.highlight pre .attr { color: #9cdcfe; }
   border-radius: 6px;
   font-size: 13px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+}
+
+/* 动态页热力图：手机端横向滑动查看（触摸滚动），桌面端内容区更宽不受影响 */
+#activity-heatmap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#activity-heatmap svg {
+  min-width: 880px;
+}
+
+/* 文章标签：移动到顶部横幅标题下方（星空图上用白色半透明胶囊） */
+.post-meta__tag-list.in-banner {
+  margin: 6px 0 10px;
+}
+.post-meta__tag-list.in-banner .post-meta__tags {
+  display: inline-block;
+  margin: 0 8px 6px 0;
+  padding: 3px 14px;
+  border: 1px solid rgba(255, 255, 255, .45);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .92);
+  font-size: 14px;
+  transition: all .2s;
+}
+.post-meta__tag-list.in-banner .post-meta__tags:hover {
+  background: rgba(255, 255, 255, .92);
+  color: #1e1e1e;
 }
 
 /* 增强 功能反馈 toast */

@@ -27,7 +27,8 @@
     for (var c = 0; c < weeks; c++) {
       var dd = days[c * 7];
       if (!dd) break;
-      if (dd.getMonth() !== prevM) {
+      // 首列可能包含上一年的 12 月，只标注属于本年份的月份
+      if (dd.getFullYear() === year && dd.getMonth() !== prevM) {
         prevM = dd.getMonth();
         svg += '<text x="' + (LBL_W + c * (CELL + GAP)) + '" y="12" font-size="10" fill="currentColor" opacity=".65">' + MONTHS[prevM] + '</text>';
       }
@@ -63,6 +64,7 @@
       html += yearSvg(y, y === last);
     }
     box.innerHTML = html;
+    box.scrollLeft = 0; // 重置横向滚动（避免浏览器的滚动位置记忆停在年中年尾）
     applyTheme(box);
   }
 

@@ -12,6 +12,7 @@ menu:
   归档: /archives/ || fas fa-archive
   标签: /tags/ || fas fa-tags
   动态: /activity/ || fas fa-calendar-alt
+  关于: /about/ || fas fa-user
   实验室: /lab/ || fas fa-flask
 
 # ------- 社交链接（同步自 GitHub 主页） -------
@@ -61,13 +62,30 @@ avatar:
 search:
   use: local_search
 
+# ------- 分享按钮（去掉没有账号的 facebook / X） -------
+share:
+  use: sharejs
+  sharejs:
+    sites: wechat,weibo,qq
+
+# ------- 文章系列（同系列文章在侧栏聚合展示） -------
+series:
+  enable: true
+  orderBy: 'title'
+  order: 1
+
+# ------- 文章目录（关闭自动编号，标题自带中文序号） -------
+toc:
+  number: false
+
 # ------- 代码块 -------
+# 长代码折叠（printf 那篇 89 行太长），可点击展开
 code_blocks:
   theme: darker
   macStyle: true
   copy: true
   language: true
-  height_limit: false
+  height_limit: 380
   word_wrap: false
 
 # ------- 页脚 -------
@@ -102,6 +120,12 @@ post_copyright:
 
 # ------- 图片灯箱（点击放大，带遮罩） -------
 lightbox: fancybox
+
+# ------- 图片懒加载（浏览器原生，长图滚动到才加载） -------
+lazyload:
+  enable: true
+  native: true
+  field: site
 
 # ------- 访问统计 -------
 # 静态站没有真实统计能力，不蒜子在本地/未注册域名下会显示乱数，关闭

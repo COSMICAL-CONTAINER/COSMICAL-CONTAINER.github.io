@@ -11,7 +11,7 @@
     a.className = 'back-to-tags';
     a.href = '/tags/';
     a.textContent = '← 全部标签';
-    title.insertAdjacentElement('afterend', a);
+    title.insertAdjacentElement('beforebegin', a);
   }
 
   if (document.readyState !== 'loading') init();
