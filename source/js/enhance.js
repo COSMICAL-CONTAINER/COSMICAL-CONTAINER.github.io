@@ -236,6 +236,76 @@
     });
   }
 
+  // ---- 搜索高亮提示气泡：?highlight=xxx 进入时，提示当前页面的高亮情况 ----
+  // 等高亮标记生成后统计：正文里有 → 提示关键词；
+  // 匹配只在代码里（代码块会被跳过高亮）→ 提示"仅出现在代码中"；两者皆无 → 不弹
+  function initHighlightNotice() {
+    var kw = new URL(location.href).searchParams.get('highlight');
+    kw = kw ? kw.trim() : '';
+    if (!kw) return;
+    if (document.getElementById('highlight-notice')) return;
+
+    var keywords = kw.split(/\s+/).filter(Boolean);
+
+    function countMarks() {
+      var prose = 0, inCode = 0;
+      document.querySelectorAll('mark.search-keyword').forEach(function (m) {
+        if (m.closest('figure.highlight, pre, .highlight-tools, figcaption')) inCode++;
+        else prose++;
+      });
+      return { prose: prose, inCode: inCode };
+    }
+
+    var attempts = 0;
+    var timer = setInterval(function () {
+      attempts++;
+      var c = countMarks();
+      if (c.prose > 0) {
+        clearInterval(timer);
+        showNotice('当前页面已高亮关键词：' + keywords.join('、'));
+      } else if (c.inCode > 0) {
+        clearInterval(timer);
+        showNotice('关键词仅出现在代码中，未做高亮显示');
+      } else if (attempts >= 10) {
+        clearInterval(timer);
+        showNotice('未在当前页面找到关键词：' + keywords.join('、'));
+      }
+    }, 250);
+  }
+
+  function showNotice(text) {
+    if (document.getElementById('highlight-notice')) return;
+    var box = document.createElement('div');
+    box.id = 'highlight-notice';
+    var textEl = document.createElement('span');
+    textEl.className = 'hn-text';
+    textEl.textContent = text;
+    var close = document.createElement('span');
+    close.className = 'hn-close';
+    close.innerHTML = '&times;';
+    close.title = '关闭';
+    box.appendChild(textEl);
+    box.appendChild(close);
+    function dismiss() {
+      clearTimeout(box._timer);
+      box.style.opacity = '0';
+      setTimeout(function () { box.remove(); }, 300);
+    }
+    close.addEventListener('click', dismiss);
+    box._timer = setTimeout(dismiss, 10000);
+    document.body.appendChild(box);
+  }
+
+  // ---- 文案替换：本站的 categories 用于承载系列，界面统一显示为「系列」 ----
+  function relabelCategoryWording() {
+    document.querySelectorAll('.headline, .article-sort-title').forEach(function (el) {
+      if (el.textContent.trim() === '分类') el.textContent = '系列';
+      else if (el.textContent.indexOf('分类 - ') === 0) el.textContent = el.textContent.replace('分类 - ', '系列 - ');
+    });
+    if (document.title.indexOf('分类: ') === 0) document.title = document.title.replace('分类: ', '系列: ');
+    if (document.title.indexOf('分类 - ') === 0) document.title = document.title.replace('分类 - ', '系列 - ');
+  }
+
   // ---- 文章标签（主题默认在文末，移动到顶部横幅标题下方） ----
   function initTopTags() {
     if (!/^\/posts\//.test(location.pathname)) return;
@@ -255,6 +325,15 @@
         }
       }
     }, 300);
+  }
+
+  // ---- 文章标题公式美化：O(N^N!) → N 的指数上标 ----
+  function beautifyPostTitle() {
+    if (!/^\/posts\//.test(location.pathname)) return;
+    var el = document.querySelector('.post-title');
+    if (el && el.textContent.indexOf('O(N^N!)') !== -1) {
+      el.innerHTML = el.textContent.replace(/O\(N\^N!\)/g, 'O(N<sup>N!</sup>)');
+    }
   }
 
   // ---- 代码块「复制为图片」 ----
@@ -304,6 +383,27 @@
     return missing;
   }
 
+  // ---- 自动换行切换按钮 ----
+  function attachWrapToggles() {
+    var figs = document.querySelectorAll('#article-container figure.highlight');
+    var missing = 0;
+    figs.forEach(function (fig) {
+      var tools = fig.querySelector('.highlight-tools');
+      if (!tools) { missing++; return; }
+      if (tools.querySelector('.wrap-toggle-btn')) return;
+      var btn = document.createElement('i');
+      btn.className = 'fas fa-align-left wrap-toggle-btn';
+      btn.title = '切换自动换行';
+      tools.appendChild(btn);
+      btn.addEventListener('click', function () {
+        var on = fig.classList.toggle('wrap-enabled');
+        btn.classList.toggle('active', on);
+        toast(on ? '已开启自动换行' : '已关闭自动换行');
+      });
+    });
+    return missing;
+  }
+
   function downloadImage(dataUrl) {
     var a = document.createElement('a');
     a.download = 'code-' + new Date().toISOString().slice(0, 10) + '.png';
@@ -312,14 +412,17 @@
   }
 
   function init() {
-    initCopyAppend();
-    initCodeFilenames();
-    initTopTags();
-    if (attachImageButtons() > 0) {
+    // 单个增强失败不拖垮其他增强
+    [initCopyAppend, initCodeFilenames, initTopTags, beautifyPostTitle,
+     initHighlightNotice, relabelCategoryWording].forEach(function (fn) {
+      try { fn(); } catch (e) { /* 忽略单个功能的异常 */ }
+    });
+    var missing = attachImageButtons() + attachWrapToggles();
+    if (missing > 0) {
       // Butterfly 的工具栏由其脚本在 DOMContentLoaded 后生成，轮询等待
       var tries = 0;
       var timer = setInterval(function () {
-        if (attachImageButtons() === 0 || ++tries >= 20) clearInterval(timer);
+        if (attachImageButtons() + attachWrapToggles() === 0 || ++tries >= 20) clearInterval(timer);
       }, 300);
     }
   }

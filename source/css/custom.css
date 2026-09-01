@@ -272,3 +272,94 @@ body.read-mode .code-expand-btn i {
   transition: opacity .3s;
   pointer-events: none;
 }
+
+/* 中文排版：正文段落首行缩进两格（只作用于文章顶层段落，代码块/引用/列表不受影响） */
+#article-container > p {
+  text-indent: 2em;
+}
+
+/* 代码框「自动换行」切换按钮（enhance.js 注入） */
+figure.highlight .wrap-toggle-btn {
+  cursor: pointer;
+}
+figure.highlight .wrap-toggle-btn:hover {
+  color: var(--theme-color, #49b1f5);
+}
+figure.highlight .wrap-toggle-btn.active {
+  color: var(--theme-color, #49b1f5);
+}
+/* 开启换行：表格固定布局，代码区折行（行号与折行会对不齐，属已知取舍） */
+#article-container figure.highlight.wrap-enabled {
+  table-layout: fixed;
+  width: 100%;
+}
+#article-container figure.highlight.wrap-enabled td.code pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 搜索高亮提示气泡（?highlight=xxx 进入时显示，✕ 或 10 秒后消失） */
+#highlight-notice {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(92vw, 560px);
+  padding: 10px 18px;
+  background: var(--card-bg, #fff);
+  color: var(--font-color, #4c4948);
+  border: 1px solid var(--card-border, rgba(0, 0, 0, .08));
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .15);
+  font-size: 14px;
+  transition: opacity .3s;
+}
+#highlight-notice .hn-close {
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  opacity: .55;
+}
+#highlight-notice .hn-close:hover {
+  opacity: 1;
+}
+
+/* 首页寄语面板（由 homepage-hero.js 注入，仅首页显示；位于双栏布局上方通栏） */
+#home-hero {
+  max-width: 1200px;
+  width: calc(100% - 40px);
+  margin: 2rem auto 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border, rgba(0, 0, 0, .08));
+  border-radius: 12px;
+  padding: 1.1rem 1.5rem 1.2rem;
+  box-shadow: var(--card-box-shadow, none);
+}
+#home-hero .home-hero-tag {
+  display: inline-block;
+  font-size: .8em;
+  color: var(--hero-tag-color, #f47466);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0 10px;
+  line-height: 1.7;
+  margin-bottom: .4rem;
+}
+#home-hero .home-hero-title {
+  font-size: 1.3em;
+  font-weight: 700;
+  margin-bottom: .5rem;
+}
+#home-hero p {
+  margin: .35rem 0;
+  line-height: 1.9;
+}
+#home-hero .home-hero-more {
+  display: inline-block;
+  margin-top: .4rem;
+  font-weight: 600;
+}

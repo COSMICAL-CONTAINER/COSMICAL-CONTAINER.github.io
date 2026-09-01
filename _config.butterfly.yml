@@ -12,7 +12,7 @@ menu:
   归档: /archives/ || fas fa-archive
   标签: /tags/ || fas fa-tags
   动态: /activity/ || fas fa-calendar-alt
-  关于: /about/ || fas fa-user
+  关于我们: /about/ || fas fa-user-friends
   实验室: /lab/ || fas fa-flask
 
 # ------- 社交链接（同步自 GitHub 主页） -------
@@ -159,11 +159,15 @@ darkmode:
 # 侧栏 WakaTime 编码统计卡片（inject 需要写完整标签）
 inject:
   head:
-    - '<link rel="stylesheet" href="/css/custom.css">'
+    - '<link rel="stylesheet" href="/css/custom.css?v=20260901">'
   bottom:
     - '<script src="/js/wakatime-card.js"></script>'
     - '<script src="/js/tag-back.js"></script>'
-    - '<script src="/js/enhance.js"></script>'
+    - '<script src="/js/enhance.js?v=20260901"></script>'
+    # 搜索关键词高亮跳过代码块/标题（详见文件头注释）
+    - '<script src="/js/custom-search-highlight.js?v=20260901"></script>'
+    # 首页寄语面板（仅首页显示，替代永久置顶）
+    - '<script src="/js/homepage-hero.js?v=20260901"></script>'
 
 # ------- CDN -------
 # 第三方库经 hexo-butterfly-extjs 打包到本地，不依赖外网 CDN
