@@ -174,3 +174,27 @@ inject:
 CDN:
   internal_provider: local
   third_party_provider: local
+
+# --------------------------------------
+# 评论系统（2026-09 接入）
+# Giscus：GitHub 登录评论（基于仓库 Discussions，公开仓库已开启 Discussions + 安装 giscus App）
+# Twikoo：免登录评论（Vercel 后端，生产分支已切 dependabot，环境地址 my-twikoo.vercel.app）
+comments:
+  use:
+    - Giscus
+    - Twikoo
+  text: true
+  lazyload: false
+  count: false
+
+twikoo:
+  envId: https://my-twikoo.vercel.app
+  region:
+  visitor: false
+
+giscus:
+  repo: COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io
+  repo_id: R_kgDOHTJxpw
+  category_id: DIC_kwDOHTJxp84DE3Jg
+  light_theme: light
+  dark_theme: dark

@@ -82,6 +82,25 @@ git push
 
 ---
 
+## 💬 评论区（giscus + Twikoo 双系统）
+
+每篇文章底部都有评论区，两种方式并存，访客任选：
+
+| 系统 | 适合谁 | 登录方式 | 数据存在哪 |
+|---|---|---|---|
+| giscus | 有 GitHub 账号的读者 | GitHub OAuth 授权 | 本仓库的 Discussions（公开） |
+| Twikoo | 没有 GitHub 账号的路人 | 免登录，填昵称即可 | Vercel 后端（`my-twikoo.vercel.app`） |
+
+- 访客视角的说明文章：`source/_posts/评论区使用指南.md`
+- 配置位置：`_config.butterfly.yml` 的 `comments` / `giscus` / `twikoo` 三段
+  - `comments.use` 必须写成 YAML 数组（两行 `- Giscus`、`- Twikoo`），写成字符串会按字符遍历导致评论区空白
+  - `comments.lazyload: false`：评论随页面直接加载。懒加载依赖 IntersectionObserver，在部分内嵌浏览器/无头环境不触发，直接加载更稳
+  - giscus 的 `repo_id` / `category_id` 在 [giscus.app](https://giscus.app/) 生成（分类选 General）
+- Twikoo 管理后台：任意文章评论区切到 Twikoo，底部「密码登录」进管理面板（首次使用先在 Vercel 环境变量设置密码）
+- 已知问题：`*.vercel.app` 域名在大陆被 DNS 污染，无代理访客连不上 Twikoo 后端（评论区会一直转圈）；giscus 走 giscus.app + GitHub，不受影响。要让大陆路人正常留言，后续可把 Twikoo 迁到大陆可达的平台（如腾讯 EdgeOne Pages），换好环境地址改 `twikoo.envId` 即可
+
+---
+
 ## 🆕 新电脑 / 重装系统后从零恢复
 
 ```bash
