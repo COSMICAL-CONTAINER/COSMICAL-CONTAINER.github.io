@@ -1,0 +1,82 @@
+/* 标签页两级分组（配合 /js/tag-group.js，仅 /tags/ 页面会重排） */
+
+.tag-cloud-list.tag-tree-ready {
+  display: block;
+  text-align: left;
+}
+
+/* 每个父标签一个卡片框 */
+.tag-tree-group {
+  background: var(--card-bg, rgba(255, 255, 255, 0.65));
+  border: 1px solid var(--line-color, rgba(144, 147, 153, 0.35));
+  border-radius: 14px;
+  padding: 16px 18px 15px;
+  margin: 0 0 16px;
+}
+
+/* 框头：父标签 + 总篇数 */
+.tag-tree-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+/*
+ * 主题给 .tag-cloud-list a 设了 color:white（原生锚点自带彩色内联背景）。
+ * 框头链接是新建的、没有内联背景，必须整条覆盖主题规则，否则白字白底"隐身"。
+ */
+.tag-cloud-list .tag-tree-head > a.tag-tree-head-link,
+.tag-cloud-list .tag-tree-head > a {
+  display: inline-flex !important;
+  align-items: center;
+  color: var(--font-color, #4c4948) !important;
+  background: rgba(73, 177, 245, 0.14) !important;
+  font-size: 1.05em;
+  font-weight: 600;
+  padding: 4px 14px;
+  margin: 0;
+}
+
+.tag-cloud-list .tag-tree-head > a.tag-tree-head-link:hover,
+.tag-cloud-list .tag-tree-head > a:hover {
+  color: #fff !important;
+  background: #49b1f5 !important;
+}
+
+.tag-cloud-list .tag-tree-parent {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  margin: 0;
+  padding: 0;
+}
+
+.tag-cloud-list .tag-tree-parent .tag-tree-count,
+.tag-tree-head .tag-tree-count {
+  font-weight: 400;
+  font-size: 0.85em;
+  opacity: 0.72;
+}
+
+.tag-tree-empty {
+  color: var(--font-color, #555);
+  opacity: 0.85;
+}
+
+/* 子标签装在框里 */
+.tag-tree-kids {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tag-cloud-list .tag-tree-child {
+  display: inline-block;
+  margin: 0;
+}
+
+/* 其他标签框 */
+.tag-tree-plain {
+  border-style: dashed;
+}
