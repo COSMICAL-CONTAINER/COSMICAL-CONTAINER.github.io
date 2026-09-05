@@ -131,7 +131,6 @@ tag_tree:
     - Qt
   Windows:
     - Win32
-    - 排查
   'RPG Maker':
     - ARPG
     - Minecraft
