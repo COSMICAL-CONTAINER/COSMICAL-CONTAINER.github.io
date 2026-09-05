@@ -1,0 +1,380 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>抽象代码：会自杀的代码 | 寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="函数能不能在干完活之后，把自己从程序里”抹掉”？对象能不能在出生的那一刻自我了断？能。今天这篇讲两个短小精悍的自杀程序——一个 C 的，一个 C++ 的。  📌 更新（2026-08-31）：为写这篇重新编译复现了两个程序，并修正了对自杀对象输出的描述——它比想象中死得更干脆，详见运行一节。  自杀函数指针：信使送信的比喻先看代码： 自杀函数指针.c12345678910111213141516">
+<meta property="og:type" content="article">
+<meta property="og:title" content="抽象代码：会自杀的代码">
+<meta property="og:url" content="https://cosmical-container.github.io/posts/f9357c8c/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="函数能不能在干完活之后，把自己从程序里”抹掉”？对象能不能在出生的那一刻自我了断？能。今天这篇讲两个短小精悍的自杀程序——一个 C 的，一个 C++ 的。  📌 更新（2026-08-31）：为写这篇重新编译复现了两个程序，并修正了对自杀对象输出的描述——它比想象中死得更干脆，详见运行一节。  自杀函数指针：信使送信的比喻先看代码： 自杀函数指针.c12345678910111213141516">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/img/covers/cover-2-ocean.svg">
+<meta property="article:published_time" content="2024-01-13T05:53:00.000Z">
+<meta property="article:modified_time" content="2024-01-13T05:53:00.000Z">
+<meta property="article:author" content="寰宇体">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="C语言">
+<meta property="article:tag" content="抽象代码">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/img/covers/cover-2-ocean.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "抽象代码：会自杀的代码",
+  "url": "https://cosmical-container.github.io/posts/f9357c8c/",
+  "image": "https://cosmical-container.github.io/img/covers/cover-2-ocean.svg",
+  "datePublished": "2024-01-13T05:53:00.000Z",
+  "dateModified": "2024-01-13T05:53:00.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "寰宇体",
+      "url": "https://github.com/COSMICAL-CONTAINER"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/posts/f9357c8c/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '抽象代码：会自杀的代码',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/covers/cover-2-ocean.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a><a class="nav-page-title" href="/"><span class="site-name">抽象代码：会自杀的代码</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">抽象代码：会自杀的代码</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2024-01-13T05:53:00.000Z" title="发表于 2024-01-13 13:53:00">2024-01-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%BD%E8%B1%A1%E4%BB%A3%E7%A0%81/">抽象代码</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>4分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>函数能不能在干完活之后，把自己从程序里”抹掉”？对象能不能在出生的那一刻自我了断？能。今天这篇讲两个短小精悍的自杀程序——一个 C 的，一个 C++ 的。</p>
+<blockquote>
+<p>📌 更新（2026-08-31）：为写这篇重新编译复现了两个程序，并修正了对自杀对象输出的描述——它比想象中死得更干脆，详见运行一节。</p>
+</blockquote>
+<h2 id="自杀函数指针：信使送信的比喻"><a href="#自杀函数指针：信使送信的比喻" class="headerlink" title="自杀函数指针：信使送信的比喻"></a>自杀函数指针：信使送信的比喻</h2><p>先看代码：</p>
+<figure class="highlight c"><figcaption><span>自杀函数指针.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 一个简单（但可能不那么让人愉快）的比方是，信使P把一封信从A送到B，</span></span><br><span class="line"><span class="comment">// 而信的内容的第一句就是&quot;干掉P，然后再看下面的内容&quot;。</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">init</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"><span class="type">void</span> (*__init__)(<span class="type">void</span>) = init;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">init</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;init programm\n&quot;</span>);</span><br><span class="line">    __init__ = <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    __init__();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// __init__();   //NULL</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里的 <code>init</code> 函数干了两件事：打印一行字，然后把指向自己的全局函数指针 <code>__init__</code> <strong>置成 NULL</strong>。第一次 <code>__init__()</code> 一切正常，输出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">init programm</span><br></pre></td></tr></table></figure>
+
+<p>但如果把第二次调用放开，程序就会对着空指针跳下去——当场去世。这就是”自杀”：函数在执行到一半的时候，亲手解除了自己的可调用状态。</p>
+<p>代码开头那段注释是整个程序最好的部分，值得单独抄一遍：</p>
+<blockquote>
+<p>一个简单（但可能不那么让人愉快）的比方是，信使 P 把一封信从 A 送到 B，而信的内容的第一句就是”干掉 P，然后再看下面的内容”。</p>
+</blockquote>
+<p>函数就是信使，函数体就是信。信使在送达消息的过程中，按消息的指示抹掉了自己——消息送达之后，世上再无这个信使。这个比方残忍、精确、还带点文学性，是我个人最喜欢的注释之一。</p>
+<p>严格来说这里”自杀”的是<strong>函数指针</strong>而不是函数本身：函数的字节码还躺在 <code>.text</code> 段里纹丝不动，死掉的是”能找到它的那把钥匙”。这个区别正是它能安全运行的原因——如果它 <code>free</code> 的是自己的代码，那就不是自杀，是他杀了。</p>
+<h2 id="自杀对象：出生即了断（C-版）"><a href="#自杀对象：出生即了断（C-版）" class="headerlink" title="自杀对象：出生即了断（C++ 版）"></a>自杀对象：出生即了断（C++ 版）</h2><p>C++ 的对象能不能更狠一点——在构造函数里自我了断？看代码：</p>
+<figure class="highlight cpp"><figcaption><span>自杀对象.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TestClass</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">TestClass</span>();</span><br><span class="line">    ~<span class="built_in">TestClass</span>()&#123;cout &lt;&lt; <span class="string">&quot;This is destruct function.&quot;</span> &lt;&lt; endl;&#125;</span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">TestClass::<span class="built_in">TestClass</span>()</span><br><span class="line">&#123;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;This is construct function.&quot;</span> &lt;&lt; endl;</span><br><span class="line">    <span class="keyword">delete</span> <span class="keyword">this</span>;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;And I have suicided &quot;</span> &lt;&lt; endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// struct x struct z&lt;x(x(x(x(x(x(x(x(x(x(x(x(x(x(x(x(x(x(y,x(y&gt;&lt;y*,x(y*w&gt;v&lt;y*,w,x&#123;&#125;</span></span><br><span class="line">    TestClass obj1;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为写这篇文章重新编译运行，它的真实输出是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">This is construct function.</span><br><span class="line">This is destruct function.</span><br></pre></td></tr></table></figure>
+
+<p>退出码 127，进程异常终止。注意：<strong>“And I have suicided” 这行永远打不出来</strong>，第二次析构也从未发生。要理解为什么，得先搞清楚 <code>delete this</code> 到底干了什么——它不是一句魔法，而是两个动作：<strong>先调用析构函数，再释放这块内存</strong>。</p>
+<p>而这里的 <code>obj1</code> 是个<strong>栈上对象</strong>。于是事件顺序是：</p>
+<ol>
+<li>构造函数打印第一行；</li>
+<li><code>delete this</code> 第一步：调用析构函数——打印第二行 <code>This is destruct function.</code>；</li>
+<li><code>delete this</code> 第二步：把这块内存交还给堆——但它是<strong>栈地址</strong>，<code>free</code> 一个不在堆上的指针，进程当场崩溃；</li>
+<li><code>cout &lt;&lt; &quot;And I have suicided&quot;</code> 以及作用域结束时本应补上的第二次析构，永远没有机会执行。</li>
+</ol>
+<p>也就是说，这场”自杀”的真实剧本是：<strong>析构函数在 delete 的第一步就被触发，成了自己的葬礼；随后非法释放直接把整个进程带走</strong>。当年编译的 exe 和今天重新编译的 exe，行为一模一样——这个 crash 不是新环境的问题，它从出生那天起就是这么死的，只是没人打开过退出码。</p>
+<h2 id="正经话：这些动作在什么情况下是”合法”的"><a href="#正经话：这些动作在什么情况下是”合法”的" class="headerlink" title="正经话：这些动作在什么情况下是”合法”的"></a>正经话：这些动作在什么情况下是”合法”的</h2><p>两个程序能跑，不代表这些写法值得提倡——它们全都在未定义行为的边缘蹦迪：</p>
+<ul>
+<li><strong><code>delete this</code></strong> 在 C++ 里有一个流传甚广的”合法用法”范式（引用计数归零时对象自毁），条件苛刻：对象必须由 <code>new</code> 创建、之后<strong>绝不能再碰任何成员</strong>、也不能让析构被触发第二次。范例代码里作用域结束时那第二次析构，就是标准意义上的 UB。</li>
+<li><strong>函数指针置 NULL</strong> 这边倒是完全无害的安全操作——真正危险的是置空之后再调用它（空指针跳转）。正经的写法是调用前判空，或者干脆用”一次性初始化”的标准工具。</li>
+</ul>
+<p>所以这两个程序的正确打开方式是：当语言规则的可视化教具。函数指针是”地址”，所以可以置空；<code>delete</code> 的第一步是调用析构函数、且栈上的东西永远不归 <code>delete</code> 管——看懂了这两行自杀代码，你比背十条规则记得都牢。</p>
+<p>系列其他文章：<a href="/posts/99a422d6/">下划线完形填空</a>、<a href="/posts/65633b2a/">尊嘟假嘟</a>。系列缘起见<a href="/posts/5d21f4a7/">抽象代码宣言</a>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER">寰宇体</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cosmical-container.github.io/posts/f9357c8c/">https://cosmical-container.github.io/posts/f9357c8c/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cosmical-container.github.io" target="_blank">寰宇体的世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C%E8%AF%AD%E8%A8%80/">C语言</a><a class="post-meta__tags" href="/tags/C/">C++</a><a class="post-meta__tags" href="/tags/%E6%8A%BD%E8%B1%A1%E4%BB%A3%E7%A0%81/">抽象代码</a></div><div class="post-share"><div class="social-share" data-image="/img/covers/cover-2-ocean.svg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/bd6fe775/" title="C语言100级函数指针挑战"><img class="cover" src="/img/covers/cover-5-midnight.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post" loading='lazy'><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">C语言100级函数指针挑战</div></div><div class="info-2"><div class="info-item-1">一个整活挑战：定义一个”指向函数的指针，该函数返回同类型的指针”，然后套 100 层。这个类型长这样（节选开头和结尾）： 12typedef long long int (* (* (* ... (* (*a)())(void) ... );// 中间是 100 层重复的 (* ... () )  这是什么鬼类型从变量名 a 出发，用”右左法则”读这个声明：  a 先被 * 包住：a 是一个指针 右边跟 ()：指针指向一个函数 函数返回值又在 (* ) 里：返回值还是指针 重复第 2、3 步 100 次  也就是：a 是一个函数指针，调用它返回下一个函数指针，再调用又返回下一个……一共 100 层。 实现：自返回的函数1234567891011121314a fun()&#123;    static int i = 0;    printf(&quot;(%d)&quot;, ++i);    return (a)fun;&#125;int main()&#123;    fun();    printf(&quot;\n&quot;);    fun()()()()/* .....</div></div></div></a><a class="pagination-related" href="/posts/6ffc9fd6/" title="抽象代码：一个&quot;O(1)&quot;的质数判断器"><img class="cover" src="/img/space.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post" loading='lazy'><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">抽象代码：一个"O(1)"的质数判断器</div></div><div class="info-2"><div class="info-item-1">先看运行效果。一个判断质数的程序，输入 7： 1237 → 7 is a Prime100 → 100 isn&#x27;t a Prime254 → 254 isn&#x27;t a Prime  响应快得惊人，因为它一次除法都没做——不是算法好，是它根本不判断。它是一份”背好答案”的程序：把 1 到 255 每个数是不是质数，直接写成 1029 行 if-else。而这个程序的作者，是另一个程序。 生成器一号：把判断展开成 if-else生成器的思路是时间换空间再换时间：生成的时候用普通试除法判断一次质数，然后把结果硬编码进一个新程序： 123456789101112131415161718for (int i = 2; i &lt; num; i++)&#123;    char temp[50];    sprintf(temp, &quot;    else if(num == %d)\n&quot;, i);    fprintf(fp, temp);    fprintf(fp, &quot;    &#123;\n&quot;);    if(isPrime(i)...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/f8225dd/" title="抽象代码：把中文藏进 int 数组"><img class="cover" src="/img/covers/cover-5-midnight.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-15</div><div class="info-item-2">抽象代码：把中文藏进 int 数组</div></div><div class="info-2"><div class="info-item-1">先看运行结果——一个 32KB 的 C++ 程序，运行后在屏幕上打出一句话： 1嵌入式基地YYDS  这句话在源代码里一个汉字都没有。它藏在哪？藏在一个 int 数组里，而且数组里的每个数字，用的还是不同的进制。完整源码如下，请注意开头的 #define eval 和数组里反复出现的 eval(...)——后面会讲它们是干嘛的： 加密中文demo.cpp123456789101112131415161718192021222324252627282930313233#include &lt;stdio.h&gt;#include &lt;locale.h&gt;#define eval(everying) everyingint main()&#123;	// int c = 10;	// int d = 5;	// int rs3 = c++ + ++c - --d - ++d + 1 + c--;	// c++ + ++c = 10 + &amp;c = 10 + 12 = 22	// 22 - --d = 22 - 4 = 18	// 18 - ++d = 18 - 5 =...</div></div></div></a><a class="pagination-related" href="/posts/22bac41f/" title="抽象代码：从 drink()() 到百层 typedef 之旅"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-10-24</div><div class="info-item-2">抽象代码：从 drink()() 到百层 typedef 之旅</div></div><div class="info-2"><div class="info-item-1"> 📌 更新（2026-08-31）：本文写于 2023 年 10 月。发布前用 2026 年的新版 GCC 把全流程重新复现了一遍，文中的编译器行为说明（含 GCC 14 的变化）即来自这次复现。  系列缘起那篇文章里说过：一位同学告诉我 C 语言里有”返回值为函数指针的函数”，我写下了 drink()()，然后问题就变成了——**能 drink()()() 吗？能无限连下去吗？**这篇就是那个问题的完整答案，也是整个抽象代码系列的起点详解。 第一步：typedef 套娃drink()() 能跑两连，第三连就撑不住了——因为返回类型太”窄”。解法是让每一层 typedef 都”返回上一层”： 12345678910111213typedef long long (*p_fun)(void);typedef p_fun (*p_fun2)(void);p_fun2 fun()&#123;    printf(&quot;()&quot;);    return fun;&#125;int main()&#123;    fun()()();  // 三连成功&#125;  每套一...</div></div></div></a><a class="pagination-related" href="/posts/99a422d6/" title="抽象代码：下划线完形填空"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-22</div><div class="info-item-2">抽象代码：下划线完形填空</div></div><div class="info-2"><div class="info-item-1">先上代码。下面是一个完整的、可以编译、可以运行的 C 语言程序，它是一个从 9 倒数到 0 的倒计时器。请欣赏： _.c123456789101112131415161718192021222324252627#include &lt;stdio.h&gt;#define _ int#define __ main#define ___ while#define _____ x#define ______ ;#define _______ ()#define ________ &#123;#define _________ &#125;#define __________ (#define ___________ )#define ____________ =#define _____________ --&gt;#define ______________ &quot;%d\n&quot;,#define _______________ printf#define ________________ return_ __ ________________ _____ _______...</div></div></div></a><a class="pagination-related" href="/posts/852f8e75/" title="抽象代码：分号的艺术"><img class="cover" src="/img/covers/cover-2-ocean.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-09-11</div><div class="info-item-2">抽象代码：分号的艺术</div></div><div class="info-2"><div class="info-item-1">C 语言里，分号是语句的句号。规则人人都懂：句子写完，分号收尾。 但分号其实是”语句终止符”，它并没有规定自己必须站在句尾。于是有了下面这个程序——每个分号都搬家搬到了下一行的行首： 用分号作为缩进.c123456789101112#include &lt;stdio.h&gt;int main(int argc, char* arg[])&#123;;;;;int i = 0;;;;while(i &lt; 10)&#123;;;;;;;;;printf(&quot;%d\n&quot;, i);;;;;;;;i++;;;;&#125;;;;;return 0;&#125;  第一眼：int i = 0 后面没有分号，这能编译？——能。真机运行，输出干干净净的 0 到 9： 12345012...9  原理：把分号从句尾搬到句首关键在于理解分号到底”属于谁”。C 编译器眼里，换行就是普通的空白，int i = 0 下一行行首的那四个分号，其中第一个分号恰好补上了上一句缺的句号，剩下三个分号是三条合法的空语句（empty statement，什么都不做）。 也就是说，编译器看到的...</div></div></div></a><a class="pagination-related" href="/posts/6ffc9fd6/" title="抽象代码：一个&quot;O(1)&quot;的质数判断器"><img class="cover" src="/img/space.jpg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-01-09</div><div class="info-item-2">抽象代码：一个&quot;O(1)&quot;的质数判断器</div></div><div class="info-2"><div class="info-item-1">先看运行效果。一个判断质数的程序，输入 7： 1237 → 7 is a Prime100 → 100 isn&#x27;t a Prime254 → 254 isn&#x27;t a Prime  响应快得惊人，因为它一次除法都没做——不是算法好，是它根本不判断。它是一份”背好答案”的程序：把 1 到 255 每个数是不是质数，直接写成 1029 行 if-else。而这个程序的作者，是另一个程序。 生成器一号：把判断展开成 if-else生成器的思路是时间换空间再换时间：生成的时候用普通试除法判断一次质数，然后把结果硬编码进一个新程序： 123456789101112131415161718for (int i = 2; i &lt; num; i++)&#123;    char temp[50];    sprintf(temp, &quot;    else if(num == %d)\n&quot;, i);    fprintf(fp, temp);    fprintf(fp, &quot;    &#123;\n&quot;);    if(isPrime(i)...</div></div></div></a><a class="pagination-related" href="/posts/5dde1648/" title="AutoWrite 自动打字机开发记：从模拟按键到发送消息"><img class="cover" src="/img/space.jpg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-19</div><div class="info-item-2">AutoWrite 自动打字机开发记：从模拟按键到发送消息</div></div><div class="info-2"><div class="info-item-1">总有些场合，文字得靠键盘一个字一个字”敲”进去——目标输入框不吃复制粘贴，或者你只是想让朋友亲眼看着一段话”自己”出现在聊天框里。AutoWrite 就是干这个的：你把文本交给它，它替你把每个键按下去。项目做了两版，正好是 Windows 下模拟输入的两条技术路线——第一版把自己变成键盘，第二版直接给窗口发消息。第一版整理后传上了 GitHub：AutoWrite（MIT 协议）。 第一版思路：把自己变成键盘最早的版本（V0.0.1，2023 年 4 月）核心只有一个念头：程序不碰目标窗口，只负责假装自己是键盘。Windows 提供的 keybd_event 就是干这个的——给它一个虚拟键码（VK code），系统就当作这个键被按了一下： 12345void write_word(int vk)//输入数字、字母&#123;	keybd_event(vk,0,0,0);	// 按下	keybd_event(vk,0,KEYEVENTF_KEYUP,0);	// 弹起&#125;  按下、弹起，两个事件，一个键就”敲”完了。字母数字都好办，麻烦的是符号——它们和主键区不是一对一的关...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="comment-switch"><span class="first-comment">Giscus</span><span id="switch-btn"></span><span class="second-comment">Twikoo</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E6%9D%80%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%EF%BC%9A%E4%BF%A1%E4%BD%BF%E9%80%81%E4%BF%A1%E7%9A%84%E6%AF%94%E5%96%BB"><span class="toc-text">自杀函数指针：信使送信的比喻</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E6%9D%80%E5%AF%B9%E8%B1%A1%EF%BC%9A%E5%87%BA%E7%94%9F%E5%8D%B3%E4%BA%86%E6%96%AD%EF%BC%88C-%E7%89%88%EF%BC%89"><span class="toc-text">自杀对象：出生即了断（C++ 版）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E7%BB%8F%E8%AF%9D%EF%BC%9A%E8%BF%99%E4%BA%9B%E5%8A%A8%E4%BD%9C%E5%9C%A8%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B%E6%98%AF%E2%80%9D%E5%90%88%E6%B3%95%E2%80%9D%E7%9A%84"><span class="toc-text">正经话：这些动作在什么情况下是”合法”的</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io',
+      'data-repo-id': 'R_kgDOHTJxpw',
+      'data-category-id': 'DIC_kwDOHTJxp84DE3Jg',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('/pluginsSrc/twikoo/dist/twikoo.all.min.js?v=1.7.15').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Giscus' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Giscus' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

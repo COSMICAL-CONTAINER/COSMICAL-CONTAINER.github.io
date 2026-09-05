@@ -1,0 +1,365 @@
+/* 站点自定义样式 */
+/* 阅读字号整体放大（主题默认 14px 偏小） */
+:root {
+  --global-font-size: 16px;
+}
+
+/* 代码配色：VSCode Dark+ 风格（覆盖主题 darker 调色板，并补齐缺色的类） */
+figure.highlight,
+figure.highlight pre { background: #212121; }
+figure.highlight pre .comment { color: #6a9955; font-style: italic; }
+figure.highlight pre .string { color: #ce9178; }
+figure.highlight pre .number { color: #b5cea8; }
+figure.highlight pre .keyword { color: #569cd6; }
+figure.highlight pre .type { color: #4ec9b0; }
+figure.highlight pre .params { color: #9cdcfe; }
+figure.highlight pre .meta { color: #c586c0; }
+figure.highlight pre .title,
+figure.highlight pre .function,
+figure.highlight pre .built_in { color: #dcdcaa; }
+figure.highlight pre .symbol,
+figure.highlight pre .property,
+figure.highlight pre .variable { color: #9cdcfe; }
+figure.highlight pre .tag { color: #569cd6; }
+figure.highlight pre .attr { color: #9cdcfe; }
+
+/* 标签页：统一标签字号（主题默认按文章数在 1.2em~1.5em 间浮动，大小不一） */
+.tag-cloud-list a {
+  font-size: 1.4em !important;
+  line-height: 2.2;
+}
+
+/* 标签详情页：返回标签页按钮 */
+.back-to-tags {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 4px 16px;
+  border: 1px solid rgba(128, 133, 140, .45);
+  border-radius: 999px;
+  font-size: .85em;
+  color: inherit;
+  text-decoration: none;
+  transition: all .2s;
+}
+.back-to-tags:hover {
+  background: #49b1f5;
+  border-color: transparent;
+  color: #fff;
+}
+
+/* 动态页热力图：有文章的格子显示手型 */
+#activity-heatmap .act-cell:not([data-lvl="0"]) {
+  cursor: pointer;
+}
+
+/* 动态页：多篇弹出列表 */
+#act-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.act-popup-card {
+  background: #fff;
+  color: #4c4948;
+  border-radius: 12px;
+  padding: 16px 22px;
+  min-width: 280px;
+  max-width: 86vw;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
+}
+[data-theme="dark"] .act-popup-card {
+  background: #25272e;
+  color: #d0d0d0;
+}
+.act-popup-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.act-popup-close {
+  cursor: pointer;
+  opacity: .55;
+}
+.act-popup-close:hover {
+  opacity: 1;
+}
+.act-popup-card a {
+  display: block;
+  padding: 6px 0;
+  color: #49b1f5;
+  text-decoration: none;
+}
+.act-popup-card a:hover {
+  text-decoration: underline;
+}
+
+/* 代码工具栏：居中文件名标签（白色文字，不影响原有语言标签） */
+.highlight-tools {
+  position: relative;
+}
+.code-filename-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255,255,255,.9);
+  font-family: Consolas, Menlo, monospace;
+  font-size: 16px;
+  font-weight: bold;
+  pointer-events: none;
+  white-space: nowrap;
+  width: max-content;
+  z-index: 3;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* md 里用 ```lang 文件名 声明的完整文件：文件名已由 JS 搬到工具栏中央展示，
+   原生 figcaption 在普通模式下藏起来；阅读模式主题会强制它显示，正好充当文件名标注 */
+#article-container figure.highlight figcaption {
+  display: none;
+}
+
+/* 手机窄屏：长文件名居中时缩小字号并截断，避免压到右侧按钮 */
+@media screen and (max-width: 768px) {
+  .code-filename-label {
+    font-size: 13px;
+    max-width: 52%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* 阅读模式：代码展开按钮的半透明深色渐变叠在浅色阅读背景上会变成一条突兀的灰线，
+   改成褪入当前阅读模式代码背景色的渐变，并把箭头的闪烁动画停掉 */
+body.read-mode {
+  --hlexpand-bg: linear-gradient(180deg, rgba(247, 247, 247, 0), rgba(247, 247, 247, .95));
+}
+[data-theme='dark'] body.read-mode {
+  --hlexpand-bg: linear-gradient(180deg, rgba(23, 23, 23, 0), rgba(23, 23, 23, .95));
+}
+body.read-mode .code-expand-btn i {
+  animation: none;
+}
+
+/* 代码工具栏：保存为图片按钮 */
+.copy-image-btn {
+  cursor: pointer;
+  margin-left: 8px;
+}
+.copy-image-btn:hover {
+  color: #49b1f5;
+}
+
+/* CodeSnap 风格代码截图卡片（渲染在屏幕外，仅用于生成图片） */
+.codesnap-stage {
+  position: fixed;
+  left: -99999px;
+  top: 0;
+  padding: 24px;
+  background: transparent;
+}
+.codesnap-card {
+  display: inline-block;
+  min-width: 420px;
+  background: #1e1e1e;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .45);
+}
+.codesnap-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #252526;
+}
+.codesnap-titlebar .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.codesnap-titlebar .dot-red { background: #ff5f56; }
+.codesnap-titlebar .dot-yellow { background: #ffbd2e; }
+.codesnap-titlebar .dot-green { background: #27c93f; }
+.codesnap-file {
+  margin-left: 8px;
+  color: #9da5b4;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 13px;
+}
+.codesnap-card figure.highlight { margin: 0; }
+.codesnap-card figure.highlight td.code { padding: 14px 18px; }
+.codesnap-card figure.highlight pre { background: transparent; }
+
+/* 复制附加版权开关行 */
+.copyright-copy-toggle {
+  margin-top: 8px;
+  font-size: .88em;
+  opacity: .85;
+}
+.copyright-copy-toggle label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.copyright-copy-toggle input {
+  cursor: pointer;
+}
+
+/* 复制成功的提示（主题默认黑底不明显，改为主题蓝） */
+.copy-notice {
+  background: #49b1f5 !important;
+  color: #fff !important;
+  padding: 4px 12px !important;
+  border-radius: 6px;
+  font-size: 13px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+}
+
+/* 动态页热力图：手机端横向滑动查看（触摸滚动），桌面端内容区更宽不受影响 */
+#activity-heatmap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#activity-heatmap svg {
+  min-width: 880px;
+}
+
+/* 文章标签：移动到顶部横幅标题下方（星空图上用白色半透明胶囊） */
+.post-meta__tag-list.in-banner {
+  margin: 6px 0 10px;
+}
+.post-meta__tag-list.in-banner .post-meta__tags {
+  display: inline-block;
+  margin: 0 8px 6px 0;
+  padding: 3px 14px;
+  border: 1px solid rgba(255, 255, 255, .45);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .92);
+  font-size: 14px;
+  transition: all .2s;
+}
+.post-meta__tag-list.in-banner .post-meta__tags:hover {
+  background: rgba(255, 255, 255, .92);
+  color: #1e1e1e;
+}
+
+/* 增强 功能反馈 toast */
+#enhance-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 48px;
+  transform: translateX(-50%);
+  z-index: 100000;
+  background: #49b1f5;
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+  opacity: 0;
+  transition: opacity .3s;
+  pointer-events: none;
+}
+
+/* 中文排版：正文段落首行缩进两格（只作用于文章顶层段落，代码块/引用/列表不受影响） */
+#article-container > p {
+  text-indent: 2em;
+}
+
+/* 代码框「自动换行」切换按钮（enhance.js 注入） */
+figure.highlight .wrap-toggle-btn {
+  cursor: pointer;
+}
+figure.highlight .wrap-toggle-btn:hover {
+  color: var(--theme-color, #49b1f5);
+}
+figure.highlight .wrap-toggle-btn.active {
+  color: var(--theme-color, #49b1f5);
+}
+/* 开启换行：表格固定布局，代码区折行（行号与折行会对不齐，属已知取舍） */
+#article-container figure.highlight.wrap-enabled {
+  table-layout: fixed;
+  width: 100%;
+}
+#article-container figure.highlight.wrap-enabled td.code pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 搜索高亮提示气泡（?highlight=xxx 进入时显示，✕ 或 10 秒后消失） */
+#highlight-notice {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(92vw, 560px);
+  padding: 10px 18px;
+  background: var(--card-bg, #fff);
+  color: var(--font-color, #4c4948);
+  border: 1px solid var(--card-border, rgba(0, 0, 0, .08));
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .15);
+  font-size: 14px;
+  transition: opacity .3s;
+}
+#highlight-notice .hn-close {
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  opacity: .55;
+}
+#highlight-notice .hn-close:hover {
+  opacity: 1;
+}
+
+/* 首页寄语面板（由 homepage-hero.js 注入，仅首页显示；位于双栏布局上方通栏） */
+#home-hero {
+  max-width: 1200px;
+  width: calc(100% - 40px);
+  margin: 2rem auto 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border, rgba(0, 0, 0, .08));
+  border-radius: 12px;
+  padding: 1.1rem 1.5rem 1.2rem;
+  box-shadow: var(--card-box-shadow, none);
+}
+#home-hero .home-hero-tag {
+  display: inline-block;
+  font-size: .8em;
+  color: var(--hero-tag-color, #f47466);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0 10px;
+  line-height: 1.7;
+  margin-bottom: .4rem;
+}
+#home-hero .home-hero-title {
+  font-size: 1.3em;
+  font-weight: 700;
+  margin-bottom: .5rem;
+}
+#home-hero p {
+  margin: .35rem 0;
+  line-height: 1.9;
+}
+#home-hero .home-hero-more {
+  display: inline-block;
+  margin-top: .4rem;
+  font-weight: 600;
+}

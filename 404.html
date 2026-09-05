@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>404 · 寰宇体的世界</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; }
+  body {
+    background: #05060f;
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .bg {
+    position: fixed; inset: 0; z-index: 0;
+    background: url("/img/space.jpg") center / cover no-repeat;
+  }
+  .veil { position: fixed; inset: 0; z-index: 1; background: rgba(3, 5, 15, .55); }
+  .card {
+    position: relative; z-index: 2; text-align: center;
+    background: rgba(10, 14, 30, .55); border: 1px solid rgba(255,255,255,.15);
+    backdrop-filter: blur(8px); border-radius: 18px; padding: 48px 56px; max-width: 520px;
+  }
+  .card h1 { font-size: 64px; letter-spacing: 4px; }
+  .card h2 { font-size: 18px; font-weight: 500; margin: 10px 0 18px; }
+  .card p  { font-size: 13px; opacity: .85; margin-bottom: 24px; word-break: break-all; }
+  .card a.btn {
+    display: inline-block; margin: 0 6px; color: #fff; text-decoration: none; font-size: 14px;
+    border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: 8px 22px;
+    background: rgba(255,255,255,.08); transition: background .2s;
+  }
+  .card a.btn:hover { background: rgba(255,255,255,.22); }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="veil"></div>
+<div class="card">
+  <h1>404</h1>
+  <h2 id="msg">页面飘到寰宇之外了</h2>
+  <p id="path"></p>
+  <a class="btn" href="/">返回首页</a>
+  <a class="btn" href="/archives/">看归档</a>
+</div>
+<script>
+// 旧地址（日期式链接、/111/）自动跳转到新地址
+var MAP = {
+  "111": "/lab/",
+  "2019/05/02/VB-禁用复制粘贴": "/posts/e1a08705/",
+  "2019/08/16/VB-井字棋": "/posts/cb56202b/",
+  "2020/01/15/VB-AI": "/posts/7497c945/",
+  "2020/08/20/VB-MouseLinker": "/posts/4a40a691/",
+  "2021/07/13/VB-注册表": "/posts/135991a0/",
+  "2022/05/08/C-Program1": "/posts/107649e7/",
+  "2022/05/08/Hello-World-0": "/posts/4a17b156/",
+  "2022/06/21/Wechat-public-platform": "/posts/30e0d4c4/",
+  "2022/11/25/C-返回值为函数指针的函数": "/posts/a049fc87/",
+  "2022/11/27/C-复刻printf函数1": "/posts/2ed40c3a/"
+};
+(function () {
+  var p = decodeURIComponent(location.pathname).replace(/^\/+/, "").replace(/(\/index\.html)?\/?$/, "");
+  document.getElementById("path").textContent = location.pathname;
+  if (MAP[p]) {
+    document.getElementById("msg").textContent = "地址已更新，正在带你前往新家…";
+    location.replace(MAP[p]);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>我的MC复刻（一）：2DMC垃圾制作——随机地形的第一次尝试 | 寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="我对 Minecraft 的向往由来已久，久到总想自己手搓一个。真要动手的时候，第一个开工的不是那些漂亮的素材，而是一个最根本的问题：地形到底能不能自己”长出来”？ 这个第一次尝试的工程，名字起得非常谦虚，叫「2DMC垃圾制作」。工程里的素材落盘时间是 2016 年 10 月 16 日——五把镐子、泥土、原石、屎蒂夫行走图，和 PS 里那批抠图是同一批；地图数据则在 10 月 22 日第一次存盘。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="我的MC复刻（一）：2DMC垃圾制作——随机地形的第一次尝试">
+<meta property="og:url" content="https://cosmical-container.github.io/posts/d2aacbb8/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="我对 Minecraft 的向往由来已久，久到总想自己手搓一个。真要动手的时候，第一个开工的不是那些漂亮的素材，而是一个最根本的问题：地形到底能不能自己”长出来”？ 这个第一次尝试的工程，名字起得非常谦虚，叫「2DMC垃圾制作」。工程里的素材落盘时间是 2016 年 10 月 16 日——五把镐子、泥土、原石、屎蒂夫行走图，和 PS 里那批抠图是同一批；地图数据则在 10 月 22 日第一次存盘。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/img/covers/cover-6-ember.svg">
+<meta property="article:published_time" content="2016-10-22T08:00:09.000Z">
+<meta property="article:modified_time" content="2016-10-22T08:00:09.000Z">
+<meta property="article:author" content="寰宇体">
+<meta property="article:tag" content="Minecraft">
+<meta property="article:tag" content="RPG Maker">
+<meta property="article:tag" content="游戏开发">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/img/covers/cover-6-ember.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "我的MC复刻（一）：2DMC垃圾制作——随机地形的第一次尝试",
+  "url": "https://cosmical-container.github.io/posts/d2aacbb8/",
+  "image": "https://cosmical-container.github.io/img/covers/cover-6-ember.svg",
+  "datePublished": "2016-10-22T08:00:09.000Z",
+  "dateModified": "2016-10-22T08:00:09.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "寰宇体",
+      "url": "https://github.com/COSMICAL-CONTAINER"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/posts/d2aacbb8/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '我的MC复刻（一）：2DMC垃圾制作——随机地形的第一次尝试',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/covers/cover-6-ember.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a><a class="nav-page-title" href="/"><span class="site-name">我的MC复刻（一）：2DMC垃圾制作——随机地形的第一次尝试</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">我的MC复刻（一）：2DMC垃圾制作——随机地形的第一次尝试</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2016-10-22T08:00:09.000Z" title="发表于 2016-10-22 16:00:09">2016-10-22</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%88%91%E7%9A%84MC%E5%A4%8D%E5%88%BB/">我的MC复刻</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>5分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>我对 Minecraft 的向往由来已久，久到总想自己手搓一个。真要动手的时候，第一个开工的不是那些漂亮的素材，而是一个最根本的问题：地形到底能不能自己”长出来”？</p>
+<p>这个第一次尝试的工程，名字起得非常谦虚，叫「2DMC垃圾制作」。工程里的素材落盘时间是 2016 年 10 月 16 日——五把镐子、泥土、原石、屎蒂夫行走图，和 PS 里那批抠图是同一批；地图数据则在 10 月 22 日第一次存盘。</p>
+<h2 id="先交代操作"><a href="#先交代操作" class="headerlink" title="先交代操作"></a>先交代操作</h2><p>方向键里只有左右能操控移动，Z 键跳跃，空格是挖掘键。按 W 会切换到另一张地图——这个后面再说。</p>
+<h2 id="目的：测试地形随机生成"><a href="#目的：测试地形随机生成" class="headerlink" title="目的：测试地形随机生成"></a>目的：测试地形随机生成</h2><p>做这个工程的出发点只有一个——测试地形随机生成。玩 Minecraft 的时候总会好奇：地形到底是怎么”长出来”的？当年的我只会最简单的东西：随机数。</p>
+<p>所以开局落地的这张「草原吧？」地图，就是那次实验的现场——深绿的底子上，方块由随机数直接撒出来，东一块西一块，毫无规律可言。这并不是一张”好看”的地图，它就是随机数本身的形状：</p>
+<p><img src="/posts/d2aacbb8/mc1-demo-init.gif" alt="随机地形" loading='lazy'></p>
+<p>右下角的 X: 12 Y: - 5 是坐标——「地图显示XY」是特意加上的脚本，走一步它就报一次位置。</p>
+<h2 id="按-W，切到-2D-MC-世界"><a href="#按-W，切到-2D-MC-世界" class="headerlink" title="按 W，切到 2D MC 世界"></a>按 W，切到 2D MC 世界</h2><p>切换过去的第一段时间其实有点好笑：角色直接卡在了出生点的泥土里，完全动不了了；不过旁边的木头和脚下的泥土还挖得动——于是就这么卡在原地，挖了一整段：</p>
+<p><img src="/posts/d2aacbb8/mc1-seg-stuckdig.gif" alt="卡在泥土里挖" loading='lazy'></p>
+<p>读档重来，就靠空格往下凿自救。下面这段从按 W 切过来那一刻开始全程保留——刚进来的几秒、卡住、凿穿脚下方块，然后越凿越深，坐标从 Y: -5 一路凿到了 Y: -19，往下凿了十几格：</p>
+<p><img src="/posts/d2aacbb8/mc1-seg-digdown.gif" alt="往下挖掘" loading='lazy'></p>
+<p>「草原吧？」在俯视角里，是随机数撒在深绿底子上的形状；切到「草原吧？ 2」的 2D 视角，树冠长在顶上，泥土草方块还是东一块西一块——落在哪里依然由随机数说了算。地图是杂乱了点，不过重力、挖掘这些底子，在这一版里已经立住了。</p>
+<h2 id="这版的配置"><a href="#这版的配置" class="headerlink" title="这版的配置"></a>这版的配置</h2><ul>
+<li>重力脚本：之前就有的社区脚本，这版直接沿用</li>
+<li>「地图显示XY」：这一版特意加的坐标显示</li>
+<li>whbm 的完整鼠标系统（四方向专用）加四方向寻路算法：点击移动、点 NPC 触发事件</li>
+<li>EngShun 的 TextBox 输入框</li>
+</ul>
+<h2 id="打开编辑器，看看随机地图是怎么写的"><a href="#打开编辑器，看看随机地图是怎么写的" class="headerlink" title="打开编辑器，看看随机地图是怎么写的"></a>打开编辑器，看看随机地图是怎么写的</h2><p>光看演示还不够，这次把 RMXP 的编辑器也打开了，截了八张关键部位。编辑器里可没有什么图例，所以每张图我直接点名，说清它在哪、要看的是什么。</p>
+<p>先看「草原吧？」在编辑器里的样子：深绿的底子上，方块东一块西一块，游戏里那张随机地图在编辑器里反而看得最清楚。这里还藏着一个当时的小机关——图上这些橡木原木，大多数其实只是贴图，点不动也挖不了；真正能交互的原木，整张图只在左上角藏了一个：</p>
+<div id="fig-1"></div>
+
+<p><img src="/posts/d2aacbb8/mc1-code-01-grassmap.png" alt="「草原吧？」编辑器画面：多数原木只是贴图" loading='lazy'></p>
+<div class="figcap">图 1｜「草原吧？」编辑器画面：多数原木只是贴图</div>
+
+<p>接下来这张是「草原吧？ 2」的图块页。这张地图和「草原吧？」正好反过来：地图上的方块全是贴图事件，个个都能交互。左边一列还能看到方块破坏的裂纹贴图，从刚裂开到快碎掉，一段一段备齐了：</p>
+<div id="fig-2"></div>
+
+<p><img src="/posts/d2aacbb8/mc1-code-02-tiles.png" alt="「草原吧？ 2」：满地事件方块与裂纹贴图" loading='lazy'></p>
+<div class="figcap">图 2｜「草原吧？ 2」：满地事件方块与裂纹贴图</div>
+
+<p>随机刷新的账，记在一个叫 EV003 的并行事件里：草方块刷新点的 X、Y 全部交给随机数——X 从 0 到 20 里抽，Y 从 6 到 12 里抽；顺手还实时记下了角色当前的 XY 坐标。整张图的草方块长在哪儿，就是这几行变量说了算：</p>
+<div id="fig-3"></div>
+
+<p><img src="/posts/d2aacbb8/mc1-code-03-ev003.png" alt="EV003：随机刷新点与角色坐标记录" loading='lazy'></p>
+<div class="figcap">图 3｜EV003：随机刷新点与角色坐标记录</div>
+
+<p>随便再打开一个草方块的事件 EV020。它的第 1 页挂着「地图随机刷新」开关：一进地图，先用随机数算出刷新点，再用「设置事件位置」把自己挪过去，最后打开独立开关 A——到这一步，这块草方块刷新完成，站在原地等着被角色响应：</p>
+<div id="fig-4"></div>
+
+<p><img src="/posts/d2aacbb8/mc1-code-04-ev020p1.png" alt="EV020 第 1 页：进图随机刷新位置" loading='lazy'></p>
+<div class="figcap">图 4｜EV020 第 1 页：进图随机刷新位置</div>
+
+<p>第 2 页的触发方式居然是「与主角接触」——按道理这里该是决定键，要主角按下 C 或者空格才算动手挖。内容倒是不复杂：先看创造模式开了没有，没开的话，再判断手里装备的是不是「屎蒂夫」，条件对了就打开独立开关 B；按住下键也能走进同一个分支：</p>
+<div id="fig-5"></div>
+
+<p><img src="/posts/d2aacbb8/mc1-code-05-ev020p2.png" alt="EV020 第 2 页：接触触发与挖掘判定" loading='lazy'></p>
+<div class="figcap">图 5｜EV020 第 2 页：接触触发与挖掘判定</div>
+
+<p>第 3 页就是挖掘本身了，事件图片已经换成了挖掘状态的裂纹贴图。执行内容就三行：等 5 帧、打开独立开关 C、给泥土 +1——也就是说刚开挖，泥土就进包了，根本不等动画播完。后面的页全是同一个套路：一条独立开关接力一页，每页等 5 帧、播一段裂纹动画，裂缝越来越大，最后一页把方块完全挖掉。逻辑很朴素，但拼起来就是游戏里那个挖掘的手感：</p>
+<div id="fig-6"></div>
+
+<p><img src="/posts/d2aacbb8/mc1-code-06-ev020p3.png" alt="EV020 第 3 页：等待 5 帧的接力挖掘" loading='lazy'></p>
+<div class="figcap">图 6｜EV020 第 3 页：等待 5 帧的接力挖掘</div>
+
+<p>数据库的公共事件列表里也藏着好东西。这张是「使用“创造模式开启地图”」：使用物品后要输入一个 7 位的代码，答案是 123456，输对了才把「创造模式开启」开关打开，还挺正式地弹一句“您的游戏模式已更新”。不过结合前面第 2 页的挖掘判定看，创造模式在这里其实管不着挖掘——照样要走独立开关的接力，照样等动画播完才掉落：</p>
+<div id="fig-7"></div>
+
+<p><img src="/posts/d2aacbb8/mc1-code-07-cecode.png" alt="公共事件：创造模式的 7 位开启代码" loading='lazy'></p>
+<div class="figcap">图 7｜公共事件：创造模式的 7 位开启代码</div>
+
+<p>最后一张是公共事件「创造模式」本体：条件开关挂着创造模式开关，里面直接给重力脚本的变量赋值——把跳跃次数改成 9999。跳一下之后空中还能无限再跳，模拟出能飞的样子。飞行模式，就这一行数字：</p>
+<div id="fig-8"></div>
+
+<p><img src="/posts/d2aacbb8/mc1-code-08-creative.png" alt="公共事件「创造模式」：把跳跃改成 9999" loading='lazy'></p>
+<div class="figcap">图 8｜公共事件「创造模式」：把跳跃改成 9999</div>
+
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><div class="offstory"><p><span class="offstory-tag">场外话</span>从随机数撒方块，到后来见到的柏林噪声——地形生成这条路，我是从最笨的方法开始走的。走得多慢不重要，重要的是 2016 年那个问"地形能不能自动长出来"的问题，我在几年后还愿意打开工程接着试。这种事，多做几次就不亏。</p></div>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER">寰宇体</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cosmical-container.github.io/posts/d2aacbb8/">https://cosmical-container.github.io/posts/d2aacbb8/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cosmical-container.github.io" target="_blank">寰宇体的世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/RPG-Maker/">RPG Maker</a><a class="post-meta__tags" href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/">游戏开发</a><a class="post-meta__tags" href="/tags/Minecraft/">Minecraft</a></div><div class="post-share"><div class="social-share" data-image="/img/covers/cover-6-ember.svg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/266b0c6c/" title="我的MC复刻（二）：RMXP 里的 2D MC"><img class="cover" src="/img/covers/cover-4-forest.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post" loading='lazy'><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">我的MC复刻（二）：RMXP 里的 2D MC</div></div><div class="info-2"><div class="info-item-1">我对 Minecraft 的向往由来已久，久到总想自己手搓一个。上一篇的「垃圾制作」是第一次下手，这一篇的工程接着往前走：2016 年 11 月备好的素材，2017 年 12 月变成了一个真正能玩的 2DMC。 素材：从游戏里截图，用 PS 抠第一步不是写代码，是备料。方法说穿了很简单：自己开着 Minecraft 截图，再用 PS 一张一张抠出来、修好。五把镐子按科技树排开——木镐、石镐、铁镐、金镐、金刚石镐，一级不落：      方块类的贴图也备齐了，比如泥土和原石（鹅卵石）：   行走图也画了一张，文件名叫「屎蒂夫.png」——steve 的抽象版。最绝的是正视图，居然张了这么大的一个嘴巴：  一年后，在 RMXP 里动手2017 年 12 月 16 日傍晚 18:37，一个标题叫「RMXP版MC」的工程存了盘：默认脚本打底，加一个全方位像素移动脚本，再配一个 66RPG 的鼠标脚本——这就是第一版 2DMC 的全部家当。两个小时后的 20:06，它被打包成了「rmxp-minecraft ver beta 0.0.0.0.1」，同时还复制出一份 beta 0.0.0.0....</div></div></div></a><a class="pagination-related" href="/posts/1df3ce68/" title="我的 RPG Maker XP 作品集（一）：总览"><img class="cover" src="/img/covers/cover-3-sunset.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post" loading='lazy'><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">我的 RPG Maker XP 作品集（一）：总览</div></div><div class="info-2"><div class="info-item-1">最近把当年用 RPG Maker XP 做的东西从旧硬盘里整个翻了出来，索性整理成一个系列，在这里逐个展示。 先交代一下背景。RPG Maker XP（下面简称 RMXP）是日本 Enterbrain 公司 2004 年推出的 RPG 制作工具，这个系列里的所有作品，用的都是这一个引擎。它的思路是让不会编程的人也能做游戏：地图靠图块一格一格拼出来，剧情靠「事件」一页一页写出来，角色、物品、技能、怪物都在自带的数据库里填表，画面是 640×480 的分辨率，战斗和菜单都有现成模板。 再往深走，RMXP 内置了一套叫 RGSS 的脚本系统，用 Ruby 语言写成——想改战斗公式、加个新界面，就得动脚本。这款软件在国内能流行起来，很大程度上靠 66RPG 社区的汉化、教程和范例工程，当年的论坛上养活了大批业余作者，这个系列里用到的不少脚本，源头也都在那边。它的图标是一枚黑龙徽记，当年每次打开 RMXP 都要先看它一眼：  这个系列挑重点的讲，一共三章；2DMC 的两代作品在「我的MC复刻」系列里单独讲，时间线里一并列上：    时间 作品 说明    2018-07 赌青蛙 V1.0....</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/266b0c6c/" title="我的MC复刻（二）：RMXP 里的 2D MC"><img class="cover" src="/img/covers/cover-4-forest.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2018-01-01</div><div class="info-item-2">我的MC复刻（二）：RMXP 里的 2D MC</div></div><div class="info-2"><div class="info-item-1">我对 Minecraft 的向往由来已久，久到总想自己手搓一个。上一篇的「垃圾制作」是第一次下手，这一篇的工程接着往前走：2016 年 11 月备好的素材，2017 年 12 月变成了一个真正能玩的 2DMC。 素材：从游戏里截图，用 PS 抠第一步不是写代码，是备料。方法说穿了很简单：自己开着 Minecraft 截图，再用 PS 一张一张抠出来、修好。五把镐子按科技树排开——木镐、石镐、铁镐、金镐、金刚石镐，一级不落：      方块类的贴图也备齐了，比如泥土和原石（鹅卵石）：   行走图也画了一张，文件名叫「屎蒂夫.png」——steve 的抽象版。最绝的是正视图，居然张了这么大的一个嘴巴：  一年后，在 RMXP 里动手2017 年 12 月 16 日傍晚 18:37，一个标题叫「RMXP版MC」的工程存了盘：默认脚本打底，加一个全方位像素移动脚本，再配一个 66RPG 的鼠标脚本——这就是第一版 2DMC 的全部家当。两个小时后的 20:06，它被打包成了「rmxp-minecraft ver beta 0.0.0.0.1」，同时还复制出一份 beta 0.0.0.0....</div></div></div></a><a class="pagination-related" href="/posts/c3dae21e/" title="我的 RPG Maker XP 作品集（二）：赌青蛙开发记"><img class="cover" src="/img/covers/cover-2-ocean.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2018-07-26</div><div class="info-item-2">我的 RPG Maker XP 作品集（二）：赌青蛙开发记</div></div><div class="info-2"><div class="info-item-1">在这个系列里，赌青蛙是我最想拿出来展示的一个。从 2017 年 8 月的雏形《赌博》，到 2018 年 7 月的 V1.0.0，前前后后做了快一年，游戏内容全部是我一个人做的。它的更新日志保存得很完整——第一句话就很有精神：  别以为赌青蛙不会有更新，其实这个小游戏也是有制作难度的。不说了自己看  这是个什么游戏场上有几只颜色不同的青蛙，你押注谁赢。押注工具是赌博纸：  *上面印着”绿色青蛙赢”的赌博纸*上面印着”蓝色青蛙赢”的赌博纸*上面印着”紫色青蛙赢”的赌博纸*上面印着”红色青蛙赢”的赌博纸  下注货币是赌场券，分初级、中级、高级、传说四档，V0.1 就引入了”倍数”的概念。赌输了怎么办？游戏里有一件物品叫「捞东西（你是怎么得到的？）」——物品描述直接质问玩家来历，我觉得这是全游戏最妙的一行字。 顺带一提，它的前身工程名字就叫「赌博」，里面已经躺着四色赌博纸和四档赌场券，还有「作者的无用钥匙」「提示（山洞里-1）」。所以命名史是：先诚实地叫《赌博》，后来改叫《赌青蛙》，仿佛这就是另一款游戏了。 更新日志版本V0.1  ★(1)大概弄清楚了赌青蛙的原理，做完了赌青蛙的大概样子...</div></div></div></a><a class="pagination-related" href="/posts/dcb93373/" title="我的 RPG Maker XP 作品集（三）：MY ARPG 开发记"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-12</div><div class="info-item-2">我的 RPG Maker XP 作品集（三）：MY ARPG 开发记</div></div><div class="info-2"><div class="info-item-1">这篇展示 MY ARPG——2021 年做的即时战斗 ARPG，也是我那个 RMXP 时代武器系统做得最讲究的一个。它的更新日志开头是这样的：  嗨！这个ARPG游戏是本人第一次制作。有什么不好请提意见！  说是第一次，得限定一下范围：第一次做 ARPG。因为它的工程文件是直接从赌青蛙 V1.0.0 复制出来的——物品库原封不动搬了过来，赌场券、化学实验室、NaOH 星级武器全套都在。上一个项目就是下一个项目的底座，我一直觉得这没什么好隐瞒的，反而挺骄傲：青蛙至少贡献了它的尸体。 武器系统「游戏怎么玩？请点击在这里.txt」是这个作品里我最得意的一份文案，武器部分原文照录：  A.当[铁匕首&#x2F;钢短剑]装备时，按下shift键即可攻击。C.当[普通の弓]装备时，按下【C】键即可先填充箭袋中的箭，再次按下【C】时即可射击（可能延迟），在游戏界面的最左边有一排箭数，方便玩家查看箭的数量。技能：1当按下【Z】键时开启[连发]技能，可以持续按shift键发射。2当按下【D】键时，如果你的箭数大于5，即可发动[集中射击]技能。D.当[火之杖]装备时，当按下【C】键即可发射火球，威力...</div></div></div></a><a class="pagination-related" href="/posts/d627472d/" title="我的 RPG Maker XP 作品集（四）：ARPG 范例改造"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-07-09</div><div class="info-item-2">我的 RPG Maker XP 作品集（四）：ARPG 范例改造</div></div><div class="info-2"><div class="info-item-1">2018 年收尾的 RMXP 故事，2021 年 7 月又多出了这么一章：拿 ARPG 范例 1.02 做底子，把我自己拼接的脚本装上去，做一个自己的即时战斗翻版。工程里的更新说明是这么开的头：  更新说明： Alpha版本（内部测试版本）bete版本（外部客户测试版本） Alpha版本V0.0.11.使用范例制作出框架，大致实现了ARPG的功能2.使用血条显示功能，能够在地图上显示角色血条 Alpha版本V0.0.51.修复攻击伤害固定问题2.修复打开菜单返回出现的角色升级问题3.制作黄金兵4.尝试制作蓄力条  「使用范例制作出框架」——范例出骨架，我往里拼脚本，这就是这一章的分工。 竞技场这版没有剧情地图，一进去就是一座竞技场。标题画面还是 RMXP 的默认底子，新游戏、继续、退出三件套：  选新游戏，画面淡进竞技场，第一波红色的怪直接围了上来：  右边从上到下挂着整面按键说明：近身攻击 Q、远程事件 A、远程技能 S、炸弹攻击 D、清空消息 E、普通射击 Z——每个动作各归各键；左下角是 HP、SP 两条血蓝条，压着一个魔法阵；右下角记着等级和金币。升级播报一路往上滚：「L...</div></div></div></a><a class="pagination-related" href="/posts/1df3ce68/" title="我的 RPG Maker XP 作品集（一）：总览"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2015-02-25</div><div class="info-item-2">我的 RPG Maker XP 作品集（一）：总览</div></div><div class="info-2"><div class="info-item-1">最近把当年用 RPG Maker XP 做的东西从旧硬盘里整个翻了出来，索性整理成一个系列，在这里逐个展示。 先交代一下背景。RPG Maker XP（下面简称 RMXP）是日本 Enterbrain 公司 2004 年推出的 RPG 制作工具，这个系列里的所有作品，用的都是这一个引擎。它的思路是让不会编程的人也能做游戏：地图靠图块一格一格拼出来，剧情靠「事件」一页一页写出来，角色、物品、技能、怪物都在自带的数据库里填表，画面是 640×480 的分辨率，战斗和菜单都有现成模板。 再往深走，RMXP 内置了一套叫 RGSS 的脚本系统，用 Ruby 语言写成——想改战斗公式、加个新界面，就得动脚本。这款软件在国内能流行起来，很大程度上靠 66RPG 社区的汉化、教程和范例工程，当年的论坛上养活了大批业余作者，这个系列里用到的不少脚本，源头也都在那边。它的图标是一枚黑龙徽记，当年每次打开 RMXP 都要先看它一眼：  这个系列挑重点的讲，一共三章；2DMC 的两代作品在「我的MC复刻」系列里单独讲，时间线里一并列上：    时间 作品 说明    2018-07 赌青蛙 V1.0....</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="comment-switch"><span class="first-comment">Giscus</span><span id="switch-btn"></span><span class="second-comment">Twikoo</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E4%BA%A4%E4%BB%A3%E6%93%8D%E4%BD%9C"><span class="toc-text">先交代操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E7%9A%84%EF%BC%9A%E6%B5%8B%E8%AF%95%E5%9C%B0%E5%BD%A2%E9%9A%8F%E6%9C%BA%E7%94%9F%E6%88%90"><span class="toc-text">目的：测试地形随机生成</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%89-W%EF%BC%8C%E5%88%87%E5%88%B0-2D-MC-%E4%B8%96%E7%95%8C"><span class="toc-text">按 W，切到 2D MC 世界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%99%E7%89%88%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-text">这版的配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E7%BC%96%E8%BE%91%E5%99%A8%EF%BC%8C%E7%9C%8B%E7%9C%8B%E9%9A%8F%E6%9C%BA%E5%9C%B0%E5%9B%BE%E6%98%AF%E6%80%8E%E4%B9%88%E5%86%99%E7%9A%84"><span class="toc-text">打开编辑器，看看随机地图是怎么写的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-text">结语</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io',
+      'data-repo-id': 'R_kgDOHTJxpw',
+      'data-category-id': 'DIC_kwDOHTJxp84DE3Jg',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('/pluginsSrc/twikoo/dist/twikoo.all.min.js?v=1.7.15').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Giscus' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Giscus' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>从黑窗口到窗口：我的 Win32 学习轨迹 | 寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="学 C 语言的前半年，我的程序全都活在一个黑窗口里——printf 进，scanf 出。2023 年 2 月，我决定去摸一摸 Windows 真正的样子：窗口、消息、控件、对话框。到 7 月，我已经能在内存里徒手拼出一个对话框、写出一个带菜单和列表视图的课程设计。这篇文章按时间顺序复盘这条轨迹的四个站点：鼠标热身 → 第一个窗口 → 内存里手搓对话框 → 学生考勤管理系统。 热身：做一个鼠标监听器">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从黑窗口到窗口：我的 Win32 学习轨迹">
+<meta property="og:url" content="https://cosmical-container.github.io/posts/91c3b2d7/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="学 C 语言的前半年，我的程序全都活在一个黑窗口里——printf 进，scanf 出。2023 年 2 月，我决定去摸一摸 Windows 真正的样子：窗口、消息、控件、对话框。到 7 月，我已经能在内存里徒手拼出一个对话框、写出一个带菜单和列表视图的课程设计。这篇文章按时间顺序复盘这条轨迹的四个站点：鼠标热身 → 第一个窗口 → 内存里手搓对话框 → 学生考勤管理系统。 热身：做一个鼠标监听器">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/img/covers/cover-1-nebula.svg">
+<meta property="article:published_time" content="2023-07-06T03:05:00.000Z">
+<meta property="article:modified_time" content="2023-07-06T03:05:00.000Z">
+<meta property="article:author" content="寰宇体">
+<meta property="article:tag" content="C语言">
+<meta property="article:tag" content="Win32">
+<meta property="article:tag" content="Windows">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/img/covers/cover-1-nebula.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "从黑窗口到窗口：我的 Win32 学习轨迹",
+  "url": "https://cosmical-container.github.io/posts/91c3b2d7/",
+  "image": "https://cosmical-container.github.io/img/covers/cover-1-nebula.svg",
+  "datePublished": "2023-07-06T03:05:00.000Z",
+  "dateModified": "2023-07-06T03:05:00.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "寰宇体",
+      "url": "https://github.com/COSMICAL-CONTAINER"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/posts/91c3b2d7/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '从黑窗口到窗口：我的 Win32 学习轨迹',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/covers/cover-1-nebula.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a><a class="nav-page-title" href="/"><span class="site-name">从黑窗口到窗口：我的 Win32 学习轨迹</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">从黑窗口到窗口：我的 Win32 学习轨迹</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2023-07-06T03:05:00.000Z" title="发表于 2023-07-06 11:05:00">2023-07-06</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>学 C 语言的前半年，我的程序全都活在一个黑窗口里——<code>printf</code> 进，<code>scanf</code> 出。2023 年 2 月，我决定去摸一摸 Windows 真正的样子：窗口、消息、控件、对话框。到 7 月，我已经能在内存里徒手拼出一个对话框、写出一个带菜单和列表视图的课程设计。这篇文章按时间顺序复盘这条轨迹的四个站点：<strong>鼠标热身 → 第一个窗口 → 内存里手搓对话框 → 学生考勤管理系统</strong>。</p>
+<h2 id="热身：做一个鼠标监听器"><a href="#热身：做一个鼠标监听器" class="headerlink" title="热身：做一个鼠标监听器"></a>热身：做一个鼠标监听器</h2><p>进 Win32 的世界之前，先在控制台里热身。目标很简单：实时显示鼠标坐标、统计左右键点击次数。核心是两个 API——<code>GetAsyncKeyState</code> 查按键状态、<code>GetCursorPos</code> 拿坐标：</p>
+<figure class="highlight cpp"><figcaption><span>鼠标检测.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;windows.h&gt;</span>                			<span class="comment">//GetAsyncKeyState所需头文件</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> KEY_DOWN(VK_NONAME) ((GetAsyncKeyState(VK_NONAME) &amp; 0x8000) ? 1:0)  <span class="comment">//用来检测按键的点击事件</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="type">int</span> a=<span class="number">1</span>,b=<span class="number">1</span>; <span class="comment">//计数器</span></span><br><span class="line">	<span class="comment">//----------移除快速编辑模式(对于Win10用户)----------//</span></span><br><span class="line">	HANDLE hStdin = <span class="built_in">GetStdHandle</span>(STD_INPUT_HANDLE);</span><br><span class="line">	DWORD mode;</span><br><span class="line">	<span class="built_in">GetConsoleMode</span>(hStdin, &amp;mode);</span><br><span class="line">	mode &amp;= ~ENABLE_QUICK_EDIT_MODE;</span><br><span class="line">	<span class="built_in">SetConsoleMode</span>(hStdin, mode);</span><br><span class="line"></span><br><span class="line">	POINT point;</span><br><span class="line">	<span class="comment">//----------循环检测----------//</span></span><br><span class="line">	<span class="keyword">while</span>(<span class="literal">true</span>) &#123;                      			<span class="comment">//循环检测</span></span><br><span class="line">		<span class="keyword">if</span>(<span class="built_in">KEY_DOWN</span>(VK_LBUTTON)) &#123;  			<span class="comment">//鼠标左键按下</span></span><br><span class="line">			cout&lt;&lt;<span class="string">&quot;鼠标左键被按下&quot;</span>&lt;&lt;a&lt;&lt;<span class="string">&quot;次&quot;</span>&lt;&lt;endl&lt;&lt;endl;</span><br><span class="line">			a++;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span>(<span class="built_in">KEY_DOWN</span>(VK_RBUTTON)) &#123;             <span class="comment">//鼠标右键按下</span></span><br><span class="line">			cout&lt;&lt;<span class="string">&quot;鼠标右键被按下&quot;</span>&lt;&lt;b&lt;&lt;<span class="string">&quot;次&quot;</span>&lt;&lt;endl&lt;&lt;endl;</span><br><span class="line">			b++;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="built_in">GetCursorPos</span>(&amp;point);            		<span class="comment">//获取鼠标位置</span></span><br><span class="line">		cout &lt;&lt; point.x &lt;&lt; <span class="string">&quot;,&quot;</span> &lt;&lt; point.y &lt;&lt; endl;</span><br><span class="line"></span><br><span class="line">		<span class="built_in">Sleep</span>(<span class="number">100</span>);                  			<span class="comment">//等待100毫秒，减少CPU占用</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这段小代码里藏着一个 Win10 用户才会懂的坑：<strong>控制台的”快速编辑模式”</strong>。你在控制台里点一下鼠标选中文本，整个程序就暂停了——对交互程序是致命的。所以开头那几行 <code>GetConsoleMode</code>&#x2F;<code>SetConsoleMode</code> 不是废话，是把快速编辑模式摘掉。另一个习惯也在这里养成：循环里的 <code>Sleep(100)</code>，不睡觉的轮询会把 CPU 吃满。</p>
+<h2 id="第一个窗口：四件套"><a href="#第一个窗口：四件套" class="headerlink" title="第一个窗口：四件套"></a>第一个窗口：四件套</h2><p>真正的起点是窗口。Win32 的窗口程序有一套固定仪式，四件套缺一不可：<strong>注册窗口类 → 创建窗口 → 消息循环 → 窗口过程</strong>。我的第一个窗口（wind.c）在这套骨架上多玩了两个控件——一个按钮和一个列表框，按钮按下就往列表框里塞一条消息：</p>
+<figure class="highlight c"><figcaption><span>wind.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;windows.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">DisplayConfirmSaveAsMessageBox</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> msgboxID = MessageBox(</span><br><span class="line">        <span class="literal">NULL</span>,</span><br><span class="line">        <span class="string">&quot;temp.txt already exists.\nDo you want to replace it?&quot;</span>,</span><br><span class="line">        <span class="string">&quot;Confirm Save As&quot;</span>,</span><br><span class="line">        MB_ICONEXCLAMATION | MB_YESNO</span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (msgboxID == IDYES)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> add code</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> msgboxID;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">LRESULT CALLBACK <span class="title function_">WndProc</span><span class="params">(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">switch</span> (msg)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> WM_DESTROY:</span><br><span class="line">            PostQuitMessage(<span class="number">0</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> WM_COMMAND:</span><br><span class="line">            <span class="keyword">if</span> (LOWORD(wParam) == <span class="number">1</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                DisplayConfirmSaveAsMessageBox();</span><br><span class="line">                HWND hListBox = GetDlgItem(hwnd, <span class="number">2</span>);</span><br><span class="line">                <span class="keyword">if</span>(hListBox == <span class="literal">NULL</span>)</span><br><span class="line">                    MessageBox(<span class="literal">NULL</span>, <span class="string">&quot;NULL!&quot;</span>, <span class="string">&quot;Button&quot;</span>, MB_OK);</span><br><span class="line">                SendMessage(hListBox, LB_ADDSTRING, <span class="number">0</span>, (LPARAM)<span class="string">&quot;Button clicked!&quot;</span>);</span><br><span class="line">                InvalidateRect(hListBox, <span class="literal">NULL</span>, TRUE);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">return</span> DefWindowProc(hwnd, msg, wParam, lParam);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> WINAPI <span class="title function_">WinMain</span><span class="params">(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, <span class="type">int</span> nCmdShow)</span></span><br><span class="line">&#123;</span><br><span class="line">    ShowWindow(GetConsoleWindow(), SW_HIDE);</span><br><span class="line"></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> CLASS_NAME[] = <span class="string">&quot;Hello, World!&quot;</span>;</span><br><span class="line"></span><br><span class="line">    WNDCLASS wc = &#123; &#125;;</span><br><span class="line"></span><br><span class="line">    wc.lpfnWndProc = WndProc;</span><br><span class="line">    wc.hInstance = hInstance;</span><br><span class="line">    wc.lpszClassName = CLASS_NAME;</span><br><span class="line"></span><br><span class="line">    RegisterClass(&amp;wc);</span><br><span class="line"></span><br><span class="line">    HWND hwnd = CreateWindowEx(</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        CLASS_NAME,</span><br><span class="line">        <span class="string">&quot;Hello, World!&quot;</span>,</span><br><span class="line">        WS_OVERLAPPEDWINDOW,</span><br><span class="line">        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,</span><br><span class="line">        <span class="literal">NULL</span>,</span><br><span class="line">        <span class="literal">NULL</span>,</span><br><span class="line">        hInstance,</span><br><span class="line">        <span class="literal">NULL</span></span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (hwnd == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    CreateWindow(</span><br><span class="line">        <span class="string">&quot;BUTTON&quot;</span>, <span class="string">&quot;Click me&quot;</span>,</span><br><span class="line">        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,</span><br><span class="line">        <span class="number">10</span>, <span class="number">10</span>, <span class="number">100</span>, <span class="number">30</span>,</span><br><span class="line">        hwnd, (HMENU)<span class="number">1</span>,</span><br><span class="line">        (HINSTANCE)(LONG_PTR)GetWindowLong(hwnd, GWLP_HINSTANCE),</span><br><span class="line">        <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    CreateWindow(</span><br><span class="line">        <span class="string">&quot;LISTBOX&quot;</span>, <span class="string">&quot;&quot;</span>,</span><br><span class="line">        WS_VISIBLE | WS_CHILD | LBS_STANDARD,</span><br><span class="line">        <span class="number">10</span>, <span class="number">50</span>, <span class="number">500</span>, <span class="number">200</span>,</span><br><span class="line">        hwnd, (HMENU)<span class="number">2</span>,</span><br><span class="line">        (HINSTANCE)(LONG_PTR)GetWindowLong(hwnd, GWLP_HINSTANCE),</span><br><span class="line">        <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    ShowWindow(hwnd, nCmdShow);</span><br><span class="line"></span><br><span class="line">    MSG msg = &#123; &#125;;</span><br><span class="line">    <span class="keyword">while</span> (GetMessage(&amp;msg, <span class="literal">NULL</span>, <span class="number">0</span>, <span class="number">0</span>))</span><br><span class="line">    &#123;</span><br><span class="line">        TranslateMessage(&amp;msg);</span><br><span class="line">        DispatchMessage(&amp;msg);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里要理解的核心机制是<strong>消息驱动</strong>：程序不再是从上到下执行完就结束，而是进入 <code>GetMessage</code> 死循环，等 Windows 把事件（点击、按键、关闭）打包成”消息”投递给 <code>WndProc</code>，由它分发处理。按钮被点击时，<code>WM_COMMAND</code> 消息的 <code>wParam</code> 低 16 位带着创建按钮时给的那个 ID——<code>(HMENU)1</code>——<code>WndProc</code> 靠这个编号认出是哪个控件在说话。</p>
+<p>另外注意第一行的 <code>ShowWindow(GetConsoleWindow(), SW_HIDE)</code>：WinMain 编译出的程序默认还拖着个控制台黑框，一行代码把它藏起来，程序才算”像个 Windows 程序”。</p>
+<h2 id="进阶：在内存里手搓一个对话框"><a href="#进阶：在内存里手搓一个对话框" class="headerlink" title="进阶：在内存里手搓一个对话框"></a>进阶：在内存里手搓一个对话框</h2><p>资源文件里的对话框见得多了，但微软的文档里藏着一个更野的玩法：<strong>在内存里直接拼一张对话框模板</strong>，运行时用 <code>DialogBoxIndirect</code> 凭空创建。<code>动态创建对话框.c</code>（以及它的前身”乱搞的创建窗口.c”）干的就是这个。</p>
+<p>流程是：<code>GlobalAlloc</code> 切一大块零初始化内存，然后按 <code>DLGTEMPLATE</code> 结构的格式<strong>一个字段一个字段地填</strong>——先填对话框的样式、控件数、坐标，再逐个填控件模板，每个控件之间用 <code>lpwAlign</code> 对齐到 DWORD 边界：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">hgbl = GlobalAlloc(GMEM_ZEROINIT, <span class="number">2048</span>);</span><br><span class="line">lpdt = (LPDLGTEMPLATE)GlobalLock(hgbl);</span><br><span class="line"></span><br><span class="line">lpdt-&gt;style = WS_POPUP | WS_BORDER | WS_SYSMENU | DS_MODALFRAME | WS_CAPTION;</span><br><span class="line">lpdt-&gt;cdit = <span class="number">2</span>;         <span class="comment">// 控件数量</span></span><br><span class="line">lpdt-&gt;x  = <span class="number">10</span>;  lpdt-&gt;y  = <span class="number">10</span>;</span><br><span class="line">lpdt-&gt;cx = <span class="number">200</span>; lpdt-&gt;cy = <span class="number">200</span>;</span><br><span class="line"></span><br><span class="line">lpw = (LPWORD)(lpdt + <span class="number">1</span>);</span><br><span class="line">*lpw++ = <span class="number">0</span>;             <span class="comment">// 无菜单</span></span><br><span class="line">*lpw++ = <span class="number">0</span>;             <span class="comment">// 默认对话框类</span></span><br><span class="line"></span><br><span class="line">lpwsz = (LPWSTR)lpw;</span><br><span class="line">nchar = <span class="number">1</span> + MultiByteToWideChar(CP_ACP, <span class="number">0</span>, <span class="string">&quot;My Dialog&quot;</span>, <span class="number">-1</span>, lpwsz, <span class="number">50</span>);</span><br><span class="line">lpw += nchar;</span><br><span class="line"></span><br><span class="line">lpw = lpwAlign(lpw);    <span class="comment">// 对齐到 DWORD 边界</span></span><br><span class="line">lpdit = (LPDLGTEMPLATE)lpw;</span><br><span class="line">lpdit-&gt;x  = <span class="number">150</span>; lpdit-&gt;y  = <span class="number">0</span>;</span><br><span class="line">lpdit-&gt;cx = <span class="number">50</span>; lpdit-&gt;cy = <span class="number">20</span>;</span><br><span class="line">lpdit-&gt;id = IDOK;</span><br><span class="line">lpdit-&gt;style = WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON;</span><br><span class="line">...</span><br><span class="line">ret = DialogBoxIndirect(hinst, (LPDLGTEMPLATE)hgbl, hwndOwner, (DLGPROC)DialogProc);</span><br></pre></td></tr></table></figure>
+
+<p>这套写法我是照着微软官方文档的示例一步步复刻的，但复刻的过程把三个概念焊进了脑子：<strong>模板是一段有格式的二进制，不是配置文件</strong>；<strong>对齐不是玄学</strong>（<code>lpwAlign</code> 那个把指针推到 4 字节边界的函数，错一步整个模板解析全乱）；<strong>控件的类名用 <code>0xFFFF + 原子值</code> 表示</strong>（按钮是 0x0080）——系统控件在注册表里早已注册，报个编号就行。</p>
+<h2 id="收官：学生考勤管理系统"><a href="#收官：学生考勤管理系统" class="headerlink" title="收官：学生考勤管理系统"></a>收官：学生考勤管理系统</h2><p>这条轨迹的终点是 2023 年 4 月的课程设计：一个完整的学生考勤管理系统，单文件 32KB，纯 Win32。源码单独建了仓库：<a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER/Student-Attendance-System">Student-Attendance-System</a>。它是跟着微软官方教程的代码一步一步搭起来的，但搭完之后，之前轨迹上的每样东西都在里面派上了用场：</p>
+<p><strong>控件编号用宏管理。</strong> 四组”姓名 &#x2F; 年龄 &#x2F; 学号 &#x2F; 班级”标签加编辑框，每个控件一个宏编号——这是从 wind.c 里 <code>(HMENU)1</code>、<code>(HMENU)2</code> 的裸数字进化来的：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> ID_TEXT_NAME    11</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ID_TEXT_AGE     12</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ID_TEXT_ID      13</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ID_TEXT_CLASS   14</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ID_EDIT_NAME  21  <span class="comment">// edit control id for name</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ID_EDIT_AGE   22</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ID_EDIT_ID    23</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ID_EDIT_CLASS 24</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>静态标签 + 编辑框</strong>成对创建，<code>CreateTextAndEdit</code> 一个函数把整个录入表单铺出来：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">hLabUsername = CreateWindow(</span><br><span class="line">    TEXT(<span class="string">&quot;static&quot;</span>),</span><br><span class="line">    TEXT(<span class="string">&quot;姓名：&quot;</span>),</span><br><span class="line">    WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE <span class="comment">/*垂直居中*/</span> | SS_RIGHT <span class="comment">/*水平居右*/</span>,</span><br><span class="line">    <span class="number">0</span>, <span class="number">20</span>, <span class="number">70</span>, <span class="number">26</span>,</span><br><span class="line">    hwndDlg,</span><br><span class="line">    (HMENU)ID_TEXT_NAME,</span><br><span class="line">    hInst,</span><br><span class="line">    <span class="literal">NULL</span>);</span><br></pre></td></tr></table></figure>
+
+<p><strong>ListView 当主界面</strong>——增删改查的载体。列名用 <code>InsertListViewColumns</code> 建好，学生数据一条条 <code>InsertListViewItems</code> 塞进去，选中删除走 <code>DeleteListViewChooseItems</code>。<strong>菜单</strong>挂了打开、保存、退出和编辑操作（复制&#x2F;粘贴&#x2F;剪切&#x2F;删除）。整站三个窗口过程（主窗口、添加窗口、修改窗口）各管各的消息。</p>
+<p>最值得一提的是它把前面”内存拼对话框”的技能直接复用了：添加和修改学生信息的弹窗，不是资源文件里的静态模板，而是运行时 <code>GlobalAlloc</code> + <code>DLGTEMPLATE</code> 现场拼出来的——学到的招式真的被用上了。</p>
+<h2 id="轨迹复盘"><a href="#轨迹复盘" class="headerlink" title="轨迹复盘"></a>轨迹复盘</h2><p>回头看这条从 2 月到 7 月的轨迹，有三个记忆点值得单独立此存照：</p>
+<p><strong>快速编辑模式的坑。</strong> 不摘掉它，控制台程序点一下鼠标就假死——这种坑只有踩过才知道，文档里绝不会写。</p>
+<p><strong><code>lpwAlign</code> 的意义。</strong> 对齐这个问题，在结构体那一章人人都”学过”，但只有当你亲手在一段二进制里靠 <code>lpwAlign(lpw)</code> 跳过 2 个字节、否则整个对话框解析崩掉的时候，对齐才从考点变成常识。</p>
+<p><strong>藏起黑框。</strong> <code>ShowWindow(GetConsoleWindow(), SW_HIDE)</code>——一行代码的仪式感，程序从”学 C 时的作业”变成”一个 Windows 程序”。</p>
+<p>Win32 如今已经很老了，老到新项目都不好意思用它。但它就是 Windows 本身：今天所有现代框架的窗口、消息、控件，剥开壳都是在调这一套。要理解一个系统，没有比用它最裸的方式驱动它更好的入口了。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER">寰宇体</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cosmical-container.github.io/posts/91c3b2d7/">https://cosmical-container.github.io/posts/91c3b2d7/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cosmical-container.github.io" target="_blank">寰宇体的世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C%E8%AF%AD%E8%A8%80/">C语言</a><a class="post-meta__tags" href="/tags/Win32/">Win32</a><a class="post-meta__tags" href="/tags/Windows/">Windows</a></div><div class="post-share"><div class="social-share" data-image="/img/covers/cover-1-nebula.svg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/99a422d6/" title="抽象代码：下划线完形填空"><img class="cover" src="/img/covers/cover-3-sunset.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post" loading='lazy'><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">抽象代码：下划线完形填空</div></div><div class="info-2"><div class="info-item-1">先上代码。下面是一个完整的、可以编译、可以运行的 C 语言程序，它是一个从 9 倒数到 0 的倒计时器。请欣赏： _.c123456789101112131415161718192021222324252627#include &lt;stdio.h&gt;#define _ int#define __ main#define ___ while#define _____ x#define ______ ;#define _______ ()#define ________ &#123;#define _________ &#125;#define __________ (#define ___________ )#define ____________ =#define _____________ --&gt;#define ______________ &quot;%d\n&quot;,#define _______________ printf#define ________________ return_ __ ________________ _____ _______...</div></div></div></a><a class="pagination-related" href="/posts/11de485d/" title="通用链表 glist 开发记：从 void* 到函数指针"><img class="cover" src="/img/covers/cover-4-forest.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post" loading='lazy'><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">通用链表 glist 开发记：从 void* 到函数指针</div></div><div class="info-2"><div class="info-item-1">教科书里的线性表长一个样：int a[MAX]，或者 struct Node { int data; struct Node* next; }——从头到尾只能装一种类型。2023 年 4 月，我决定写一个”什么都能装”的列表：同一个列表里同时放 int、char、float、double，甚至自定义结构体，不光存得进去，还得一个一个打印出来。 这个项目最后叫 glist（general list），从 V1.0 迭代到 V1.2，源码整理在 GitHub 仓库 glist 里，三个版本各占一个标签。三个版本不多，恰好是 C 语言里实现”泛型”的三条思路的进化史：只存地址 → 给类型发身份证 → 让数据自己带说明书。 V1.0：先把”存”解决——void* 数组一切的起点是一个朴素的问题：一个格子不知道自己装的是什么类型，怎么装？ 答案就是 void*。普通指针绑定着类型，所以它知道数据从哪开始、到哪结束；void* 只有起始地址，什么类型都不绑，所以任何指针都能不加转换地赋给它。那 list 就别存数据，存地址： list.h123456789101112131415161718...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/fa6111b0/" title="不锁屏：谁动鼠标谁锁屏"><img class="cover" src="/img/covers/cover-2-ocean.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-03-02</div><div class="info-item-2">不锁屏：谁动鼠标谁锁屏</div></div><div class="info-2"><div class="info-item-1"> 📌 更新（2026-09-01）：归档复测，只编译不运行——理由见正文，这玩意挂在那里，谁的鼠标一动就锁谁的屏。  这个程序要干的事，全写在它的名字里：不锁屏，防止被动鼠标。为什么又要不锁屏、又要防鼠标？因为电脑设成了从不自动锁屏——图的就是人离开一会儿、回来接着用，不用反复输密码。方便是真方便，可人不在的那段时间，屏幕就这么亮着，谁来都能动两下。这个程序就是给这份方便加的保险：把它挂在后台再走，期间只要有谁动了鼠标，屏幕立刻锁上——防的就是这一手。 实现思路一句话：盯住鼠标，谁动谁锁。整个程序的核心循环： 12345678910int main()&#123;    printf(&quot;开始计时\n&quot;);    while (1)    &#123;        Sleep(100);        GetMouseLocation();    &#125;    return 0;&#125;  每 100 毫秒查一次鼠标。查的逻辑在 GetMouseLocation 里：GetCursorPos 拿坐标，交给 isMouseMove 判断，一旦返回 f...</div></div></div></a><a class="pagination-related" href="/posts/5dde1648/" title="AutoWrite 自动打字机开发记：从模拟按键到发送消息"><img class="cover" src="/img/space.jpg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-19</div><div class="info-item-2">AutoWrite 自动打字机开发记：从模拟按键到发送消息</div></div><div class="info-2"><div class="info-item-1">总有些场合，文字得靠键盘一个字一个字”敲”进去——目标输入框不吃复制粘贴，或者你只是想让朋友亲眼看着一段话”自己”出现在聊天框里。AutoWrite 就是干这个的：你把文本交给它，它替你把每个键按下去。项目做了两版，正好是 Windows 下模拟输入的两条技术路线——第一版把自己变成键盘，第二版直接给窗口发消息。第一版整理后传上了 GitHub：AutoWrite（MIT 协议）。 第一版思路：把自己变成键盘最早的版本（V0.0.1，2023 年 4 月）核心只有一个念头：程序不碰目标窗口，只负责假装自己是键盘。Windows 提供的 keybd_event 就是干这个的——给它一个虚拟键码（VK code），系统就当作这个键被按了一下： 12345void write_word(int vk)//输入数字、字母&#123;	keybd_event(vk,0,0,0);	// 按下	keybd_event(vk,0,KEYEVENTF_KEYUP,0);	// 弹起&#125;  按下、弹起，两个事件，一个键就”敲”完了。字母数字都好办，麻烦的是符号——它们和主键区不是一对一的关...</div></div></div></a><a class="pagination-related" href="/posts/f8225dd/" title="抽象代码：把中文藏进 int 数组"><img class="cover" src="/img/covers/cover-5-midnight.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-15</div><div class="info-item-2">抽象代码：把中文藏进 int 数组</div></div><div class="info-2"><div class="info-item-1">先看运行结果——一个 32KB 的 C++ 程序，运行后在屏幕上打出一句话： 1嵌入式基地YYDS  这句话在源代码里一个汉字都没有。它藏在哪？藏在一个 int 数组里，而且数组里的每个数字，用的还是不同的进制。完整源码如下，请注意开头的 #define eval 和数组里反复出现的 eval(...)——后面会讲它们是干嘛的： 加密中文demo.cpp123456789101112131415161718192021222324252627282930313233#include &lt;stdio.h&gt;#include &lt;locale.h&gt;#define eval(everying) everyingint main()&#123;	// int c = 10;	// int d = 5;	// int rs3 = c++ + ++c - --d - ++d + 1 + c--;	// c++ + ++c = 10 + &amp;c = 10 + 12 = 22	// 22 - --d = 22 - 4 = 18	// 18 - ++d = 18 - 5 =...</div></div></div></a><a class="pagination-related" href="/posts/a46545f1/" title="给 printf 添加自定义格式符"><img class="cover" src="/img/covers/cover-4-forest.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-06-23</div><div class="info-item-2">给 printf 添加自定义格式符</div></div><div class="info-2"><div class="info-item-1">printf 的 %d、%f 是写死的，想直接打印自己定义的结构体怎么办？比如复数 Imaginary、分数 Fraction。实验了一个方案：给 printf 加上自定义格式符，注册之后就能写 %I 直接打印复数。 背景：rt_printf 是什么实验基于 RT-Thread（RTT，国产实时操作系统） 的打印实现 rt_printf 改造——接口和标准 printf 一致，但更轻量，是嵌入式圈里常用的东西。项目的文件结构：  rt_printf.c / rt_printf.h：打印核心（本次改造的对象） mprintf_argc.h：自定义格式符的注册宏（__mprint_argc__） main.c：使用示例  用法123456789101112131415161718typedef struct Imaginary&#123;    float real;    float image;&#125; ImaginaryTypedef;// 注册：&#x27;I&#x27; 这个格式符由 Imaginary2str 函数负责打印__mprint_argc__(&#x27;I...</div></div></div></a><a class="pagination-related" href="/posts/18180a87/" title="C语言静态库实战：字符串查找运算符函数"><img class="cover" src="/img/covers/cover-1-nebula.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-31</div><div class="info-item-2">C语言静态库实战：字符串查找运算符函数</div></div><div class="info-2"><div class="info-item-1">把四则运算做成一个静态库，调用方式很优雅——用字符串找运算符函数： 项目共三个文件：static.h（库的接口声明）、static.c（实现）、main.c（调用示例）。 123456789101112131415#include &quot;static.h&quot;int main()&#123;    double result;    result = getoptFunction(&quot;+&quot;)(1.9, 2);    printf(&quot;%lf\n&quot;, result);    result = getoptFunction(&quot;-&quot;)(1.9, 2);    printf(&quot;%lf\n&quot;, result);    result = getoptFunction(&quot;**&quot;)(1.9, 2);   // 自定义的幂运算    printf(&quot;%lf\n&quot;, result);    return 0;&#125;  getoptFunction 接收运算符字符串，返...</div></div></div></a><a class="pagination-related" href="/posts/5b7d3e60/" title="Print.h 开发记（五）V1.5：覆盖基础类型"><img class="cover" src="/img/space.jpg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-05-01</div><div class="info-item-2">Print.h 开发记（五）V1.5：覆盖基础类型</div></div><div class="info-2"><div class="info-item-1">羡慕 Python 的 print() 吗？这个系列记录我用纯 C 实现一个万能 print 库的全过程——项目已开源：  GitHub：https://github.com/COSMICAL-CONTAINER/C_Program-Print.h  V1.5 是一次”夯实基础”的版本，没有新花样，主要做了三件事：补全基础类型与指针类型的打印、规范缓冲区与命名、完善注释。库从这个版本开始有了”正式出品”的样子。 基础类型覆盖：分发表补全_Generic 分发表补上了缺的三种基础类型——unsigned char、unsigned int、long long，各自对应一个新的打印函数： 1234567891011121314void print_uchar(unsigned char num)&#123;    printf(&quot;%c&quot;, num);&#125;void print_uint(unsigned int num)&#123;    printf(&quot;%u&quot;, num);&#125;void print_longlong(long l...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="comment-switch"><span class="first-comment">Giscus</span><span id="switch-btn"></span><span class="second-comment">Twikoo</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%83%AD%E8%BA%AB%EF%BC%9A%E5%81%9A%E4%B8%80%E4%B8%AA%E9%BC%A0%E6%A0%87%E7%9B%91%E5%90%AC%E5%99%A8"><span class="toc-text">热身：做一个鼠标监听器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E4%B8%AA%E7%AA%97%E5%8F%A3%EF%BC%9A%E5%9B%9B%E4%BB%B6%E5%A5%97"><span class="toc-text">第一个窗口：四件套</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9B%E9%98%B6%EF%BC%9A%E5%9C%A8%E5%86%85%E5%AD%98%E9%87%8C%E6%89%8B%E6%90%93%E4%B8%80%E4%B8%AA%E5%AF%B9%E8%AF%9D%E6%A1%86"><span class="toc-text">进阶：在内存里手搓一个对话框</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%B6%E5%AE%98%EF%BC%9A%E5%AD%A6%E7%94%9F%E8%80%83%E5%8B%A4%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F"><span class="toc-text">收官：学生考勤管理系统</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%A8%E8%BF%B9%E5%A4%8D%E7%9B%98"><span class="toc-text">轨迹复盘</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io',
+      'data-repo-id': 'R_kgDOHTJxpw',
+      'data-category-id': 'DIC_kwDOHTJxp84DE3Jg',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('/pluginsSrc/twikoo/dist/twikoo.all.min.js?v=1.7.15').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Giscus' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Giscus' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

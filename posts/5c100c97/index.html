@@ -1,0 +1,353 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>当 include 遇上 MP4 | 寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一个大胆的实验：把写好的头文件 GenShin.h 改名成 GenShin.mp4，然后照常 #include 它，编译器会买账吗？ 实验材料：这个”mp4”其实是纯文本先用 file 命令验一下它的真身——GenShin.mp4: C source, ASCII text。它就是一个普普通通的头文件，只是后缀被改了： GenShin.mp4123456#ifndef __GenShin_H__#">
+<meta property="og:type" content="article">
+<meta property="og:title" content="当 include 遇上 MP4">
+<meta property="og:url" content="https://cosmical-container.github.io/posts/5c100c97/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="一个大胆的实验：把写好的头文件 GenShin.h 改名成 GenShin.mp4，然后照常 #include 它，编译器会买账吗？ 实验材料：这个”mp4”其实是纯文本先用 file 命令验一下它的真身——GenShin.mp4: C source, ASCII text。它就是一个普普通通的头文件，只是后缀被改了： GenShin.mp4123456#ifndef __GenShin_H__#">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/img/covers/cover-3-sunset.svg">
+<meta property="article:published_time" content="2023-09-30T10:03:00.000Z">
+<meta property="article:modified_time" content="2023-09-30T10:03:00.000Z">
+<meta property="article:author" content="寰宇体">
+<meta property="article:tag" content="C语言">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/img/covers/cover-3-sunset.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "当 include 遇上 MP4",
+  "url": "https://cosmical-container.github.io/posts/5c100c97/",
+  "image": "https://cosmical-container.github.io/img/covers/cover-3-sunset.svg",
+  "datePublished": "2023-09-30T10:03:00.000Z",
+  "dateModified": "2023-09-30T10:03:00.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "寰宇体",
+      "url": "https://github.com/COSMICAL-CONTAINER"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/posts/5c100c97/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '当 include 遇上 MP4',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/covers/cover-3-sunset.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a><a class="nav-page-title" href="/"><span class="site-name">当 include 遇上 MP4</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">当 include 遇上 MP4</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2023-09-30T10:03:00.000Z" title="发表于 2023-09-30 18:03:00">2023-09-30</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">547</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>1分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>一个大胆的实验：把写好的头文件 <strong>GenShin.h 改名成 GenShin.mp4</strong>，然后照常 <code>#include</code> 它，编译器会买账吗？</p>
+<h2 id="实验材料：这个”mp4”其实是纯文本"><a href="#实验材料：这个”mp4”其实是纯文本" class="headerlink" title="实验材料：这个”mp4”其实是纯文本"></a>实验材料：这个”mp4”其实是纯文本</h2><p>先用 <code>file</code> 命令验一下它的真身——<code>GenShin.mp4: C source, ASCII text</code>。它就是一个普普通通的头文件，只是后缀被改了：</p>
+<figure class="highlight c"><figcaption><span>GenShin.mp4</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifndef</span> __GenShin_H__</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __GenShin_H__</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NUM 114514 </span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">// !__GenShin_H__</span></span></span><br></pre></td></tr></table></figure>
+
+<h2 id="实验代码"><a href="#实验代码" class="headerlink" title="实验代码"></a>实验代码</h2><figure class="highlight c"><figcaption><span>main.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;GenShin.mp4&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, NUM);        <span class="comment">// NUM 就来自上面这个&quot;mp4&quot;</span></span><br><span class="line">    <span class="type">int</span> num = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span>* i = &amp;num; ; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%p : %d\n&quot;</span>, i, *i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译通过，<code>printf</code> 打印出 <strong>114514</strong>——头文件里的宏在”mp4”里定义，在 main 里生效。</p>
+<h2 id="原理：include-只是文本复制"><a href="#原理：include-只是文本复制" class="headerlink" title="原理：include 只是文本复制"></a>原理：include 只是文本复制</h2><p>预处理器处理 <code>#include</code> 时只做一件事：<strong>把目标文件的内容原样粘贴进来</strong>，它从头到尾没有检查过扩展名。扩展名（.h&#x2F;.hpp&#x2F;.mp4）是给人看的标识，对预处理器来说一律是文本。</p>
+<p>粘贴完成后，这段”mp4”的内容就变成了 main.c 的一部分：<code>#define NUM 114514</code> 正常生效，编译器看到的和 include 一个普通头文件没有任何区别。如果 GenShin.mp4 里是一段二进制数据，预处理器才会真的报错——因为它粘贴出来的内容里出现了非法 token。</p>
+<h2 id="附赠：顺着内存往上爬"><a href="#附赠：顺着内存往上爬" class="headerlink" title="附赠：顺着内存往上爬"></a>附赠：顺着内存往上爬</h2><p>后面的无限循环是顺带的实验——把 <code>num</code> 的地址取出来，让指针不断 <code>i++</code> 往高地址走，逐个打印每个地址上的值：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="type">int</span>* i = &amp;num; ; i++)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%p : %d\n&quot;</span>, i, *i);</span><br></pre></td></tr></table></figure>
+
+<p>这相当于一个只读的”内存查看器”：栈帧、返回地址、上层函数的局部变量，都会一条条滚过屏幕。配合 CE 练习那篇，正好直观感受”变量就是内存里的一格”。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>这个实验的结论就一句话：<strong>#include 不看文件名，只复制文本</strong>。头文件不是什么特殊格式，任何文本文件都能被 include——当然，正式项目里还是老老实实用 .h 后缀，毕竟扩展名是给人看的导航。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER">寰宇体</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cosmical-container.github.io/posts/5c100c97/">https://cosmical-container.github.io/posts/5c100c97/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cosmical-container.github.io" target="_blank">寰宇体的世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C%E8%AF%AD%E8%A8%80/">C语言</a></div><div class="post-share"><div class="social-share" data-image="/img/covers/cover-3-sunset.svg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/965c6e6d/" title="用 C 语言实现莫尔斯电码编码"><img class="cover" src="/img/covers/cover-4-forest.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post" loading='lazy'><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">用 C 语言实现莫尔斯电码编码</div></div><div class="info-2"><div class="info-item-1">莫尔斯电码是最古老的数字编码之一：每个字母对应一串点和划。用 C 语言实现英文字母到莫尔斯电码的编码，核心代码只要十几行。 思路把 26 个字母的莫尔斯码按字母表顺序存进一个字符串指针数组，编码时把字符减去 &#39;a&#39; 得到下标，直接查表输出： 1234567891011121314char *code[] = &#123;&quot;.-&quot;, &quot;-...&quot;, &quot;-.-.&quot;, &quot;-..&quot;, &quot;.&quot;, &quot;..-.&quot;, &quot;--.&quot;, &quot;....&quot;, &quot;..&quot;, &quot;.---&quot;, &quot;-.-.&quot;,                &quot;.-..&quot;, &quot;--&quot;, &quot;-.&quot;, &quot;---&quot;, &quot;.--.&quot;, &quot;--.-&quot;, &quot;.-.&quot;, &quo...</div></div></div></a><a class="pagination-related" href="/posts/65633b2a/" title="抽象代码：尊嘟假嘟"><img class="cover" src="/img/covers/cover-6-ember.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post" loading='lazy'><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">抽象代码：尊嘟假嘟</div></div><div class="info-2"><div class="info-item-1">又是先上完整代码。下面这个程序能编译、能运行，但它看起来像是谁打字的时候手滑了： 抽象-尊嘟假嘟.c1234567891011121314151617181920212223#include &lt;stdio.h&gt;#include &lt;stdlib.h&gt;#include &lt;time.h&gt;char str[][4] = &lt;%&quot;o.o&quot;,&quot;O.O&quot;%&gt;;int fun(int *p)&#123;    printf(&quot;%p\n&quot;, p);    printf(&quot;%p\n&quot;, p+1);&#125;int main()&lt;%    int a;    fun(&amp;a);    srand((time(0)));    printf(&quot;%s\n&quot;, (rand() % 2)[str]);    int b[10] = &#123;0,1,2,3,&#125;;    printf(&quot;%d&quot;, *(&amp;b[0]+1...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/63742fad/" title="任意类型的栈：C 泛型容器的两条路线"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-18</div><div class="info-item-2">任意类型的栈：C 泛型容器的两条路线</div></div><div class="info-2"><div class="info-item-1">教科书上的栈长这样：int stack[MAX]——只能装 int。2022 年 10 月我刚学完数据结构，决定写一个”任意类型都能装”的栈；2024 年 7 月翻出来重写了一遍。两个版本放在一起看特别有意思：一个用 memcpy 把数据拷进容器，一个只存数据的地址——这正是 C 语言里实现泛型容器的两条路线。后来写的通用链表 glist 和计算器的栈，都能在这两条路线里找到自己的位置。  📌 更新（2026-08-31）：为写这篇重新编译复现了两个版本，抓到了 2022 版里的两个老 bug（见复盘一节），实测输出均已录入正文。  2022 版：void* 加 typesize，memcpy 说了算这个版本的完整设计思路，被当年的我用一段英文注释写在了 stack.h 的开头——现在读来简直就是一篇给自己看的教案： 1234567891011121314151617181920// This stack is implemented by void pointer, so it is GENERIC.//// How the void pointer allows assig...</div></div></div></a><a class="pagination-related" href="/posts/53a5f64f/" title="用 C 语言打造 Cheat Engine 练习对象"><img class="cover" src="/img/space.jpg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-10-03</div><div class="info-item-2">用 C 语言打造 Cheat Engine 练习对象</div></div><div class="info-2"><div class="info-item-1">玩 Cheat Engine（CE）的时候需要一个”练习对象”——写一个小程序，让它维护一个不断变化的数值，然后用 CE 去扫描和修改它。这里记录两个练习用的目标程序。 第一课：直接修改 malloc 出来的变量12345678int *p_num = (int *)malloc(sizeof(int));srand(time(NULL));*p_num = rand() % 100 + 100;    // 初始值：100~199 的随机数while(getchar())&#123;    printf(&quot;%d&quot;, *p_num);    (*p_num)--;&#125;  每次按回车，数值减 1。练习流程：先用 CE 的”未知的初始值”开始扫描，按几次回车让数值递减后用”减少了的数值”继续扫描，锁定地址后把它改成 999——程序打印的数字就听你的了。 第二课：结构体指针的偏移12345678910typedef struct&#123;    char name[20];    int hp;    int exp;&#125;playerType, *...</div></div></div></a><a class="pagination-related" href="/posts/99a422d6/" title="抽象代码：下划线完形填空"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-22</div><div class="info-item-2">抽象代码：下划线完形填空</div></div><div class="info-2"><div class="info-item-1">先上代码。下面是一个完整的、可以编译、可以运行的 C 语言程序，它是一个从 9 倒数到 0 的倒计时器。请欣赏： _.c123456789101112131415161718192021222324252627#include &lt;stdio.h&gt;#define _ int#define __ main#define ___ while#define _____ x#define ______ ;#define _______ ()#define ________ &#123;#define _________ &#125;#define __________ (#define ___________ )#define ____________ =#define _____________ --&gt;#define ______________ &quot;%d\n&quot;,#define _______________ printf#define ________________ return_ __ ________________ _____ _______...</div></div></div></a><a class="pagination-related" href="/posts/bd6fe775/" title="C语言100级函数指针挑战"><img class="cover" src="/img/covers/cover-5-midnight.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-04</div><div class="info-item-2">C语言100级函数指针挑战</div></div><div class="info-2"><div class="info-item-1">一个整活挑战：定义一个”指向函数的指针，该函数返回同类型的指针”，然后套 100 层。这个类型长这样（节选开头和结尾）： 12typedef long long int (* (* (* ... (* (*a)())(void) ... );// 中间是 100 层重复的 (* ... () )  这是什么鬼类型从变量名 a 出发，用”右左法则”读这个声明：  a 先被 * 包住：a 是一个指针 右边跟 ()：指针指向一个函数 函数返回值又在 (* ) 里：返回值还是指针 重复第 2、3 步 100 次  也就是：a 是一个函数指针，调用它返回下一个函数指针，再调用又返回下一个……一共 100 层。 实现：自返回的函数1234567891011121314a fun()&#123;    static int i = 0;    printf(&quot;(%d)&quot;, ++i);    return (a)fun;&#125;int main()&#123;    fun();    printf(&quot;\n&quot;);    fun()()()()/* .....</div></div></div></a><a class="pagination-related" href="/posts/18180a87/" title="C语言静态库实战：字符串查找运算符函数"><img class="cover" src="/img/covers/cover-1-nebula.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-31</div><div class="info-item-2">C语言静态库实战：字符串查找运算符函数</div></div><div class="info-2"><div class="info-item-1">把四则运算做成一个静态库，调用方式很优雅——用字符串找运算符函数： 项目共三个文件：static.h（库的接口声明）、static.c（实现）、main.c（调用示例）。 123456789101112131415#include &quot;static.h&quot;int main()&#123;    double result;    result = getoptFunction(&quot;+&quot;)(1.9, 2);    printf(&quot;%lf\n&quot;, result);    result = getoptFunction(&quot;-&quot;)(1.9, 2);    printf(&quot;%lf\n&quot;, result);    result = getoptFunction(&quot;**&quot;)(1.9, 2);   // 自定义的幂运算    printf(&quot;%lf\n&quot;, result);    return 0;&#125;  getoptFunction 接收运算符字符串，返...</div></div></div></a><a class="pagination-related" href="/posts/7fa03b95/" title="Print.h 开发记（七）V1.7&#x2F;V1.8"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-10-05</div><div class="info-item-2">Print.h 开发记（七）V1.7&#x2F;V1.8</div></div><div class="info-2"><div class="info-item-1"> 系列导航：上一篇：Print.h 开发记（六）V1.6  系列最终篇：V1.7 加入字体效果，V1.8 修掉遗留问题并支持无参调用——print 库到此定稿。 V1.7：字体宏除了颜色，ANSI 转义序列还能控制字体效果： 123456789101112// 原始字体宏#define NONE(str)          str&quot;\033[m&quot;// 高亮文字#define HIGHTLIGHT(str)    &quot;\033[1m&quot;NONE(str)// 斜体文字#define ITALIC(str)        &quot;\033[3m&quot;NONE(str)// 下划线文字#define _(str)             &quot;\033[4m&quot;NONE(str)// 闪烁文字#define FLASGING(str)      &quot;\033[5m&quot;NONE(str)// 反显文字 - 交换前景色和背景色#define Reversedisplay(str) &quot;\033[7m&quo...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="comment-switch"><span class="first-comment">Giscus</span><span id="switch-btn"></span><span class="second-comment">Twikoo</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E6%9D%90%E6%96%99%EF%BC%9A%E8%BF%99%E4%B8%AA%E2%80%9Dmp4%E2%80%9D%E5%85%B6%E5%AE%9E%E6%98%AF%E7%BA%AF%E6%96%87%E6%9C%AC"><span class="toc-text">实验材料：这个”mp4”其实是纯文本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%BB%A3%E7%A0%81"><span class="toc-text">实验代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9Ainclude-%E5%8F%AA%E6%98%AF%E6%96%87%E6%9C%AC%E5%A4%8D%E5%88%B6"><span class="toc-text">原理：include 只是文本复制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E8%B5%A0%EF%BC%9A%E9%A1%BA%E7%9D%80%E5%86%85%E5%AD%98%E5%BE%80%E4%B8%8A%E7%88%AC"><span class="toc-text">附赠：顺着内存往上爬</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="toc-text">写在最后</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io',
+      'data-repo-id': 'R_kgDOHTJxpw',
+      'data-category-id': 'DIC_kwDOHTJxp84DE3Jg',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('/pluginsSrc/twikoo/dist/twikoo.all.min.js?v=1.7.15').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Giscus' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Giscus' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

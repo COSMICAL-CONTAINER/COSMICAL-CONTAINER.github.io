@@ -1,0 +1,411 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>我的 RPG Maker XP 作品集（二）：赌青蛙开发记 | 寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="在这个系列里，赌青蛙是我最想拿出来展示的一个。从 2017 年 8 月的雏形《赌博》，到 2018 年 7 月的 V1.0.0，前前后后做了快一年，游戏内容全部是我一个人做的。它的更新日志保存得很完整——第一句话就很有精神：  别以为赌青蛙不会有更新，其实这个小游戏也是有制作难度的。不说了自己看  这是个什么游戏场上有几只颜色不同的青蛙，你押注谁赢。押注工具是赌博纸：  *上面印着”绿色青蛙赢”的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="我的 RPG Maker XP 作品集（二）：赌青蛙开发记">
+<meta property="og:url" content="https://cosmical-container.github.io/posts/c3dae21e/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="在这个系列里，赌青蛙是我最想拿出来展示的一个。从 2017 年 8 月的雏形《赌博》，到 2018 年 7 月的 V1.0.0，前前后后做了快一年，游戏内容全部是我一个人做的。它的更新日志保存得很完整——第一句话就很有精神：  别以为赌青蛙不会有更新，其实这个小游戏也是有制作难度的。不说了自己看  这是个什么游戏场上有几只颜色不同的青蛙，你押注谁赢。押注工具是赌博纸：  *上面印着”绿色青蛙赢”的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/img/covers/cover-2-ocean.svg">
+<meta property="article:published_time" content="2018-07-26T09:49:24.000Z">
+<meta property="article:modified_time" content="2018-07-26T09:49:24.000Z">
+<meta property="article:author" content="寰宇体">
+<meta property="article:tag" content="RPG Maker">
+<meta property="article:tag" content="游戏开发">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/img/covers/cover-2-ocean.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "我的 RPG Maker XP 作品集（二）：赌青蛙开发记",
+  "url": "https://cosmical-container.github.io/posts/c3dae21e/",
+  "image": "https://cosmical-container.github.io/img/covers/cover-2-ocean.svg",
+  "datePublished": "2018-07-26T09:49:24.000Z",
+  "dateModified": "2018-07-26T09:49:24.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "寰宇体",
+      "url": "https://github.com/COSMICAL-CONTAINER"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/posts/c3dae21e/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '我的 RPG Maker XP 作品集（二）：赌青蛙开发记',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/covers/cover-2-ocean.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a><a class="nav-page-title" href="/"><span class="site-name">我的 RPG Maker XP 作品集（二）：赌青蛙开发记</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">我的 RPG Maker XP 作品集（二）：赌青蛙开发记</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2018-07-26T09:49:24.000Z" title="发表于 2018-07-26 17:49:24">2018-07-26</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/RMXP-%E4%BD%9C%E5%93%81%E9%9B%86/">RMXP 作品集</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>在这个系列里，赌青蛙是我最想拿出来展示的一个。从 2017 年 8 月的雏形《赌博》，到 2018 年 7 月的 V1.0.0，前前后后做了快一年，游戏内容全部是我一个人做的。它的更新日志保存得很完整——第一句话就很有精神：</p>
+<blockquote>
+<p>别以为赌青蛙不会有更新，其实这个小游戏也是有制作难度的。不说了自己看</p>
+</blockquote>
+<h2 id="这是个什么游戏"><a href="#这是个什么游戏" class="headerlink" title="这是个什么游戏"></a>这是个什么游戏</h2><p>场上有几只颜色不同的青蛙，你押注谁赢。押注工具是赌博纸：</p>
+<blockquote>
+<p>*上面印着”绿色青蛙赢”的赌博纸<br>*上面印着”蓝色青蛙赢”的赌博纸<br>*上面印着”紫色青蛙赢”的赌博纸<br>*上面印着”红色青蛙赢”的赌博纸</p>
+</blockquote>
+<p>下注货币是赌场券，分初级、中级、高级、传说四档，V0.1 就引入了”倍数”的概念。赌输了怎么办？游戏里有一件物品叫「捞东西（你是怎么得到的？）」——物品描述直接质问玩家来历，我觉得这是全游戏最妙的一行字。</p>
+<p>顺带一提，它的前身工程名字就叫「赌博」，里面已经躺着四色赌博纸和四档赌场券，还有「作者的无用钥匙」「提示（山洞里-1）」。所以命名史是：先诚实地叫《赌博》，后来改叫《赌青蛙》，仿佛这就是另一款游戏了。</p>
+<h2 id="更新日志"><a href="#更新日志" class="headerlink" title="更新日志"></a>更新日志</h2><p><strong>版本V0.1</strong></p>
+<blockquote>
+<p>★(1)大概弄清楚了赌青蛙的原理，做完了赌青蛙的大概样子。<br>★(2)设置赌场券。增加物品初级赌场券。<br>★(3)增加了”倍数”的概念。</p>
+</blockquote>
+<p>“大概弄清楚了原理””做完了大概样子”——两个”大概”，独立开发的日常尽在其中。</p>
+<p><strong>版本V0.2</strong></p>
+<blockquote>
+<p>★(3)修复了正在赌青蛙时还可以再次赌的BUG<br>★(4)修复了赌时青蛙的胜利判断错误—两只或多只青蛙同时胜利。</p>
+</blockquote>
+<p>一款赌博游戏最致命的 bug：玩家可以在赌博的时候继续赌博。记住这个 bug，它还会回来。</p>
+<p><strong>版本V0.2.5.0</strong>——十五条全文照录，一条不删：</p>
+<blockquote>
+<p>★(1)这只是测试。<br>★(2)增物品传说赌场券的变态度…。<br>★(3)新增小”小游戏”—推箱子。<br>★(4)新增获得一些物品的方式。<br>★(5)新增二进制编码解密。（PS：不知道问度娘）<br>★(6)改变地图模样。<br>★(7)新增”赌角（jue）”改名功能。<br>★(8)增强地图亮光（事件）。<br>★(9)增加剧情的狗血。<br>★(10)增加地图隐藏事件。（一开始的提示有开启的方法）<br>★(11)<strong>再次</strong>修复了正在赌青蛙时还可以再次赌的BUG（这次加了提示）<br>★(12)增加开始的骗人脚本。<br>★(13)优化了对话框的显示。（素材）<br>★(14)增加了远景图片！<br>★(15)你有没有发现其实测试版增加好多好多东西。</p>
+</blockquote>
+<p>几条值得单独说的。第十一条：上次修复没有生效，那个 bug 又出现了，这次的解决方案是”加了提示”——用文案兜底程序，非常超前的设计哲学。第九条”增加剧情的狗血”是我写过最坦诚的更新说明。第五条，一款赌青蛙游戏里藏了一个二进制编码解密，还贴心注明”不知道问度娘”。第十二条的”开始的骗人脚本”到底骗了什么，可惜脚本源文件没能保存下来，成了悬案——悬案的结局放在本文最后一节，多年之后它自己招了。至于第三条——赌青蛙里为什么会有推箱子？不为什么，它就是有。</p>
+<h2 id="内容量：111-种物品"><a href="#内容量：111-种物品" class="headerlink" title="内容量：111 种物品"></a>内容量：111 种物品</h2><p>V1.0.0 的数据库里躺着 111 种物品，画风横跨三个领域。其一是化学实验室：</p>
+<blockquote>
+<p>高锰酸钾 &#x2F; 锰酸钾 &#x2F; 二氧化锰 &#x2F; 双氧水<br>小酒精灯 &#x2F; 酒精灯 &#x2F; 大酒精灯 &#x2F; <strong>特大酒精灯</strong> &#x2F; 酒精喷灯<br>氧气 &#x2F; 氢气 &#x2F; 二氧化碳 &#x2F; 氯气 &#x2F; 二氧化硫 &#x2F; 三氧化硫<br>三氧化二铁 &#x2F; 四氧化三铁 &#x2F; 铁矿混合物<br>煤炭 &#x2F; 铁 &#x2F; 钠 &#x2F; 氢氧化钠固体 &#x2F; 氢氧化钠溶液 &#x2F; 硫酸溶液</p>
+</blockquote>
+<p>高锰酸钾、二氧化锰、双氧水——教科书上氧气的实验室制法全套药材，四种规格的酒精灯从小排到特大。大概是那两年刚在课本上认识这些名词，它们就集体住进了赌青蛙。别问赌青蛙为什么要制氧气。</p>
+<p>其二是重工业流水线：</p>
+<blockquote>
+<p>小型压缩机 &#x2F; 粉碎机 &#x2F; 炉子 &#x2F; 高科技合成台<br>压缩の橡木木板 &#x2F; 压缩の铁粒 &#x2F; 压缩の玻璃片<br>打火石の蓝图 &#x2F; 铁棒の蓝图 &#x2F; 钢之剑の蓝图 &#x2F; 铁头盔の蓝图……</p>
+</blockquote>
+<p>矿要过粉碎机，材料要进压缩机”压缩の”，造装备得先捡蓝图——一整条从矿物到成品的科技链。此外还有「？？？钥匙」「一个藏有不明物品的宝箱」「藏宝图」「铲子」和改名牌、VIP0、强化攻速这些系统物品。</p>
+<h2 id="武器库：51-把"><a href="#武器库：51-把" class="headerlink" title="武器库：51 把"></a>武器库：51 把</h2><p>武器库的主力是一套化学强化体系——五种武器（铁匕首、铁剑、钢短剑、钢之剑、木杖），各配两种化学方案，每种方案五个星级：</p>
+<blockquote>
+<p>铁匕首NaOH★ &#x2F; 铁匕首NaOH★★ &#x2F; 铁匕首NaOH★★★ &#x2F; 铁匕首NaOH★★★★ &#x2F; 铁匕首NaOH★★★★★<br>钢之剑H2SO4★ &#x2F; …… &#x2F; 钢之剑H2SO4★★★★★</p>
+</blockquote>
+<p>给剑浇氢氧化钠和硫酸升级，星级越高伤害越高。除了这套体系，还有两件镇库之宝：**「作者大大的专用金手指」**和一根可疑的「打抢专用绳」。另外「普通の弓」「箭袋（空）」「箭袋（满20支）」也在这里先登了场，这套装备后来成了 MY ARPG 的主力。</p>
+<h2 id="后来"><a href="#后来" class="headerlink" title="后来"></a>后来</h2><p>「历史版本」文件夹里，V0.5、V0.5.2、V1.0.0、V1.0.0正式版 并排躺着，还有一个「赌青蛙V0.5.2手机版」。而更新日志停在 0.4+ 之后再没补写过，所有版本的日志都一模一样。</p>
+<p>不过在老U盘的赌青蛙V0 打包版里，还留着一份没停过的日志。0.4+ 那一版，是霸王想出来要更新一个版本的，日志上签的也是它的名字：完善 Logo 系统、金钱上限冲到 99999999、赌角可以升级还带奖励、开启等级礼包，甚至让游戏半脱离 RMXP 运行。再往后的 0.5 和 0.5+，银行、贷款、9999999999999999 的金钱上限、地图寻宝，也都一条条记着。</p>
+<p>最后的时间戳是 2018 年 7 月 26 日 17:49——传说赌场券的”变态度”停在了三个点，二进制解密的密码再没人破，推箱子永远留在了青蛙肚子里。</p>
+<div class="offstory"><p><span class="offstory-tag">场外话</span>但我对它没什么遗憾。从"大概弄清楚了原理"到 111 种物品、51 把武器、多套小游戏和隐藏事件，这是我做得最完整的一款游戏。</p></div>
+
+<h2 id="正式版复活实录"><a href="#正式版复活实录" class="headerlink" title="正式版复活实录"></a>正式版复活实录</h2><p>文章写到这儿，剧情有了新进展：V1.0.0 正式版的安装包找到了。</p>
+<p>安装包里的 Game.rgssad 用解密工具一次解开，数据库全在，连一直缺着的 Scripts.rxdata 也在——一百多段脚本全部有代码，只是脚本名清一色空白，是作者最后一次保存时留下的样子。麻烦在于脚本和数据的版本要配对，最后的方案是一个缝合怪：正式版的 Data，配上 0.5+(2) 的脚本，再补一张标题用的 logo 图。混合版就这么跑起来了：</p>
+<p><img src="/posts/c3dae21e/dqw100-title.gif" alt="V1.0.0 混合版标题画面" loading='lazy'></p>
+<p>跑起来的第一件事就是破案。开机不到三秒，屏幕上端端正正弹出一个 RGSS 报错框：</p>
+<p><img src="/posts/c3dae21e/dqw100-prank.gif" alt="开机假报错与骗你的" loading='lazy'></p>
+<p>报错内容写得有鼻子有眼，连行号都给你标好了，点掉确定，后面紧跟着弹出一句话：骗你的！——V0.2.5.0 更新日志第十二条的悬案当场告破。这一手一看就是霸王的手笔。</p>
+<p>新开一局，教学流程完完整整地走了一遍：</p>
+<p><img src="/posts/c3dae21e/dqw100-tutorial.gif" alt="开场教学" loading='lazy'></p>
+<p>是否跳过（强烈建议新手不要跳过，有彩蛋）、第一次来免费玩一次、送初级赌场券和 20 块钱开局资金，还问要不要改名——不改的话默认就叫「帅锅」。V1.0.0 新增的「地面行走变色」开起来之后，走过的地砖会留下粉色印记，走多远画多远：</p>
+<p><img src="/posts/c3dae21e/dqw100-walk.gif" alt="行走变色" loading='lazy'></p>
+<p>菜单和存档也是真的能用。按住右键呼出菜单，物品、保存存档、结束游戏一应俱全；保存存档，文件 1 落盘，读档回来人还站在原地：</p>
+<p><img src="/posts/c3dae21e/dqw100-menu-save.gif" alt="菜单与存档" loading='lazy'></p>
+<p>物品栏里躺着教学送的初级赌场券，还有一个名为「系统」的神秘物品：</p>
+<p><img src="/posts/c3dae21e/dqw100-items.gif" alt="物品与赌场券" loading='lazy'></p>
+<p>读档回来之后，又在赌场里继续溜达了一圈：</p>
+<p><img src="/posts/c3dae21e/dqw100-load.gif" alt="读取存档回到赌场" loading='lazy'></p>
+<p>重开一局之前，还有个迟到的发现。前几天重新搭环境时，Temp 里的旧副本被系统清理掉了一半，拼混合版的过程中撞出一个意外收获——正式版自己的脚本其实直接就能跑：开机那两个整活弹窗它自己会演，鼠标脚本也本来就内置，根本不用外借。当年锁了半天的「版本配对」难题，是被开机第一句假报错骗了。这一次，就用纯正的正式版，把上回没跑完的赌局跑完。</p>
+<p>下注台是场景里的粉色花台，走过去撞一下，弹出「请投券！」——初级、中级、高级，后面还有下一页。选初级赌场券，系统问要赌多少：5￥到 10￥。鼠标压在数字上上下滑就能加减，这个细节相当超前——实际滑起来才知道，光标稍微一抖，数字噌噌往上跳，一不留神直接顶到了 9￥：</p>
+<p><img src="/posts/c3dae21e/dqw100-bet-flow.gif" alt="投券与金额" loading='lazy'></p>
+<p>更有意思的是，金额压根不用找地方点确认——光标一松手，系统自动接话：「您需要支付9￥」。上一回实录卡住的地方，原来卡在一念之间：松手，就是确认。紧接着系统公布本轮倍数：7 倍，请选择你要赌哪一个青蛙赢。赛道右边，1 号绿、2 号蓝、3 号紫、4 号红，四只青蛙已经就位。押 2 号蓝色：</p>
+<p><img src="/posts/c3dae21e/dqw100-bet-race.gif" alt="选蛙与开赛" loading='lazy'></p>
+<p>赛跑快得像一阵风，播报接连弹出：3 号紫色青蛙胜利——紧接着，2 号蓝色青蛙胜利！恭喜您猜对了，你将获得 567￥：</p>
+<p><img src="/posts/c3dae21e/dqw100-bet-win.gif" alt="猜中结算" loading='lazy'></p>
+<p>至于 9￥ 和 7 倍最后怎么算出 567￥，系统没解释，我也没敢多问。反正那年蹲在赌场门口数青蛙的小孩，要的从来就不是算清楚。</p>
+<p>数据库物品页、武器页和事件流的截图也还欠着，下回补上。</p>
+<p>这一圈测下来，结论比上一次更硬：能玩，而且真能赢。开机骗你一下，教学认认真真，存档老老实实，赌局说开就开——它可是连「正在赌青蛙时还可以再次赌」这种 bug 都修过两次的游戏，认真起来一刻都不含糊。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER">寰宇体</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cosmical-container.github.io/posts/c3dae21e/">https://cosmical-container.github.io/posts/c3dae21e/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cosmical-container.github.io" target="_blank">寰宇体的世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/RPG-Maker/">RPG Maker</a><a class="post-meta__tags" href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/">游戏开发</a></div><div class="post-share"><div class="social-share" data-image="/img/covers/cover-2-ocean.svg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/e1a08705/" title="VB6.0 禁用复制粘贴"><img class="cover" src="/img/covers/cover-3-sunset.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post" loading='lazy'><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">VB6.0 禁用复制粘贴</div></div><div class="info-2"><div class="info-item-1">关于禁用复制粘贴 你好！ 陌生人 下面是软件介绍：截图：已经很清楚，接下来是怎么用：是不是非常简单？文件大小才28k 其实要实现也是比较简单的。只需要用VB6.0打开一个定时器，定时器里面执行任务清空剪贴板，这样看上去就是禁用赋值粘贴了 </div></div></div></a><a class="pagination-related" href="/posts/266b0c6c/" title="我的MC复刻（二）：RMXP 里的 2D MC"><img class="cover" src="/img/covers/cover-4-forest.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post" loading='lazy'><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">我的MC复刻（二）：RMXP 里的 2D MC</div></div><div class="info-2"><div class="info-item-1">我对 Minecraft 的向往由来已久，久到总想自己手搓一个。上一篇的「垃圾制作」是第一次下手，这一篇的工程接着往前走：2016 年 11 月备好的素材，2017 年 12 月变成了一个真正能玩的 2DMC。 素材：从游戏里截图，用 PS 抠第一步不是写代码，是备料。方法说穿了很简单：自己开着 Minecraft 截图，再用 PS 一张一张抠出来、修好。五把镐子按科技树排开——木镐、石镐、铁镐、金镐、金刚石镐，一级不落：      方块类的贴图也备齐了，比如泥土和原石（鹅卵石）：   行走图也画了一张，文件名叫「屎蒂夫.png」——steve 的抽象版。最绝的是正视图，居然张了这么大的一个嘴巴：  一年后，在 RMXP 里动手2017 年 12 月 16 日傍晚 18:37，一个标题叫「RMXP版MC」的工程存了盘：默认脚本打底，加一个全方位像素移动脚本，再配一个 66RPG 的鼠标脚本——这就是第一版 2DMC 的全部家当。两个小时后的 20:06，它被打包成了「rmxp-minecraft ver beta 0.0.0.0.1」，同时还复制出一份 beta 0.0.0.0....</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/dcb93373/" title="我的 RPG Maker XP 作品集（三）：MY ARPG 开发记"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-12</div><div class="info-item-2">我的 RPG Maker XP 作品集（三）：MY ARPG 开发记</div></div><div class="info-2"><div class="info-item-1">这篇展示 MY ARPG——2021 年做的即时战斗 ARPG，也是我那个 RMXP 时代武器系统做得最讲究的一个。它的更新日志开头是这样的：  嗨！这个ARPG游戏是本人第一次制作。有什么不好请提意见！  说是第一次，得限定一下范围：第一次做 ARPG。因为它的工程文件是直接从赌青蛙 V1.0.0 复制出来的——物品库原封不动搬了过来，赌场券、化学实验室、NaOH 星级武器全套都在。上一个项目就是下一个项目的底座，我一直觉得这没什么好隐瞒的，反而挺骄傲：青蛙至少贡献了它的尸体。 武器系统「游戏怎么玩？请点击在这里.txt」是这个作品里我最得意的一份文案，武器部分原文照录：  A.当[铁匕首&#x2F;钢短剑]装备时，按下shift键即可攻击。C.当[普通の弓]装备时，按下【C】键即可先填充箭袋中的箭，再次按下【C】时即可射击（可能延迟），在游戏界面的最左边有一排箭数，方便玩家查看箭的数量。技能：1当按下【Z】键时开启[连发]技能，可以持续按shift键发射。2当按下【D】键时，如果你的箭数大于5，即可发动[集中射击]技能。D.当[火之杖]装备时，当按下【C】键即可发射火球，威力...</div></div></div></a><a class="pagination-related" href="/posts/d627472d/" title="我的 RPG Maker XP 作品集（四）：ARPG 范例改造"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-07-09</div><div class="info-item-2">我的 RPG Maker XP 作品集（四）：ARPG 范例改造</div></div><div class="info-2"><div class="info-item-1">2018 年收尾的 RMXP 故事，2021 年 7 月又多出了这么一章：拿 ARPG 范例 1.02 做底子，把我自己拼接的脚本装上去，做一个自己的即时战斗翻版。工程里的更新说明是这么开的头：  更新说明： Alpha版本（内部测试版本）bete版本（外部客户测试版本） Alpha版本V0.0.11.使用范例制作出框架，大致实现了ARPG的功能2.使用血条显示功能，能够在地图上显示角色血条 Alpha版本V0.0.51.修复攻击伤害固定问题2.修复打开菜单返回出现的角色升级问题3.制作黄金兵4.尝试制作蓄力条  「使用范例制作出框架」——范例出骨架，我往里拼脚本，这就是这一章的分工。 竞技场这版没有剧情地图，一进去就是一座竞技场。标题画面还是 RMXP 的默认底子，新游戏、继续、退出三件套：  选新游戏，画面淡进竞技场，第一波红色的怪直接围了上来：  右边从上到下挂着整面按键说明：近身攻击 Q、远程事件 A、远程技能 S、炸弹攻击 D、清空消息 E、普通射击 Z——每个动作各归各键；左下角是 HP、SP 两条血蓝条，压着一个魔法阵；右下角记着等级和金币。升级播报一路往上滚：「L...</div></div></div></a><a class="pagination-related" href="/posts/1df3ce68/" title="我的 RPG Maker XP 作品集（一）：总览"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2015-02-25</div><div class="info-item-2">我的 RPG Maker XP 作品集（一）：总览</div></div><div class="info-2"><div class="info-item-1">最近把当年用 RPG Maker XP 做的东西从旧硬盘里整个翻了出来，索性整理成一个系列，在这里逐个展示。 先交代一下背景。RPG Maker XP（下面简称 RMXP）是日本 Enterbrain 公司 2004 年推出的 RPG 制作工具，这个系列里的所有作品，用的都是这一个引擎。它的思路是让不会编程的人也能做游戏：地图靠图块一格一格拼出来，剧情靠「事件」一页一页写出来，角色、物品、技能、怪物都在自带的数据库里填表，画面是 640×480 的分辨率，战斗和菜单都有现成模板。 再往深走，RMXP 内置了一套叫 RGSS 的脚本系统，用 Ruby 语言写成——想改战斗公式、加个新界面，就得动脚本。这款软件在国内能流行起来，很大程度上靠 66RPG 社区的汉化、教程和范例工程，当年的论坛上养活了大批业余作者，这个系列里用到的不少脚本，源头也都在那边。它的图标是一枚黑龙徽记，当年每次打开 RMXP 都要先看它一眼：  这个系列挑重点的讲，一共三章；2DMC 的两代作品在「我的MC复刻」系列里单独讲，时间线里一并列上：    时间 作品 说明    2018-07 赌青蛙 V1.0....</div></div></div></a><a class="pagination-related" href="/posts/d2aacbb8/" title="我的MC复刻（一）：2DMC垃圾制作——随机地形的第一次尝试"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2016-10-22</div><div class="info-item-2">我的MC复刻（一）：2DMC垃圾制作——随机地形的第一次尝试</div></div><div class="info-2"><div class="info-item-1">我对 Minecraft 的向往由来已久，久到总想自己手搓一个。真要动手的时候，第一个开工的不是那些漂亮的素材，而是一个最根本的问题：地形到底能不能自己”长出来”？ 这个第一次尝试的工程，名字起得非常谦虚，叫「2DMC垃圾制作」。工程里的素材落盘时间是 2016 年 10 月 16 日——五把镐子、泥土、原石、屎蒂夫行走图，和 PS 里那批抠图是同一批；地图数据则在 10 月 22 日第一次存盘。 先交代操作方向键里只有左右能操控移动，Z 键跳跃，空格是挖掘键。按 W 会切换到另一张地图——这个后面再说。 目的：测试地形随机生成做这个工程的出发点只有一个——测试地形随机生成。玩 Minecraft 的时候总会好奇：地形到底是怎么”长出来”的？当年的我只会最简单的东西：随机数。 所以开局落地的这张「草原吧？」地图，就是那次实验的现场——深绿的底子上，方块由随机数直接撒出来，东一块西一块，毫无规律可言。这并不是一张”好看”的地图，它就是随机数本身的形状：  右下角的 X: 12 Y: - 5 是坐标——「地图显示XY」是特意加上的脚本，走一步它就报一次位置。 按 W，切到 2D MC...</div></div></div></a><a class="pagination-related" href="/posts/266b0c6c/" title="我的MC复刻（二）：RMXP 里的 2D MC"><img class="cover" src="/img/covers/cover-4-forest.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2018-01-01</div><div class="info-item-2">我的MC复刻（二）：RMXP 里的 2D MC</div></div><div class="info-2"><div class="info-item-1">我对 Minecraft 的向往由来已久，久到总想自己手搓一个。上一篇的「垃圾制作」是第一次下手，这一篇的工程接着往前走：2016 年 11 月备好的素材，2017 年 12 月变成了一个真正能玩的 2DMC。 素材：从游戏里截图，用 PS 抠第一步不是写代码，是备料。方法说穿了很简单：自己开着 Minecraft 截图，再用 PS 一张一张抠出来、修好。五把镐子按科技树排开——木镐、石镐、铁镐、金镐、金刚石镐，一级不落：      方块类的贴图也备齐了，比如泥土和原石（鹅卵石）：   行走图也画了一张，文件名叫「屎蒂夫.png」——steve 的抽象版。最绝的是正视图，居然张了这么大的一个嘴巴：  一年后，在 RMXP 里动手2017 年 12 月 16 日傍晚 18:37，一个标题叫「RMXP版MC」的工程存了盘：默认脚本打底，加一个全方位像素移动脚本，再配一个 66RPG 的鼠标脚本——这就是第一版 2DMC 的全部家当。两个小时后的 20:06，它被打包成了「rmxp-minecraft ver beta 0.0.0.0.1」，同时还复制出一份 beta 0.0.0.0....</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="comment-switch"><span class="first-comment">Giscus</span><span id="switch-btn"></span><span class="second-comment">Twikoo</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%99%E6%98%AF%E4%B8%AA%E4%BB%80%E4%B9%88%E6%B8%B8%E6%88%8F"><span class="toc-text">这是个什么游戏</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97"><span class="toc-text">更新日志</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AE%B9%E9%87%8F%EF%BC%9A111-%E7%A7%8D%E7%89%A9%E5%93%81"><span class="toc-text">内容量：111 种物品</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A6%E5%99%A8%E5%BA%93%EF%BC%9A51-%E6%8A%8A"><span class="toc-text">武器库：51 把</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8E%E6%9D%A5"><span class="toc-text">后来</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E5%BC%8F%E7%89%88%E5%A4%8D%E6%B4%BB%E5%AE%9E%E5%BD%95"><span class="toc-text">正式版复活实录</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io',
+      'data-repo-id': 'R_kgDOHTJxpw',
+      'data-category-id': 'DIC_kwDOHTJxp84DE3Jg',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('/pluginsSrc/twikoo/dist/twikoo.all.min.js?v=1.7.15').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Giscus' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Giscus' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

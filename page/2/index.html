@@ -1,0 +1,314 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="never give up">
+<meta property="og:type" content="website">
+<meta property="og:title" content="寰宇体的世界">
+<meta property="og:url" content="https://cosmical-container.github.io/page/2/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="never give up">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/images/avatar.png">
+<meta property="article:author" content="寰宇体">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/images/avatar.png"><script type="application/ld+json"></script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/page/2/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '寰宇体的世界',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'home'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="full_page fixed" id="page-header" style="background-image: url(/img/space.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="site-info"><h1 id="site-title">寰宇体的世界</h1><div id="site-subtitle"><span id="subtitle"></span></div><div id="site_social_icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts nc" id="recent-posts"><div class="recent-post-items"><div class="recent-post-item"><div class="post_cover left"><a href="/posts/2b594812/" title="c4：500 行代码的 C 语言解释器"><img class="post-bg" src="/img/covers/cover-3-sunset.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="c4：500 行代码的 C 语言解释器" loading='lazy'></a></div><div class="recent-post-info"><a class="article-title" href="/posts/2b594812/" title="c4：500 行代码的 C 语言解释器">c4：500 行代码的 C 语言解释器</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-11-26T15:33:00.000Z" title="发表于 2024-11-26 23:33:00">2024-11-26</time></span></div><div class="content">C4（C in four functions）是 Robert Swierczek 写的一个极简主义练习：用大约 500 行 C 代码实现一个能运行 C 程序的虚拟机和解释器。整个项目就四个函数：next() 词法分析、program() 语法分析生成代码、eval() 虚拟机执行、main() 组装。 它有多强1234gcc -o c4 c4.c./c4 hello.c            # 解释执行一个 C 程序./c4 -s hello.c         # 输出汇编指令./c4 c4.c hello.c       # 用 c4 解释运行 c4 自己，再由它运行 hello.c  最后一行是它的名场面：c4 可以解释执行 c4 自己（甚至再套一层）， demonstrates 了”自举（self-hosting）”的概念。 我做了什么以 c4 为基础学习整个解释器的骨架：词法分析如何把源码切成 token、虚拟机的指令集（IMM&#x2F;ADJ&#x2F;PUSH&#x2F;JMP&#x2F;…）、符号表的组织。my_gcc.c 是学习过程中加入自己注释和修改的版...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/3d37ddce/" title="宏定义的高级用法"><img class="post-bg" src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="宏定义的高级用法" loading='lazy'></a></div><div class="recent-post-info"><a class="article-title" href="/posts/3d37ddce/" title="宏定义的高级用法">宏定义的高级用法</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-11-17T06:05:00.000Z" title="发表于 2024-11-17 14:05:00">2024-11-17</time></span></div><div class="content">研究 Boost.Preprocessor 的时候整理的一套”宏元编程”套路：用纯宏实现在编译期展开出 N 个变量。不涉及任何编译器扩展，纯标准 C 预处理器。 目标12int BOOST_PP_ENUM_PARAMS(20, a);// 展开后：int a0, a1, a2, ... , a19;  坑一：拼接参数必须经过两层宏123#define BOOST_PP_CAT(a, b) BOOST_PP_CAT_I(a, b)#define BOOST_PP_CAT_I(a, b) BOOST_PP_CAT_II(~, a##b)#define BOOST_PP_CAT_II(p, res) res  为什么不能直接写 a##b？因为 ## 会阻止参数展开——直接 CAT(BOOST_PP_REPEAT_, 1) 拼出来的是字面量 BOOST_PP_REPEAT_1 而不是它展开后的内容。标准解法就是延迟一层：先拼出 ~, BOOST_PP_REPEAT_1，再扫描一轮时 ~ 被丢弃、参数正常展开。 坑二：循环靠”手写递归表”预处理器没有循环，只能靠宏递归展开模拟。但宏不能直接...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/380f72c9/" title="用 C 语言写 C++"><img class="post-bg" src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="用 C 语言写 C++" loading='lazy'></a></div><div class="recent-post-info"><a class="article-title" href="/posts/380f72c9/" title="用 C 语言写 C++">用 C 语言写 C++</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-10-29T10:07:00.000Z" title="发表于 2024-10-29 18:07:00">2024-10-29</time></span></div><div class="content">这是个整活项目，但整得非常认真：用 C 语言写出 C++ 的语法。目标包括 new Animal(&quot;Tom&quot;, 1) 这种”像话吗”的代码，甚至还有个山寨 iostream 头文件。项目分两代——第一代（2023 年 3 月）老老实实用结构体内嵌实现继承多态；第二代（2024 年 4 月起）开始放飞，靠 GCC 的两个扩展和几个胆大包天的宏，让 C 长出了 C++ 的样子。 第一步：抹平关键字C 和 C++ 最表面的区别是一堆关键字。那就 #define 掉——项目里躺着一个名叫 iostream 的文件（对，没有扩展名），内容如下： iostream12345678910111213141516171819202122#ifndef __iostream_h__#define __iostream_h__#include &lt;stdio.h&gt;#include &lt;string.h&gt;#include &lt;Print.h&gt;#define using#define namespace#define std#define class s...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/3e3bb6f0/" title="函数定义远古知识"><img class="post-bg" src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="函数定义远古知识" loading='lazy'></a></div><div class="recent-post-info"><a class="article-title" href="/posts/3e3bb6f0/" title="函数定义远古知识">函数定义远古知识</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-10-29T09:47:00.000Z" title="发表于 2024-10-29 17:47:00">2024-10-29</time></span></div><div class="content">挖到一个真正的”远古知识”：K&amp;R 风格的函数定义。这是 C 语言还没标准化的年代（K&amp;R 那本《The C Programming Language》第一版）的写法，现在的编译器为了兼容老代码依然支持。 现代写法 vs 远古写法12345678910111213// 现代写法（ANSI C / C89 之后）double alt_style(int a, double *real)&#123;    return *real + a;&#125;// 远古写法（K&amp;R 风格）double alt_style(a, real)    double *real;    int a;&#123;    return *real + a;&#125;  特征很明显：参数列表里只写参数名，参数类型声明放在函数体大括号之前。类型声明还可以乱序（先写 real 再写 a），因为它们只是”声明区”，和参数名按位置对应。 为什么被淘汰了K&amp;R 风格最大的问题是：不带原型。调用方在没有任何声明的情况下调用它，编译器不会检查参数个数和类型，传错了照样编译通过，运行时才...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/c01884e2/" title="C语言奇怪的冷知识"><img class="post-bg" src="/img/covers/cover-4-forest.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C语言奇怪的冷知识" loading='lazy'></a></div><div class="recent-post-info"><a class="article-title" href="/posts/c01884e2/" title="C语言奇怪的冷知识">C语言奇怪的冷知识</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-10-11T08:27:00.000Z" title="发表于 2024-10-11 16:27:00">2024-10-11</time></span></div><div class="content">最近学到几个 C 语言的冷知识，全是我平时踩坑或者见到的”怪现象”。挑几个有意思的分享一下，每个都能让你重新认识这门熟悉又陌生的语言。 一、数组越界导致的死循环12345678910int i, array[3];printf(&quot;%p\n&quot;, &amp;i);printf(&quot;%p\n\n&quot;, &amp;array[3]);for (i = 0; i &lt;= 3; i++)&#123;    array[i] = 0;&#125;printf(&quot;%d\n&quot;, i);  这段代码是个经典炸弹：array 只有 3 个元素，循环却写到下标 3。诡异的是它可能不会崩溃，而是死循环——因为变量 i 和 array 在栈上相邻，i 恰好落在 array[3] 的位置上，每次 array[3] = 0 都会把循环变量 i 清零，i 永远到不了 4。 注意这个现象和变量定义顺序、编译器优化级别都有关系：开了 O2 之后编译器会重新排列栈空间，死循环可能就消失了。所以这类代码属于”未定义行为”，怎么表现都看编译器心情。 二、有符号数和...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/f1369abc/" title="用栈实现四则运算计算器"><img class="post-bg" src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="用栈实现四则运算计算器" loading='lazy'></a></div><div class="recent-post-info"><a class="article-title" href="/posts/f1369abc/" title="用栈实现四则运算计算器">用栈实现四则运算计算器</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-10-06T04:33:00.000Z" title="发表于 2024-10-06 12:33:00">2024-10-06</time></span></div><div class="content">计算器是栈的教科书级应用。这个项目从 V1.0 迭代到 V1.2，最终版约 1100 行，从”能算 1+2*3“一路做到：+ - * / ^ 五则运算、{} [] () 三种括号混用、小数，甚至 sin(1+sin(1+sin(1))) 这样的嵌套函数调用——全部纯 C 手写。 核心算法：两个栈消灭优先级人脑算 3 + 4 * 2 时知道先乘除后加减，机器靠两个栈来消灭优先级问题：  数字栈：存放操作数 符号栈：存放运算符，利用优先级决定何时计算  整个算法分两步：  中缀转后缀：将 3 + 4 * 2 转为 3 4 2 * +（后缀表达式&#x2F;逆波兰式），后缀表达式不需要任何优先级判断 后缀求值：逐个读 token，数字入栈，运算符弹出两个数计算后与压回，最后栈里剩下的就是答案  先造工具：My_Stack写计算器之前先造轮子。栈用 calloc 分配、realloc 扩容，base&#x2F;top&#x2F;max 三个指针管理一段连续内存： 1234567struct my_Stack&#123;    ll stack_size;    Elemtype* bas...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/6125e204/" title="字符串公式求值器"><img class="post-bg" src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="字符串公式求值器" loading='lazy'></a></div><div class="recent-post-info"><a class="article-title" href="/posts/6125e204/" title="字符串公式求值器">字符串公式求值器</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-10-05T14:58:00.000Z" title="发表于 2024-10-05 22:58:00">2024-10-05</time></span></div><div class="content">一个有意思的小工具：给它一个字符串，比如 &quot;sin(1+1)+max(2,3)&quot; 这种形式，它能自动找出里面的数学函数调用、解析括号里的表达式，然后调用对应的库函数把结果算出来。全程纯 C，核心用了三个技术点。 一、函数指针”查找表”C 没有反射，怎么把字符串 &quot;sin&quot; 变成 sin() 函数？答案是字符串比较 + 函数指针： 123456789101112typedef double (*math_fun)(double);math_fun get_math_fun(const char *s)&#123;    if (strcmp(s, &quot;sin&quot;) == 0)  return sin;    if (strcmp(s, &quot;cos&quot;) == 0)  return cos;    if (strcmp(s, &quot;tan&quot;) == 0)  return tan;    if (strcmp(s, &quot;sqrt&quot;) == 0) return sqrt;    if...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/7fa03b95/" title="Print.h 开发记（七）V1.7/V1.8"><img class="post-bg" src="/img/covers/cover-3-sunset.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Print.h 开发记（七）V1.7/V1.8" loading='lazy'></a></div><div class="recent-post-info"><a class="article-title" href="/posts/7fa03b95/" title="Print.h 开发记（七）V1.7/V1.8">Print.h 开发记（七）V1.7/V1.8</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-10-05T14:00:00.000Z" title="发表于 2024-10-05 22:00:00">2024-10-05</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Print-h-%E5%BC%80%E5%8F%91%E8%AE%B0/">Print.h 开发记</a></span></div><div class="content"> 系列导航：上一篇：Print.h 开发记（六）V1.6  系列最终篇：V1.7 加入字体效果，V1.8 修掉遗留问题并支持无参调用——print 库到此定稿。 V1.7：字体宏除了颜色，ANSI 转义序列还能控制字体效果： 123456789101112// 原始字体宏#define NONE(str)          str&quot;\033[m&quot;// 高亮文字#define HIGHTLIGHT(str)    &quot;\033[1m&quot;NONE(str)// 斜体文字#define ITALIC(str)        &quot;\033[3m&quot;NONE(str)// 下划线文字#define _(str)             &quot;\033[4m&quot;NONE(str)// 闪烁文字#define FLASGING(str)      &quot;\033[5m&quot;NONE(str)// 反显文字 - 交换前景色和背景色#define Reversedisplay(str) &quot;\033[7m&quo...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/3623a4d9/" title="C语言数组冷知识"><img class="post-bg" src="/img/covers/cover-4-forest.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C语言数组冷知识" loading='lazy'></a></div><div class="recent-post-info"><a class="article-title" href="/posts/3623a4d9/" title="C语言数组冷知识">C语言数组冷知识</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-08-22T12:12:00.000Z" title="发表于 2024-08-22 20:12:00">2024-08-22</time></span></div><div class="content">这次分享几个数组的冷门玩法：柔性数组、负数下标和复合字面量。 一、柔性数组：通信数据包神器123456struct package&#123;    int version;    int size;    char data[0];       // 柔性数组（C99 标准写法是 char data[]）&#125;;  data[0] 不占任何空间，sizeof(struct package) 只有 8 字节（两个 int）。用法是一次性 malloc 出”结构体 + 数据”的连续内存： 12345my_package = malloc(sizeof(struct package) + data_len);my_package-&gt;version = 1;my_package-&gt;size = data_len;for (int i = 0; i &lt; data_len; i++)    my_package-&gt;data[i] = &#x27;a&#x27; + i;  这样包头和数据在一块内存里，一次 free 就能释放，序列化网络包时直接整块发送——网络...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/5dde1648/" title="AutoWrite 自动打字机开发记：从模拟按键到发送消息"><img class="post-bg" src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="AutoWrite 自动打字机开发记：从模拟按键到发送消息" loading='lazy'></a></div><div class="recent-post-info"><a class="article-title" href="/posts/5dde1648/" title="AutoWrite 自动打字机开发记：从模拟按键到发送消息">AutoWrite 自动打字机开发记：从模拟按键到发送消息</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-08-19T13:30:00.000Z" title="发表于 2024-08-19 21:30:00">2024-08-19</time></span></div><div class="content">总有些场合，文字得靠键盘一个字一个字”敲”进去——目标输入框不吃复制粘贴，或者你只是想让朋友亲眼看着一段话”自己”出现在聊天框里。AutoWrite 就是干这个的：你把文本交给它，它替你把每个键按下去。项目做了两版，正好是 Windows 下模拟输入的两条技术路线——第一版把自己变成键盘，第二版直接给窗口发消息。第一版整理后传上了 GitHub：AutoWrite（MIT 协议）。 第一版思路：把自己变成键盘最早的版本（V0.0.1，2023 年 4 月）核心只有一个念头：程序不碰目标窗口，只负责假装自己是键盘。Windows 提供的 keybd_event 就是干这个的——给它一个虚拟键码（VK code），系统就当作这个键被按了一下： 12345void write_word(int vk)//输入数字、字母&#123;	keybd_event(vk,0,0,0);	// 按下	keybd_event(vk,0,KEYEVENTF_KEYUP,0);	// 弹起&#125;  按下、弹起，两个事件，一个键就”敲”完了。字母数字都好办，麻烦的是符号——它们和主键区不是一对一的关...</div></div></div></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/"><i class="fas fa-chevron-left fa-fw"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/#content-inner">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/#content-inner">8</a><a class="extend next" rel="next" href="/page/3/#content-inner"><i class="fas fa-chevron-right fa-fw"></i></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/%E6%9D%82%E9%A1%B9/" style="font-size: 1.15em; color: #999b9e">杂项</a> <a href="/tags/VB6-0/" style="font-size: 1.3em; color: #99a1ac">VB6.0</a> <a href="/tags/ARPG/" style="font-size: 1.15em; color: #999b9e">ARPG</a> <a href="/tags/Minecraft/" style="font-size: 1.15em; color: #999b9e">Minecraft</a> <a href="/tags/Win32/" style="font-size: 1.2em; color: #999da3">Win32</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 1.1em; color: #999">工具</a> <a href="/tags/%E5%AE%8F/" style="font-size: 1.2em; color: #999da3">宏</a> <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" style="font-size: 1.2em; color: #999da3">数据结构</a> <a href="/tags/%E6%8C%87%E9%92%88/" style="font-size: 1.4em; color: #99a5b6">指针</a> <a href="/tags/%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88/" style="font-size: 1.25em; color: #999fa7">函数指针</a> <a href="/tags/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/" style="font-size: 1.1em; color: #999">线性代数</a> <a href="/tags/%E6%95%B0%E5%AD%97%E7%94%B5%E8%B7%AF/" style="font-size: 1.1em; color: #999">数字电路</a> <a href="/tags/%E6%B1%87%E7%BC%96/" style="font-size: 1.1em; color: #999">汇编</a> <a href="/tags/%E9%9A%8F%E7%AC%94/" style="font-size: 1.2em; color: #999da3">随笔</a> <a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2/" style="font-size: 1.1em; color: #999">字符串</a> <a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%80%E5%8F%91/" style="font-size: 1.35em; color: #99a3b1">游戏开发</a> <a href="/tags/RPG-Maker/" style="font-size: 1.35em; color: #99a3b1">RPG Maker</a> <a href="/tags/C/" style="font-size: 1.2em; color: #999da3">C++</a> <a href="/tags/%E6%95%B0%E5%AD%A6/" style="font-size: 1.15em; color: #999b9e">数学</a> <a href="/tags/Windows/" style="font-size: 1.15em; color: #999b9e">Windows</a> <a href="/tags/%E5%BC%80%E6%BA%90/" style="font-size: 1.1em; color: #999">开源</a> <a href="/tags/GCC/" style="font-size: 1.1em; color: #999">GCC</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 1.25em; color: #999fa7">算法</a> <a href="/tags/%E6%8A%BD%E8%B1%A1%E4%BB%A3%E7%A0%81/" style="font-size: 1.45em; color: #99a7ba">抽象代码</a> <a href="/tags/C%E8%AF%AD%E8%A8%80/" style="font-size: 1.5em; color: #99a9bf">C语言</a></div></div><div class="card-widget card-archives">
+    <div class="item-headline"><i class="fas fa-archive"></i><span>归档</span><a class="card-more-btn" href="/archives/"
+            title="查看更多">
+            <i class="fas fa-angle-right"></i>
+          </a></div>
+  
+    <ul class="card-archive-list">
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/09/">
+            <span class="card-archive-list-date">
+              九月 2026
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/08/">
+            <span class="card-archive-list-date">
+              八月 2026
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2025/06/">
+            <span class="card-archive-list-date">
+              六月 2025
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2025/03/">
+            <span class="card-archive-list-date">
+              三月 2025
+            </span>
+            <span class="card-archive-list-count">3</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2025/02/">
+            <span class="card-archive-list-date">
+              二月 2025
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2024/11/">
+            <span class="card-archive-list-date">
+              十一月 2024
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2024/10/">
+            <span class="card-archive-list-date">
+              十月 2024
+            </span>
+            <span class="card-archive-list-count">6</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2024/08/">
+            <span class="card-archive-list-date">
+              八月 2024
+            </span>
+            <span class="card-archive-list-count">3</span>
+          </a>
+        </li>
+      
+    </ul>
+  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站信息</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">73</div></div><div class="webinfo-item"><div class="item-name">本站总字数 :</div><div class="item-count">104.7k</div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-09-05T18:21:47.188Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>window.typedJSFn = {
+  init: str => {
+    window.typed = new Typed('#subtitle', Object.assign({
+      strings: str,
+      startDelay: 300,
+      typeSpeed: 150,
+      loop: true,
+      backSpeed: 50,
+    }, null))
+  },
+  run: subtitleType => {
+    if (true) {
+      if (typeof Typed === 'function') {
+        subtitleType()
+      } else {
+        btf.getScript('/pluginsSrc/typed.js/dist/typed.umd.js?v=3.0.0').then(subtitleType)
+      }
+    } else {
+      subtitleType()
+    }
+  },
+  processSubtitle: (content, extraContents = []) => {
+    if (true) {
+      const sub = ["never give up","寰宇体的世界","从 VB6.0 到 C，从这里开始"].slice()
+
+      if (extraContents.length > 0) {
+        sub.unshift(...extraContents)
+      }
+
+      if (typeof content === 'string') {
+        sub.unshift(content)
+      } else if (Array.isArray(content)) {
+        sub.unshift(...content)
+      }
+
+      sub.length > 0 && typedJSFn.init(sub)
+    } else {
+      document.getElementById('subtitle').textContent = typeof content === 'string' ? content :
+        (Array.isArray(content) && content.length > 0 ? content[0] : '')
+    }
+  }
+}
+btf.addGlobalFn('pjaxSendOnce', () => { typed && typed.destroy() }, 'typedDestroy')
+</script><script>function subtitleType () {
+  typedJSFn.processSubtitle(["never give up","寰宇体的世界","从 VB6.0 到 C，从这里开始"])
+}
+typedJSFn.run(subtitleType)</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

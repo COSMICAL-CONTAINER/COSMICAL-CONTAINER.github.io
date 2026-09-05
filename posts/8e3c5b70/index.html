@@ -1,0 +1,369 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>C语言位域：把变量拆成二进制位看 | 寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="调试的时候经常想看一个变量在内存里的二进制到底长什么样——特别是学 float 的 IEEE 754 表示、研究位运算的时候。这个需求用 C 语言的**位域（bit field）+ 联合体（union）**就能优雅解决，我做成了一个测试库并开源：  GitHub：https:&#x2F;&#x2F;github.com&#x2F;COSMICAL-CONTAINER&#x2F;C_Program-Test.h  思路：union + 位">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C语言位域：把变量拆成二进制位看">
+<meta property="og:url" content="https://cosmical-container.github.io/posts/8e3c5b70/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="调试的时候经常想看一个变量在内存里的二进制到底长什么样——特别是学 float 的 IEEE 754 表示、研究位运算的时候。这个需求用 C 语言的**位域（bit field）+ 联合体（union）**就能优雅解决，我做成了一个测试库并开源：  GitHub：https:&#x2F;&#x2F;github.com&#x2F;COSMICAL-CONTAINER&#x2F;C_Program-Test.h  思路：union + 位">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/img/covers/cover-1-nebula.svg">
+<meta property="article:published_time" content="2024-08-06T06:50:00.000Z">
+<meta property="article:modified_time" content="2024-08-06T06:50:00.000Z">
+<meta property="article:author" content="寰宇体">
+<meta property="article:tag" content="C语言">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/img/covers/cover-1-nebula.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "C语言位域：把变量拆成二进制位看",
+  "url": "https://cosmical-container.github.io/posts/8e3c5b70/",
+  "image": "https://cosmical-container.github.io/img/covers/cover-1-nebula.svg",
+  "datePublished": "2024-08-06T06:50:00.000Z",
+  "dateModified": "2024-08-06T06:50:00.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "寰宇体",
+      "url": "https://github.com/COSMICAL-CONTAINER"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/posts/8e3c5b70/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'C语言位域：把变量拆成二进制位看',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/covers/cover-1-nebula.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a><a class="nav-page-title" href="/"><span class="site-name">C语言位域：把变量拆成二进制位看</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">C语言位域：把变量拆成二进制位看</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2024-08-06T06:50:00.000Z" title="发表于 2024-08-06 14:50:00">2024-08-06</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">465</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>1分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>调试的时候经常想看一个变量<strong>在内存里的二进制到底长什么样</strong>——特别是学 float 的 IEEE 754 表示、研究位运算的时候。这个需求用 C 语言的**位域（bit field）+ 联合体（union）**就能优雅解决，我做成了一个测试库并开源：</p>
+<blockquote>
+<p><strong>GitHub</strong>：<a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER/C_Program-Test.h">https://github.com/COSMICAL-CONTAINER/C_Program-Test.h</a></p>
+</blockquote>
+<h2 id="思路：union-位域"><a href="#思路：union-位域" class="headerlink" title="思路：union + 位域"></a>思路：union + 位域</h2><p>核心是一对搭档：</p>
+<ul>
+<li><strong>union</strong>：让同一块内存既能按整体读写（<code>all</code>），又能按位读写（<code>decode</code>）</li>
+<li><strong>位域</strong>：把一个字节拆成 8 个 1 bit 的成员</li>
+</ul>
+<p>char 的拆解结构：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">data_char_structTypDef</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> bit0 : <span class="number">1</span>;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> bit1 : <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// ... bit2 ~ bit6</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> bit7 : <span class="number">1</span>;</span><br><span class="line">&#125; data_char_structTypeDef;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">union</span> _<span class="title">data_char_union</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> all;                  <span class="comment">// 整体读写</span></span><br><span class="line">    data_char_structTypeDef decode;     <span class="comment">// 按位读写</span></span><br><span class="line">&#125; data_char_unionTypeDef;</span><br></pre></td></tr></table></figure>
+
+<p>int&#x2F;float 等 32 位类型则是 4 个 char 联合体的嵌套（byte0~byte3，每个 byte 再拆 8 位）。</p>
+<h2 id="解码函数"><a href="#解码函数" class="headerlink" title="解码函数"></a>解码函数</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">decode_char</span><span class="params">(<span class="type">char</span> data_char)</span></span><br><span class="line">&#123;</span><br><span class="line">    data_char_unionTypeDef char_union;</span><br><span class="line">    char_union.all = data_char;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,  char_union.decode.bit7);   <span class="comment">// 最高位先打印</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d &quot;</span>, char_union.decode.bit4);</span><br><span class="line">    <span class="comment">// ... bit3 ~ bit0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> char_A = <span class="string">&#x27;A&#x27;</span>;</span><br><span class="line">decode_char(char_A);    <span class="comment">// &#x27;A&#x27; = 65 = 01000001</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="不止能看，还能改"><a href="#不止能看，还能改" class="headerlink" title="不止能看，还能改"></a>不止能看，还能改</h2><p>union 的好处是<strong>双向的</strong>：按位置 1 之后，读 <code>all</code> 就是改好的值：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">0</span>;</span><br><span class="line">data_int_unionTypeDef u;</span><br><span class="line">u.all = a;</span><br><span class="line">u.decode.byte0.decode.bit0 = <span class="number">1</span>;    <span class="comment">// 把第 0 位置 1</span></span><br><span class="line">u.decode.byte1.decode.bit1 = <span class="number">1</span>;    <span class="comment">// 第 9 位置 1</span></span><br><span class="line">u.decode.byte2.decode.bit2 = <span class="number">1</span>;    <span class="comment">// 第 18 位置 1</span></span><br><span class="line">u.decode.byte3.decode.bit3 = <span class="number">1</span>;    <span class="comment">// 第 27 位置 1</span></span><br><span class="line">a = u.all;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, a);                 <span class="comment">// 0 + 1 + 512 + 262144 + 134217728</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="float-的-IEEE-754-查看"><a href="#float-的-IEEE-754-查看" class="headerlink" title="float 的 IEEE 754 查看"></a>float 的 IEEE 754 查看</h2><p>float 在内存里就是 4 个字节的 IEEE 754 编码。把它按 int 的位域解读，符号位、指数、尾数一目了然：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">float</span> f = <span class="number">123456789.123456789</span>;</span><br><span class="line">u.all = *(<span class="type">int</span> *)&amp;f;      <span class="comment">// 把 float 的位模式按 int 解读</span></span><br><span class="line">decode_int(u.all);</span><br></pre></td></tr></table></figure>
+
+<h2 id="效果图"><a href="#效果图" class="headerlink" title="效果图"></a>效果图</h2><p><img src="/posts/8e3c5b70/test.png" alt="位域测试库运行效果" loading='lazy'></p>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><ul>
+<li>解码顺序是 bit7 → bit0（符合二进制的书写习惯）</li>
+<li>只依赖标准库，GCC &#x2F; MSVC 都能编译</li>
+<li>已开源：<a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER/C_Program-Test.h">https://github.com/COSMICAL-CONTAINER/C_Program-Test.h</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER">寰宇体</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cosmical-container.github.io/posts/8e3c5b70/">https://cosmical-container.github.io/posts/8e3c5b70/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cosmical-container.github.io" target="_blank">寰宇体的世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C%E8%AF%AD%E8%A8%80/">C语言</a></div><div class="post-share"><div class="social-share" data-image="/img/covers/cover-1-nebula.svg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/5dde1648/" title="AutoWrite 自动打字机开发记：从模拟按键到发送消息"><img class="cover" src="/img/space.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post" loading='lazy'><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">AutoWrite 自动打字机开发记：从模拟按键到发送消息</div></div><div class="info-2"><div class="info-item-1">总有些场合，文字得靠键盘一个字一个字”敲”进去——目标输入框不吃复制粘贴，或者你只是想让朋友亲眼看着一段话”自己”出现在聊天框里。AutoWrite 就是干这个的：你把文本交给它，它替你把每个键按下去。项目做了两版，正好是 Windows 下模拟输入的两条技术路线——第一版把自己变成键盘，第二版直接给窗口发消息。第一版整理后传上了 GitHub：AutoWrite（MIT 协议）。 第一版思路：把自己变成键盘最早的版本（V0.0.1，2023 年 4 月）核心只有一个念头：程序不碰目标窗口，只负责假装自己是键盘。Windows 提供的 keybd_event 就是干这个的——给它一个虚拟键码（VK code），系统就当作这个键被按了一下： 12345void write_word(int vk)//输入数字、字母&#123;	keybd_event(vk,0,0,0);	// 按下	keybd_event(vk,0,KEYEVENTF_KEYUP,0);	// 弹起&#125;  按下、弹起，两个事件，一个键就”敲”完了。字母数字都好办，麻烦的是符号——它们和主键区不是一对一的关...</div></div></div></a><a class="pagination-related" href="/posts/4fdba115/" title="统计 __VA_ARGS__ 参数个数"><img class="cover" src="/img/covers/cover-3-sunset.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post" loading='lazy'><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">统计 __VA_ARGS__ 参数个数</div></div><div class="info-2"><div class="info-item-1">可变参数宏 __VA_ARGS__ 有个著名的难题：怎么知道参数有几个？预处理器没有循环、没有计数，但利用”占位符平移”技巧可以完美解决。 技巧原理123#define _PrintMacroArgCount(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,XX,...) XX#define PrintMacroArgCount(...) \        _PrintMacroArgCount(&quot;ignored&quot;, ##__VA_ARGS__,9,8,7,6,5,4,3,2,1,0)  关键在参数的错位对齐：  传 3 个参数时，展开成 _PrintMacroArgCount(&quot;ignored&quot;, 1, 2, 3, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0) _0 吃掉 “ignored”（占位符），_1~&#96;_3 吃掉真实参数，XX&#96; 恰好落在 3 上 传 0 个参数时，XX 落在 0 上，顺便解决了 __VA_ARGS__ 为空时的逗号问题（##__VA_ARGS__ 会吃掉多余的逗号）  应...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/c951abd7/" title="发现了一个 O(N^N!) 的算法"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-12-08</div><div class="info-item-2">发现了一个 O(N^N!) 的算法</div></div><div class="info-2"><div class="info-item-1"> 起因是刷到一张表情包：汤姆猫一脸坏笑——   “突然想到一个 O(NN!) 的算法。” O(NN!)——N 的 N! 次方。这个复杂度夸张到什么程度？N&#x3D;3 时就是 729，N&#x3D;4 直接冲破四百万，再往上数数都没意义了。猫都能”想到”的算法，那我能不能真的把它写出来？于是有了这个程序：不借助任何数论技巧，用最朴素的递归把这道题画出来。完整代码只有 30 行： N^N!算法.c123456789101112131415161718192021222324252627282930313233343536373839#include &lt;stdio.h&gt;long long total_sum = 0;long long factorial(unsigned n)&#123;    if (n == 1)    &#123;        printf(&quot;+1&quot;);        total_sum++;        return 1;    &#125;    long long sum = 0;    for (unsigned ...</div></div></div></a><a class="pagination-related" href="/posts/6e9f2a48/" title="Print.h 开发记（六）V1.6"><img class="cover" src="/img/covers/cover-5-midnight.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-15</div><div class="info-item-2">Print.h 开发记（六）V1.6</div></div><div class="info-2"><div class="info-item-1"> 系列导航：上一篇：Print.h 开发记（五）V1.5  打印库成熟之后，最先”吃自己狗粮”的场景就是调试。V1.6 加入了一整套 debug 宏。 debug：打印变量名和它的值调试时最常写的就是 printf(&quot;x = %d\n&quot;, x)——变量名要手打两遍。# 字符串化运算符可以让宏自动完成： 12#define debug_valuename_to_str(value) #value#define debug(obj) print(LIGHT_GREEN(&quot;debug: &quot;), debug_valuename_to_str(obj) &quot; = &quot;, obj, &quot;\n&quot;)  debug(count) 展开后自动输出 debug: count = 10，变量改名也不用同步。 WARN_IF &#x2F; ERR_IF &#x2F; ERR_EXIT_IF三个按条件触发打印的宏，全部用 do { } while(0) 包裹——这是宏定义多语句的标准写法，保证在 if&#x2F;else 里展开不出问...</div></div></div></a><a class="pagination-related" href="/posts/381bb2d0/" title="C语言宏函数的优先级陷阱：一个 MAX 宏的六级进化"><img class="cover" src="/img/covers/cover-1-nebula.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-12-08</div><div class="info-item-2">C语言宏函数的优先级陷阱：一个 MAX 宏的六级进化</div></div><div class="info-2"><div class="info-item-1">最近研究了一下 MAX 宏的进化史：从青铜到王者共 6 个版本（define0.c ~ define5.c），完整记录了一个三目运算符宏是怎么被优先级、副作用、类型问题一步步逼着进化的。 先上本篇的理论基础——C 语言运算符优先级表（16 级，本篇 MAX 宏的悲剧就发生在第 7 级 &gt; 和第 8 级 != 之间）：    优先级 运算符 结合律    1 后缀运算符：[] () . -&gt; ++ -- (类型名称){列表} 从左到右   2 一元运算符：++ -- ! ~ + - * &amp; sizeof _Alignof 从右到左   3 类型转换运算符：(类型名称) 从右到左   4 乘除法运算符：* / % 从左到右   5 加减法运算符：+ - 从左到右   6 移位运算符：&lt;&lt; &gt;&gt; 从左到右   7 关系运算符：&lt; &lt;= &gt; &gt;= 从左到右   8 相等运算符：== != 从左到右   9 位运算符 AND：&amp; 从左到右   10 位运算符 XOR：^ 从左到右   11 位运算符 OR：| 从左...</div></div></div></a><a class="pagination-related" href="/posts/5c100c97/" title="当 include 遇上 MP4"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-09-30</div><div class="info-item-2">当 include 遇上 MP4</div></div><div class="info-2"><div class="info-item-1">一个大胆的实验：把写好的头文件 GenShin.h 改名成 GenShin.mp4，然后照常 #include 它，编译器会买账吗？ 实验材料：这个”mp4”其实是纯文本先用 file 命令验一下它的真身——GenShin.mp4: C source, ASCII text。它就是一个普普通通的头文件，只是后缀被改了： GenShin.mp4123456#ifndef __GenShin_H__#define __GenShin_H__#define NUM 114514 #endif // !__GenShin_H__  实验代码main.c12345678910111213#include &lt;stdio.h&gt;#include &quot;GenShin.mp4&quot;int main()&#123;    printf(&quot;%d\n&quot;, NUM);        // NUM 就来自上面这个&quot;mp4&quot;    int num = 0;    for(int* i = &amp;num; ; i++)    &#123;   ...</div></div></div></a><a class="pagination-related" href="/posts/aaae083d/" title="const 也能被修改"><img class="cover" src="/img/covers/cover-1-nebula.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-26</div><div class="info-item-2">const 也能被修改</div></div><div class="info-2"><div class="info-item-1">const 修饰的变量真的不能改吗？用指针强转试试就知道——答案是：至少局部变量可以。 实验1234567const unsigned char const_int = 0;printf(&quot;before :%d\n&quot;, const_int);*(int *)(&amp;const_int) = 10;              // 强转掉 const 再写入printf(&quot;after  :%d\n&quot;, const_int);      // 输出 10！const unsigned char const_array[] = &#123;0x01, 0x02, 0x03, 0x04, 0x05&#125;;*((int *)(&amp;const_array[0] + i)) = 10;   // 数组同理，逐个元素改掉  运行结果 before 是 0，after 变成了 10——const 声明被绕过去了。 原理const 只是编译期的约束，告诉编译器”不允许通过这个名字赋值”，它并不是内存的写保护。局部 const 变量放在栈上，和普...</div></div></div></a><a class="pagination-related" href="/posts/11de485d/" title="通用链表 glist 开发记：从 void* 到函数指针"><img class="cover" src="/img/covers/cover-4-forest.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-02</div><div class="info-item-2">通用链表 glist 开发记：从 void* 到函数指针</div></div><div class="info-2"><div class="info-item-1">教科书里的线性表长一个样：int a[MAX]，或者 struct Node { int data; struct Node* next; }——从头到尾只能装一种类型。2023 年 4 月，我决定写一个”什么都能装”的列表：同一个列表里同时放 int、char、float、double，甚至自定义结构体，不光存得进去，还得一个一个打印出来。 这个项目最后叫 glist（general list），从 V1.0 迭代到 V1.2，源码整理在 GitHub 仓库 glist 里，三个版本各占一个标签。三个版本不多，恰好是 C 语言里实现”泛型”的三条思路的进化史：只存地址 → 给类型发身份证 → 让数据自己带说明书。 V1.0：先把”存”解决——void* 数组一切的起点是一个朴素的问题：一个格子不知道自己装的是什么类型，怎么装？ 答案就是 void*。普通指针绑定着类型，所以它知道数据从哪开始、到哪结束；void* 只有起始地址，什么类型都不绑，所以任何指针都能不加转换地赋给它。那 list 就别存数据，存地址： list.h123456789101112131415161718...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="comment-switch"><span class="first-comment">Giscus</span><span id="switch-btn"></span><span class="second-comment">Twikoo</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9Aunion-%E4%BD%8D%E5%9F%9F"><span class="toc-text">思路：union + 位域</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E7%A0%81%E5%87%BD%E6%95%B0"><span class="toc-text">解码函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8D%E6%AD%A2%E8%83%BD%E7%9C%8B%EF%BC%8C%E8%BF%98%E8%83%BD%E6%94%B9"><span class="toc-text">不止能看，还能改</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#float-%E7%9A%84-IEEE-754-%E6%9F%A5%E7%9C%8B"><span class="toc-text">float 的 IEEE 754 查看</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%88%E6%9E%9C%E5%9B%BE"><span class="toc-text">效果图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%B4%E6%98%8E"><span class="toc-text">说明</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io',
+      'data-repo-id': 'R_kgDOHTJxpw',
+      'data-category-id': 'DIC_kwDOHTJxp84DE3Jg',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('/pluginsSrc/twikoo/dist/twikoo.all.min.js?v=1.7.15').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Giscus' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Giscus' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

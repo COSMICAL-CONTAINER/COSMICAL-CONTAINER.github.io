@@ -1,0 +1,382 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>C-Program1 | 寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="[C语言]printf和scanf函数的返回值CSDN原文链接 先来看一道题 1234567#include&lt;stdio.h&gt;int main()&#123;   int a&#x3D;43;   printf(&quot;%d\n&quot;,a);   return 0;&#125;  看完嘴角疯狂上扬，这题我会，输出43，贼简单。 结果突然看到一题 1234567#include&lt;s">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C-Program1">
+<meta property="og:url" content="https://cosmical-container.github.io/posts/107649e7/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="[C语言]printf和scanf函数的返回值CSDN原文链接 先来看一道题 1234567#include&lt;stdio.h&gt;int main()&#123;   int a&#x3D;43;   printf(&quot;%d\n&quot;,a);   return 0;&#125;  看完嘴角疯狂上扬，这题我会，输出43，贼简单。 结果突然看到一题 1234567#include&lt;s">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/img/space.jpg">
+<meta property="article:published_time" content="2022-05-08T06:28:04.000Z">
+<meta property="article:modified_time" content="2022-05-08T06:28:04.000Z">
+<meta property="article:author" content="寰宇体">
+<meta property="article:tag" content="C语言">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/img/space.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "C-Program1",
+  "url": "https://cosmical-container.github.io/posts/107649e7/",
+  "image": "https://cosmical-container.github.io/img/space.jpg",
+  "datePublished": "2022-05-08T06:28:04.000Z",
+  "dateModified": "2022-05-08T06:28:04.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "寰宇体",
+      "url": "https://github.com/COSMICAL-CONTAINER"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/posts/107649e7/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'C-Program1',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/space.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a><a class="nav-page-title" href="/"><span class="site-name">C-Program1</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">C-Program1</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2022-05-08T06:28:04.000Z" title="发表于 2022-05-08 14:28:04">2022-05-08</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">743</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>2分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="C语言-printf和scanf函数的返回值"><a href="#C语言-printf和scanf函数的返回值" class="headerlink" title="[C语言]printf和scanf函数的返回值"></a>[C语言]printf和scanf函数的返回值</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_28406527/article/details/121908090">CSDN原文链接</a></p>
+<p>先来看一道题</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">   <span class="type">int</span> a=<span class="number">43</span>;</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,a);</span><br><span class="line">   <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看完嘴角疯狂上扬，这题我会，<br>输出<strong>43</strong>，贼简单。</p>
+<p>结果突然看到一题</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">   <span class="type">int</span> a=<span class="number">43</span>;</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,<span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,<span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,a)));</span><br><span class="line">   <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/posts/107649e7/e1ff5c7c7cac4cc5a05d802dadaf839f.jpg" loading='lazy'></p>
+<p>就是说着一大堆printf难道不会报错？</p>
+<p>运行了一下，好像没问题，关键是怎么来的<br><img src="/posts/107649e7/1259e7c96746459392a2b54cd4130a8c.png" loading='lazy'></p>
+<p>说着我就去<strong>stdio.h</strong>头文件里寻找printf的定义去了<br><img src="/posts/107649e7/426a11a7dbba4282afb7f2891158c45f.png" loading='lazy'></p>
+<p>好像看不懂</p>
+<p><img src="/posts/107649e7/59d03c57cc574b1cbe809942ba3e0965.jpg" loading='lazy'></p>
+<p>不过我们知道了printf函数有返回值，而且还是int类型，所以，我们来试试。</p>
+<p><img src="/posts/107649e7/7a27ad841dfd4e879f310a24c04815e5.png" loading='lazy'></p>
+<p>欸？这样子救输出了01，那如果我改一下a的值呢</p>
+<p><img src="/posts/107649e7/5eacf7a6e6d4451ab0c842e338197d0f.png" loading='lazy'><br>变成11了，好像是我修改a的值就会变一个<br><img src="/posts/107649e7/7246ad5ced3643b8a921679eed3faae3.png" loading='lazy'><br><img src="/posts/107649e7/af6b6da621094789b6c2769eba40c11c.png" loading='lazy'></p>
+<p>等等，好像有点不对劲，怎么后面那一位变成4了，之前一直是1来着</p>
+<p><img src="/posts/107649e7/d4a5a5f1f3c44dd48c9fa025362a06aa.png" loading='lazy'><br><strong>好像发现规律了，就是一开始先输出一个a的值，然后在输出a的长度，验证了好多遍，发现是对的！</strong></p>
+<h2 id="printf函数的返回值是输出字符的个数"><a href="#printf函数的返回值是输出字符的个数" class="headerlink" title="printf函数的返回值是输出字符的个数"></a>printf函数的返回值是输出字符的个数</h2><p>我们再回到开头的代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">   <span class="type">int</span> a=<span class="number">43</span>;</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,<span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,<span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,a)));</span><br><span class="line">   <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们一步步拆开<br>最里面那层</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">b = <span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,a)</span><br></pre></td></tr></table></figure>
+
+<p>输出43<br>返回2<br>也就是上面这个代码屏幕上输出43但是b的值变成2了</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">c = <span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,<span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,a))</span><br></pre></td></tr></table></figure>
+
+<p>输出432，其中那个2是最里面的printf的返回值<br>返回1，也就是c的值是1，这个1就是输出2这个的字符产生的返回值<br>传递给最外面的printf，也就成了printf(“%d”,2);所以会输出一个2出来<br>接下来就是全部套进来了</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,<span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,<span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,a)));</span><br></pre></td></tr></table></figure>
+
+<p>输出4321<br>这样就懂了吧。<br>ㅤ</p>
+<p><img src="/posts/107649e7/286b0bbeef574d76806aa153332bb92b.jpg" loading='lazy'></p>
+<p>那看到这里，我就想scanf的返回值是不是也有，又重新回到stdio.h里面查询<br><img src="/posts/107649e7/f1f3bcd893824a8488bdf5edc432985d.png" loading='lazy'></p>
+<p>好家伙，它也有返回值，而且也是int类型。</p>
+<p><img src="/posts/107649e7/6eee7252ba7140e6a1732f82c1b95d18.jpg" loading='lazy'></p>
+<p>为了保证能输出，我们定义一个int型的变量储存并输出。</p>
+<p><img src="/posts/107649e7/35beb16469b54ff3b5fe9dbf89102603.png" loading='lazy'><br>输入两个东西进去，返回值是2<br><img src="/posts/107649e7/4dc17120a61141c1bdef98806543b4b1.png" loading='lazy'><br>输入三个东西进去返回值是3，好家伙，猜出来了</p>
+<p><strong>scanf函数返回值是按指定格式输入变量的个数？</strong><br>好像没毛病，<br>但我就是喜欢玩 ，我测试的时候输入了1,2进去<br>(注意这里b的类型也是int了)</p>
+<p><img src="/posts/107649e7/0f87d32e1eda4694ab3ea0e622395210.png" loading='lazy'></p>
+<p>好家伙，返回1了，这里我们都知道，只有a变量读取到了用户输入的1，b变量没有读取到</p>
+<h2 id="scanf函数返回值是正确按指定格式输入变量的个数"><a href="#scanf函数返回值是正确按指定格式输入变量的个数" class="headerlink" title="scanf函数返回值是正确按指定格式输入变量的个数"></a>scanf函数返回值是正确按指定格式输入变量的个数</h2><p>这就解释的通了<br>就先写到这里吧。。。。👻<br>接下来还要讲一下fgetc函数fputc函数fclose函数等函数的返回值</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER">寰宇体</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cosmical-container.github.io/posts/107649e7/">https://cosmical-container.github.io/posts/107649e7/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cosmical-container.github.io" target="_blank">寰宇体的世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C%E8%AF%AD%E8%A8%80/">C语言</a></div><div class="post-share"><div class="social-share" data-image="/img/space.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/4a17b156/" title="Hello World"><img class="cover" src="/img/covers/cover-4-forest.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post" loading='lazy'><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Hello World</div></div><div class="info-2"><div class="info-item-1">一个测试的网页真的是测试用的网页啦点击百度 12345#include &lt;stdio.h&gt;int main()&#123;    printf(&quot;Hello World!&quot;);&#125; </div></div></div></a><a class="pagination-related" href="/posts/135991a0/" title="VB6.0 操作注册表"><img class="cover" src="/img/covers/cover-1-nebula.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post" loading='lazy'><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">VB6.0 操作注册表</div></div><div class="info-2"><div class="info-item-1">VB6.0操作注册表本程序在Windows7系统下测试，Windows10系统注册表好像有变化，但修改的代码不会有变，可自行设计。 本文将介绍用CreateObject(“wscript.shell”)创建对象来操作注册表 本文操作的注册表目录是HKEY_CLASSES_ROOT\Directory\Background\shell也就是桌面菜单右键 下面看一下效果图： 其中python 注册表 重载文件资源管理器都是我自己添加的，在桌面右键菜单就可以直接打开，十分方便 下面我们来看一下自己动手怎么实现： 在注册表里面是这个样子，这里显示的是名字。 这里看到是ico文件的设置，也就是图标 这里看到的就是点击的时候执行的命令，可以是一个路径，也可以是一条指令。 接下来我们用Vb6.0实现添加注册表的功能 123Dim WSHSet WSH = CreateObject(&quot;WSCRIPT.SHELL&quot;)WSH.RegWrite &quot;HKEY_CLASSES_ROOT\Directory\Background\shell\test\test&quot;, &...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/4c8a91b3/" title="Print.h 开发记（四）V1.4"><img class="cover" src="/img/covers/cover-2-ocean.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-28</div><div class="info-item-2">Print.h 开发记（四）V1.4</div></div><div class="info-2"><div class="info-item-1"> 系列导航：上一篇：Print.h 开发记（三）V1.3  V1.4 是 print 库里程碑式的一版：print 和 println 从”一次只能打印一个”升级为最多支持 10 个参数——这就是 C 语言版的”重载”。 用法12print(1, 2.5, &quot;hello&quot;);          // 一次打印三个不同类型println(num, str, 3.14);         // 多参数 + 自动换行  核心机制：参数计数宏之前单独写过一篇统计可变宏参数个数，讲的就是”占位符平移”技巧——先数出参数个数： 12#define PrintMacroArgCount(...) _PrintMacroArgCount(__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)#define _PrintMacroArgCount(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, COUNT, ...) COUNT  真实参数会把后面的 10,9,8…往右挤，COUNT 落在几就代表有几个参数。 拼接...</div></div></div></a><a class="pagination-related" href="/posts/d21fddb/" title="C语言 __attribute__ 实用指南"><img class="cover" src="/img/space.jpg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-03-02</div><div class="info-item-2">C语言 __attribute__ 实用指南</div></div><div class="info-2"><div class="info-item-1">__attribute__ 是 GCC 提供的编译器扩展语法，能给函数、变量、类型附加各种”特殊指令”。整理了几个日常实用的用法。 一、mode：自定义精确定宽的整数12345typedef unsigned int my_int1Type __attribute__((mode(QI)));   // 1 字节typedef unsigned int my_int2Type __attribute__((mode(HI)));   // 2 字节my_int1Type a = 255;a++;        // 溢出回绕：255 + 1 = 0  QI&#x2F;HI&#x2F;SI&#x2F;DI&#x2F;TI 分别对应 1&#x2F;2&#x2F;4&#x2F;8 字节宽度，相当于造出了”确定是 1 字节的 unsigned int”。 二、noreturn：告诉编译器这个函数不返回12345__attribute__((noreturn))void test2()&#123;    exit(0);    // 合法：确实没有 return&#125;  如果标记为 ...</div></div></div></a><a class="pagination-related" href="/posts/3e3bb6f0/" title="函数定义远古知识"><img class="cover" src="/img/covers/cover-5-midnight.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-10-29</div><div class="info-item-2">函数定义远古知识</div></div><div class="info-2"><div class="info-item-1">挖到一个真正的”远古知识”：K&amp;R 风格的函数定义。这是 C 语言还没标准化的年代（K&amp;R 那本《The C Programming Language》第一版）的写法，现在的编译器为了兼容老代码依然支持。 现代写法 vs 远古写法12345678910111213// 现代写法（ANSI C / C89 之后）double alt_style(int a, double *real)&#123;    return *real + a;&#125;// 远古写法（K&amp;R 风格）double alt_style(a, real)    double *real;    int a;&#123;    return *real + a;&#125;  特征很明显：参数列表里只写参数名，参数类型声明放在函数体大括号之前。类型声明还可以乱序（先写 real 再写 a），因为它们只是”声明区”，和参数名按位置对应。 为什么被淘汰了K&amp;R 风格最大的问题是：不带原型。调用方在没有任何声明的情况下调用它，编译器不会检查参数个数和类型，传错了照样编译通过，运行时才...</div></div></div></a><a class="pagination-related" href="/posts/2ed40c3a/" title="C-复刻printf函数1"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-27</div><div class="info-item-2">C-复刻printf函数1</div></div><div class="info-2"><div class="info-item-1">其实很久之前就想问C语言里面的printf()是怎么实现的，主要是对printf()的参数比较感兴趣，你想我们随便定义一个函数，都得确定参数的个数，但是像printf()函数，可以根据第一个参数也就是字符串”%c %d %f %s”根据有多少个格式输入来确认参数的个数。于是我去了解到了一种叫变参函数的东西，在stdarg.h里面定义有，在加上简单的字符串合成，最后用putchar()函数来输出，简单实现了My_printf();代码如下: 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879808182838485868788#include &lt;stdio.h&gt;#include &lt;stdlib.h&gt;#include &lt;string.h&gt;#include &lt;stdarg.h&gt;char * in...</div></div></div></a><a class="pagination-related" href="/posts/53a5f64f/" title="用 C 语言打造 Cheat Engine 练习对象"><img class="cover" src="/img/space.jpg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-10-03</div><div class="info-item-2">用 C 语言打造 Cheat Engine 练习对象</div></div><div class="info-2"><div class="info-item-1">玩 Cheat Engine（CE）的时候需要一个”练习对象”——写一个小程序，让它维护一个不断变化的数值，然后用 CE 去扫描和修改它。这里记录两个练习用的目标程序。 第一课：直接修改 malloc 出来的变量12345678int *p_num = (int *)malloc(sizeof(int));srand(time(NULL));*p_num = rand() % 100 + 100;    // 初始值：100~199 的随机数while(getchar())&#123;    printf(&quot;%d&quot;, *p_num);    (*p_num)--;&#125;  每次按回车，数值减 1。练习流程：先用 CE 的”未知的初始值”开始扫描，按几次回车让数值递减后用”减少了的数值”继续扫描，锁定地址后把它改成 999——程序打印的数字就听你的了。 第二课：结构体指针的偏移12345678910typedef struct&#123;    char name[20];    int hp;    int exp;&#125;playerType, *...</div></div></div></a><a class="pagination-related" href="/posts/9d3e7f20/" title="Print.h 开发记（三）V1.3"><img class="cover" src="/img/covers/cover-1-nebula.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-28</div><div class="info-item-2">Print.h 开发记（三）V1.3</div></div><div class="info-2"><div class="info-item-1"> 系列导航：上一篇：Print.h 开发记（二）V1.2  V1.3 的更新只有一个主题，但很关键：颜色打印宏的输入格式拓展——现在既可以直接传字符串字面量，也可以传变量了。 V1.2 的限制V1.2 的颜色宏内部是字符串拼接： 1#define RED(str) &quot;\033[0;32;31m&quot;NONE(str)  NONE(str) 是 str &quot;\033[m&quot;——相邻字符串字面量的编译期拼接。这意味着 RED(&quot;hello&quot;) 没问题，但 RED(some_var) 直接编译报错：变量不是字符串字面量，没法参与拼接。 V1.3 的解决新版本把”上色”和”打印”拆开：宏只负责生成转义序列与内容的组合，内容由 printf 的 %s 输出——变量自然也就支持了。同时引入 MAXSTRLEN 100 限制单段彩色文本的最大长度，内部用缓冲区拼接，避免溢出。 顺带的修正这一版还规范了头文件：加入了 MAXSTRLEN 的定义、整理了颜色宏的排版。版本日志里那句”拓展颜色打印宏，现在可以支持输入字符串或变量了”说的就是这个。 ...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="comment-switch"><span class="first-comment">Giscus</span><span id="switch-btn"></span><span class="second-comment">Twikoo</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#C%E8%AF%AD%E8%A8%80-printf%E5%92%8Cscanf%E5%87%BD%E6%95%B0%E7%9A%84%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="toc-text">[C语言]printf和scanf函数的返回值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#printf%E5%87%BD%E6%95%B0%E7%9A%84%E8%BF%94%E5%9B%9E%E5%80%BC%E6%98%AF%E8%BE%93%E5%87%BA%E5%AD%97%E7%AC%A6%E7%9A%84%E4%B8%AA%E6%95%B0"><span class="toc-text">printf函数的返回值是输出字符的个数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#scanf%E5%87%BD%E6%95%B0%E8%BF%94%E5%9B%9E%E5%80%BC%E6%98%AF%E6%AD%A3%E7%A1%AE%E6%8C%89%E6%8C%87%E5%AE%9A%E6%A0%BC%E5%BC%8F%E8%BE%93%E5%85%A5%E5%8F%98%E9%87%8F%E7%9A%84%E4%B8%AA%E6%95%B0"><span class="toc-text">scanf函数返回值是正确按指定格式输入变量的个数</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io',
+      'data-repo-id': 'R_kgDOHTJxpw',
+      'data-category-id': 'DIC_kwDOHTJxp84DE3Jg',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('/pluginsSrc/twikoo/dist/twikoo.all.min.js?v=1.7.15').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Giscus' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Giscus' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

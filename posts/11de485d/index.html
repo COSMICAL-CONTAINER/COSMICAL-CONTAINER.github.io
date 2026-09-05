@@ -1,0 +1,412 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>通用链表 glist 开发记：从 void* 到函数指针 | 寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="教科书里的线性表长一个样：int a[MAX]，或者 struct Node { int data; struct Node* next; }——从头到尾只能装一种类型。2023 年 4 月，我决定写一个”什么都能装”的列表：同一个列表里同时放 int、char、float、double，甚至自定义结构体，不光存得进去，还得一个一个打印出来。 这个项目最后叫 glist（general list）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="通用链表 glist 开发记：从 void* 到函数指针">
+<meta property="og:url" content="https://cosmical-container.github.io/posts/11de485d/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="教科书里的线性表长一个样：int a[MAX]，或者 struct Node { int data; struct Node* next; }——从头到尾只能装一种类型。2023 年 4 月，我决定写一个”什么都能装”的列表：同一个列表里同时放 int、char、float、double，甚至自定义结构体，不光存得进去，还得一个一个打印出来。 这个项目最后叫 glist（general list）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/img/covers/cover-4-forest.svg">
+<meta property="article:published_time" content="2023-05-02T15:40:00.000Z">
+<meta property="article:modified_time" content="2023-05-02T15:40:00.000Z">
+<meta property="article:author" content="寰宇体">
+<meta property="article:tag" content="C语言">
+<meta property="article:tag" content="函数指针">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/img/covers/cover-4-forest.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "通用链表 glist 开发记：从 void* 到函数指针",
+  "url": "https://cosmical-container.github.io/posts/11de485d/",
+  "image": "https://cosmical-container.github.io/img/covers/cover-4-forest.svg",
+  "datePublished": "2023-05-02T15:40:00.000Z",
+  "dateModified": "2023-05-02T15:40:00.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "寰宇体",
+      "url": "https://github.com/COSMICAL-CONTAINER"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/posts/11de485d/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '通用链表 glist 开发记：从 void* 到函数指针',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/covers/cover-4-forest.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a><a class="nav-page-title" href="/"><span class="site-name">通用链表 glist 开发记：从 void* 到函数指针</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">通用链表 glist 开发记：从 void* 到函数指针</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2023-05-02T15:40:00.000Z" title="发表于 2023-05-02 23:40:00">2023-05-02</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>12分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>教科书里的线性表长一个样：<code>int a[MAX]</code>，或者 <code>struct Node { int data; struct Node* next; }</code>——从头到尾只能装一种类型。2023 年 4 月，我决定写一个”什么都能装”的列表：同一个列表里同时放 <code>int</code>、<code>char</code>、<code>float</code>、<code>double</code>，甚至自定义结构体，不光存得进去，还得一个一个打印出来。</p>
+<p>这个项目最后叫 glist（general list），从 V1.0 迭代到 V1.2，源码整理在 <a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER/glist">GitHub 仓库 glist</a> 里，三个版本各占一个标签。三个版本不多，恰好是 C 语言里实现”泛型”的三条思路的进化史：<strong>只存地址 → 给类型发身份证 → 让数据自己带说明书</strong>。</p>
+<h2 id="V1-0：先把”存”解决——void-数组"><a href="#V1-0：先把”存”解决——void-数组" class="headerlink" title="V1.0：先把”存”解决——void* 数组"></a>V1.0：先把”存”解决——void* 数组</h2><p>一切的起点是一个朴素的问题：一个格子不知道自己装的是什么类型，怎么装？</p>
+<p>答案就是 <code>void*</code>。普通指针绑定着类型，所以它知道数据从哪开始、到哪结束；<code>void*</code> 只有起始地址，什么类型都不绑，所以<strong>任何指针都能不加转换地赋给它</strong>。那 list 就别存数据，存地址：</p>
+<figure class="highlight c"><figcaption><span>list.h</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifndef</span> __list_H__</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __list_H__</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">void</span>* (list_node)[<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    list_node* <span class="built_in">list</span>;</span><br><span class="line">    <span class="type">size_t</span> 	size;</span><br><span class="line">&#125;<span class="built_in">list</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">list</span>* __list__(<span class="type">int</span> _Size);</span><br><span class="line"><span class="type">void</span> __list_del__(<span class="built_in">list</span>* <span class="built_in">list</span>);</span><br><span class="line"><span class="type">void</span> <span class="title function_">list_write</span><span class="params">(<span class="built_in">list</span>* <span class="built_in">list</span>, <span class="type">size_t</span> _n, <span class="type">void</span> * _Valaddress)</span>;</span><br><span class="line"><span class="type">void</span>* <span class="title function_">list_read</span><span class="params">(<span class="built_in">list</span>* <span class="built_in">list</span>, <span class="type">size_t</span> _n)</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">// __list_H__</span></span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><figcaption><span>list.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;list.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="built_in">list</span>* __list__(<span class="type">int</span> _Size)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">list</span>* new_list = (<span class="built_in">list</span> *)<span class="built_in">malloc</span>( <span class="keyword">sizeof</span>( <span class="built_in">list</span> ) );</span><br><span class="line">    list_node* new_list_node = (list_node* )<span class="built_in">malloc</span>( <span class="keyword">sizeof</span>( list_node ) * _Size);</span><br><span class="line"></span><br><span class="line">    new_list-&gt;<span class="built_in">list</span> = new_list_node;</span><br><span class="line">    new_list-&gt;size = _Size;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> new_list;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> __list_del__(<span class="built_in">list</span>* <span class="built_in">list</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">free</span>(<span class="built_in">list</span>-&gt;<span class="built_in">list</span>);</span><br><span class="line">    <span class="built_in">free</span>(<span class="built_in">list</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">list_write</span><span class="params">(<span class="built_in">list</span>* <span class="built_in">list</span>, <span class="type">size_t</span> _n, <span class="type">void</span> * _Valaddress)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (_n &lt; <span class="built_in">list</span>-&gt;size)</span><br><span class="line">        *<span class="built_in">list</span>-&gt;<span class="built_in">list</span>[_n] = _Valaddress;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span>* <span class="title function_">list_read</span><span class="params">(<span class="built_in">list</span>* <span class="built_in">list</span>, <span class="type">size_t</span> _n)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (_n &lt; <span class="built_in">list</span>-&gt;size)</span><br><span class="line">        <span class="keyword">return</span> *<span class="built_in">list</span>-&gt;<span class="built_in">list</span>[_n];</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第一次读这段代码，视线多半会卡在这一行：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">void</span>* (list_node)[<span class="number">1</span>];</span><br></pre></td></tr></table></figure>
+
+<p>它不是在声明指针，是给**”长度为 1 的 <code>void*</code> 数组”**这个类型起别名。结构体里存的是 <code>list_node*</code>——指向这种数组的指针。于是 <code>list_write</code> 里这句就绕了个弯：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*<span class="built_in">list</span>-&gt;<span class="built_in">list</span>[_n] = _Valaddress;</span><br></pre></td></tr></table></figure>
+
+<p><code>list-&gt;list</code> 指向一片”数组数组”，<code>list-&gt;list[_n]</code> 跳到第 <code>_n</code> 个数组（每个就 1 个元素），数组名退化成指针，最前面再解引用——拿到的是那个 <code>void*</code> 槽位本身。转这么大一个圈，效果等价于 <code>void* arr[_n] = _Valaddress;</code>。现在回头看，直接用 <code>void**</code> 更直白，但这个弯逼着我把”指向数组的指针”彻底练熟了，不亏。</p>
+<p>测试程序里还玩了个对照：静态版本直接在栈上开数组，用的是同款语法不同长度——<code>[1]</code> 换成 <code>[5]</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">void</span>* (StaticList_5)[<span class="number">5</span>];</span><br><span class="line"></span><br><span class="line">StaticList_5 p;</span><br><span class="line">p[<span class="number">0</span>] = &amp;num;</span><br><span class="line">p[<span class="number">1</span>] = &amp;ch;</span><br><span class="line">p[<span class="number">2</span>] = &amp;f;</span><br><span class="line">p[<span class="number">3</span>] = &amp;d;</span><br><span class="line">p[<span class="number">4</span>] = &amp;a;</span><br></pre></td></tr></table></figure>
+
+<p><code>int</code>、<code>char</code>、<code>float</code>、<code>double</code>、自定义结构体 <code>A</code>，五个不同类型的变量地址，装进了同一个数组。取出来的时候强转一下就能用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;int : %d\n&quot;</span>, *(<span class="type">int</span> *)list_read(l, <span class="number">0</span>));</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;structure : %d %c\n&quot;</span>, ((A *)list_read(l, <span class="number">4</span>))-&gt;id, ((A *)list_read(l, <span class="number">4</span>))-&gt;value);</span><br></pre></td></tr></table></figure>
+
+<p>但问题就藏在这两行 printf 里：<strong>取出来的是什么类型，全靠调用的人自己记</strong>。第 0 个是 int、第 4 个是结构体——这些信息在 <code>list_write</code> 存进去的那一刻就丢了。所以这个版本的 list 注定写不出 <code>list_printf</code>：printf 需要格式符，格式符来自类型，而类型已经没了。</p>
+<p>存的问题解决了，打印的问题一个字没动。</p>
+<h2 id="V1-1：给每个元素发一张”类型身份证”"><a href="#V1-1：给每个元素发一张”类型身份证”" class="headerlink" title="V1.1：给每个元素发一张”类型身份证”"></a>V1.1：给每个元素发一张”类型身份证”</h2><p>三个月后的一个晚上，我把思路换了个方向：既然 list 不认识类型，那就<strong>存的时候顺便把类型编号一起存进去</strong>。每个槽位从光秃秃的 <code>void*</code> 变成一对 <code>{typeId, data}</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> TYPEID_CHAR 1</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPEID_UCHAR 2</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPEID_INT 3</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPEID_UINT 4</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPEID_SORT 5</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPEID_USORT 6</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPEID_FLOAT 7</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPEID_UFLOAT 8</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPEID_DOUBLE 9</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPEID_UDOUBLE 10</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPEID_PCHAT 11</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TYPEID_MYSTRUCT 51</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">size_t</span> typeId;</span><br><span class="line">    <span class="type">void</span>* data;</span><br><span class="line">&#125;glist_note;</span><br></pre></td></tr></table></figure>
+
+<p><code>list_write</code> 多了一个参数，写入时把身份证一起钉进去：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">list_write</span><span class="params">(glist* <span class="built_in">list</span>, <span class="type">size_t</span> _n, <span class="type">void</span> * _Valaddress, <span class="type">size_t</span> _typeId)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (_n &lt; <span class="built_in">list</span>-&gt;size)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">list</span>-&gt;note[_n].data = _Valaddress;</span><br><span class="line">        <span class="built_in">list</span>-&gt;note[_n].typeId = _typeId;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>list_printf</code> 拿着编号去查表，按类型分发格式符：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">list_printf</span><span class="params">(glist* <span class="built_in">list</span>, <span class="type">size_t</span> _n)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">void</span>* data = list_read(<span class="built_in">list</span>, _n);</span><br><span class="line">    <span class="keyword">if</span>(data != <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">switch</span> (<span class="built_in">list</span>-&gt;note[_n].typeId)</span><br><span class="line">        &#123;</span><br><span class="line">        <span class="keyword">case</span> TYPEID_CHAR:<span class="built_in">printf</span>( <span class="string">&quot;%c\n&quot;</span>, *(<span class="type">char</span>*)data ); <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> TYPEID_UCHAR:<span class="built_in">printf</span>( <span class="string">&quot;%u\n&quot;</span>, *(<span class="type">unsigned</span> <span class="type">char</span>*)data ); <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> TYPEID_INT:<span class="built_in">printf</span>( <span class="string">&quot;%d\n&quot;</span>, *(<span class="type">int</span>*)data ); <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> TYPEID_UINT:<span class="built_in">printf</span>( <span class="string">&quot;%u\n&quot;</span>, *(<span class="type">unsigned</span> <span class="type">int</span>*)data ); <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> TYPEID_SORT:<span class="built_in">printf</span>( <span class="string">&quot;%d\n&quot;</span>, *(<span class="type">short</span>*)data ); <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> TYPEID_USORT:<span class="built_in">printf</span>( <span class="string">&quot;%d\n&quot;</span>, *(<span class="type">unsigned</span> <span class="type">short</span>*)data ); <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> TYPEID_FLOAT:<span class="built_in">printf</span>( <span class="string">&quot;%f\n&quot;</span>, *(<span class="type">float</span>*)data ); <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> TYPEID_DOUBLE:<span class="built_in">printf</span>( <span class="string">&quot;%lf\n&quot;</span>, *(<span class="type">double</span>*)data ); <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> TYPEID_PCHAT:<span class="built_in">printf</span>( <span class="string">&quot;%s\n&quot;</span>, (<span class="type">char</span>*)data ); <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> TYPEID_MYSTRUCT:<span class="built_in">printf</span>(<span class="string">&quot;%d %c\n&quot;</span>,*(<span class="type">int</span> *)data, *((<span class="type">int</span> *)data + <span class="number">1</span>));<span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这段 switch 里有几个当年的小心思，展开讲讲：</p>
+<p><strong><code>TYPEID_MYSTRUCT = 51</code> 为什么从 11 直接跳到 51？</strong> 给自定义类型留的”手动挡”：1~11 是内置类型固定席位，51 号之后的编号随用随占。那个测试用的结构体 <code>A { int id; int value; }</code> 打印时还有个小 hack——第二成员存的是 <code>&#39;a&#39;</code>（int 形式的 97），所以用 <code>*((int *)data + 1)</code> 把它当 int 取出来，再按 <code>%c</code> 打成字符：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> TYPEID_MYSTRUCT:<span class="built_in">printf</span>(<span class="string">&quot;%d %c\n&quot;</span>,*(<span class="type">int</span> *)data, *((<span class="type">int</span> *)data + <span class="number">1</span>));<span class="keyword">break</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>TYPEID_SORT</code> 是个将错就错的拼写。</strong> 它管的是 <code>short</code>——当年少敲了一个 H，发现的时候编号已经在测试里跑通了，懒得改，就当 “SORT” 是 “short” 的方言。</p>
+<p><strong>switch 里本来还有两个 case，被注释掉了：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// case TYPEID_UFLOAT:printf( &quot;%u&quot;, *(unsigned float*)data ); break;</span></span><br><span class="line"><span class="comment">// case TYPEID_UDOUBLE:printf( &quot;%ulf&quot;, *(unsigned double*)data ); break;</span></span><br></pre></td></tr></table></figure>
+
+<p>注释原因很简单：C 语言根本没有 <code>unsigned float</code> 和 <code>unsigned double</code> 这两种类型。定义表的时候手快把”全套 unsigned 家族”都编了号，写 case 时才发现无类型可签——这两张身份证从出生起就是废的。</p>
+<p>到这里，V1.1 能跑了：同一个列表混装五种类型，<code>list_printf</code> 逐个打印，格式符分发全自动。但这个方案的天花板也一眼可见——<strong>类型表是一扇关着的门</strong>。想支持新的 struct？回来加 <code>#define</code>、加 case、重编一遍。使用者没法不动库就扩展它，51 号通道说到底还是库作者本人在开。</p>
+<h2 id="V1-2：让数据自己带说明书"><a href="#V1-2：让数据自己带说明书" class="headerlink" title="V1.2：让数据自己带说明书"></a>V1.2：让数据自己带说明书</h2><p>V1.1 的死结在于<strong>打印知识集中在库手里</strong>。那反过来想：凭什么要 list 认识所有类型？让每个元素进门前自带一份”我该怎么被打印”的说明书，不就行了？</p>
+<p>说明书就是一个函数指针。V1.2 的槽位结构变成了这样：</p>
+<figure class="highlight c"><figcaption><span>list.h</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifndef</span> __glist_H__</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __glist_H__</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">char</span> *(*data_to_str)(<span class="type">void</span> * data);			<span class="comment">/* data */</span></span><br><span class="line">    <span class="type">void</span>* data;</span><br><span class="line">&#125;glist_note;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    glist_note* note;</span><br><span class="line">    <span class="type">size_t</span> 	size;</span><br><span class="line">&#125;glist;</span><br><span class="line"></span><br><span class="line">glist* __list__(<span class="type">int</span> _Size);</span><br><span class="line"><span class="type">void</span> __list_del__(glist* <span class="built_in">list</span>);</span><br><span class="line"><span class="type">void</span> <span class="title function_">list_write</span><span class="params">(glist* <span class="built_in">list</span>, <span class="type">size_t</span> _n, <span class="type">void</span> * _Valaddress, <span class="type">char</span> *data_to_str(<span class="type">void</span> *data))</span>;</span><br><span class="line"><span class="type">void</span>* <span class="title function_">list_read</span><span class="params">(glist* <span class="built_in">list</span>, <span class="type">size_t</span> _n)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">list_printf</span><span class="params">(glist* <span class="built_in">list</span>, <span class="type">size_t</span> _n)</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">// __glist_H__</span></span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><figcaption><span>list.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;list.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">glist* __list__(<span class="type">int</span> _Size)</span><br><span class="line">&#123;</span><br><span class="line">    glist* new_list = (glist *)<span class="built_in">malloc</span>( <span class="keyword">sizeof</span>( glist ) );</span><br><span class="line">    glist_note* new_list_node = (glist_note* )<span class="built_in">malloc</span>( <span class="keyword">sizeof</span>( glist_note ) * _Size);</span><br><span class="line"></span><br><span class="line">    new_list-&gt;note = new_list_node;</span><br><span class="line">    new_list-&gt;size = _Size;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> new_list;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> __list_del__(glist* <span class="built_in">list</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">size_t</span> i;  <span class="comment">/* loop counter */</span></span><br><span class="line">    <span class="keyword">while</span> (i &lt; <span class="built_in">list</span>-&gt;size)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">free</span>(<span class="built_in">list</span>-&gt;note[i++].data);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">free</span>(<span class="built_in">list</span>-&gt;note);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">list_write</span><span class="params">(glist* <span class="built_in">list</span>, <span class="type">size_t</span> _n, <span class="type">void</span> * _Valaddress, <span class="type">char</span> *data_to_str(<span class="type">void</span> *data))</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (_n &lt; <span class="built_in">list</span>-&gt;size)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">list</span>-&gt;note[_n].data = _Valaddress;</span><br><span class="line">        <span class="built_in">list</span>-&gt;note[_n].data_to_str = data_to_str;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span>* <span class="title function_">list_read</span><span class="params">(glist* <span class="built_in">list</span>, <span class="type">size_t</span> _n)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (_n &lt; <span class="built_in">list</span>-&gt;size)</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">list</span>-&gt;note[_n].data;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">list_printf</span><span class="params">(glist* <span class="built_in">list</span>, <span class="type">size_t</span> _n)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">void</span>* data = list_read(<span class="built_in">list</span>, _n);</span><br><span class="line">    <span class="keyword">if</span>(data != <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">char</span> *str = <span class="built_in">list</span>-&gt;note[_n].data_to_str(<span class="built_in">list</span>-&gt;note[_n].data);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%s\n&quot;</span>, str);</span><br><span class="line">        <span class="built_in">free</span>(str);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>两个地方值得停下来看。</p>
+<p><strong>第一处：函数参数里写的是函数，不是函数指针。</strong> 结构体成员是标准的函数指针 <code>char *(*data_to_str)(void * data)</code>，而 <code>list_write</code> 的参数表里却写成了 <code>char *data_to_str(void *data)</code>——像函数声明。这不是笔误：C 语言规定，函数类型的形参会自动调整成对应的函数指针，两种写法完全等价，后一种读起来更顺。函数指针声明本来就是 C 的阅读难关，我之前写的<a href="/posts/bd6fe775/">100 级函数指针挑战</a>整篇都在跟这种声明搏斗。</p>
+<p><strong>第二处：<code>list_printf</code> 变得极其简短</strong>——它不再认识任何类型了。它只做一件事：调用元素自带的 <code>data_to_str</code> 拿到字符串，打印，然后 <code>free</code>。这里有一条双方默认遵守的约定：<strong><code>to_str</code> 返回的必须是堆上申请的字符串（<code>calloc</code> 出来的），打印方用完负责释放</strong>。谁生产谁 malloc，谁消费谁 free，一句注释都没写，但契约就在那。</p>
+<p>测试程序里，每种类型配一个 to_str 工匠，自定义结构体也一视同仁：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> *<span class="title function_">int_to_str</span><span class="params">(<span class="type">void</span> *data)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">char</span> *result = (<span class="type">char</span> *)<span class="built_in">calloc</span>(<span class="number">100</span>, <span class="keyword">sizeof</span>(<span class="type">char</span>));</span><br><span class="line">    <span class="built_in">sprintf</span>(result, <span class="string">&quot;%d&quot;</span>, *(<span class="type">int</span> *)data);</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">char</span> *<span class="title function_">char_to_str</span><span class="params">(<span class="type">void</span> *data)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">char</span> *result = (<span class="type">char</span> *)<span class="built_in">calloc</span>(<span class="number">2</span>, <span class="keyword">sizeof</span>(<span class="type">char</span>));</span><br><span class="line">    <span class="built_in">sprintf</span>(result, <span class="string">&quot;%c&quot;</span>, *(<span class="type">char</span> *)data);</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">char</span> *<span class="title function_">mystruct_to_str</span><span class="params">(<span class="type">void</span> *data)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">char</span> *result = (<span class="type">char</span> *)<span class="built_in">calloc</span>(<span class="number">100</span>, <span class="keyword">sizeof</span>(<span class="type">char</span>));</span><br><span class="line">    <span class="built_in">sprintf</span>(result, <span class="string">&quot;%d %c&quot;</span>, ((A *)data)-&gt;id, ((A *)data)-&gt;value);</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>写入时把数据和说明书成对提交：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">glist* l = __list__(<span class="number">5</span>);</span><br><span class="line"></span><br><span class="line">list_write(l, <span class="number">0</span>, &amp;num, int_to_str);</span><br><span class="line">list_write(l, <span class="number">1</span>, &amp;ch, char_to_str);</span><br><span class="line">list_write(l, <span class="number">2</span>, &amp;f, float_to_str);</span><br><span class="line">list_write(l, <span class="number">3</span>, &amp;d, double_to_str);</span><br><span class="line">list_write(l, <span class="number">4</span>, &amp;a, mystruct_to_str);</span><br></pre></td></tr></table></figure>
+
+<p>从此新增一种类型，<strong>库一行都不用动</strong>——调用方自己写一个 to_str 传进来就行。V1.1 那扇关着的门，被一个函数指针从外面推开了。</p>
+<h2 id="运行效果"><a href="#运行效果" class="headerlink" title="运行效果"></a>运行效果</h2><p>V1.2 的测试程序一次跑完静态、写入、打印三段：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">static list:</span><br><span class="line">int : 122</span><br><span class="line">char : A</span><br><span class="line">float : 123.449997</span><br><span class="line">double : 456.780000</span><br><span class="line">structure : 3 a</span><br><span class="line">malloc list:</span><br><span class="line">int : 122</span><br><span class="line">char : A</span><br><span class="line">float : 123.449997</span><br><span class="line">double : 456.780000</span><br><span class="line">structure : 3 a</span><br><span class="line">new glist test:</span><br><span class="line">122</span><br><span class="line">A</span><br><span class="line">123.449997</span><br><span class="line">456.780000</span><br><span class="line">3 a</span><br></pre></td></tr></table></figure>
+
+<p>两个细节。<strong><code>123.449997</code> 不是 bug</strong>：123.45 在 float 里根本没有精确表示，存进去的是它的最近邻，<code>%f</code> 默认打 6 位小数，尾巴就露出来了；隔壁 double 的 <code>456.780000</code> 干干净净，精度差距一目了然——这个输出本身就是”为什么别用 float 存钱”的免费广告。</p>
+<p>另一个细节：V1.1 和 V1.2 的这段输出<strong>一字不差</strong>。底下数据流完全不同（编号查表 vs 函数指针分发），用户视角却完全一致——好的抽象就该是这样，换发动机不换方向盘。</p>
+<h2 id="复盘：现在回头看，埋着两个坑"><a href="#复盘：现在回头看，埋着两个坑" class="headerlink" title="复盘：现在回头看，埋着两个坑"></a>复盘：现在回头看，埋着两个坑</h2><p><strong>第一个坑，<code>__list_del__</code> 里那个未初始化的 <code>i</code>：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> __list_del__(glist* <span class="built_in">list</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">size_t</span> i;  <span class="comment">/* loop counter */</span></span><br><span class="line">    <span class="keyword">while</span> (i &lt; <span class="built_in">list</span>-&gt;size)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">free</span>(<span class="built_in">list</span>-&gt;note[i++].data);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>i</code> 没有初值，进去是栈上残留的随机数。运气好它恰好 ≥ <code>size</code>，循环一次不进，内存全漏；运气差它是个小值，<code>free</code> 一串随机下标的数据。V1.1 和 V1.2 都是这么写的，当时 exe 跑完安然退出，纯属那块栈恰好转脸给了面子。修复只值一个字符的事：<code>size_t i = 0;</code>。</p>
+<p><strong>第二个坑更隐蔽，是所有权的错配。</strong> 测试程序往 list 里存的是全局变量的地址（<code>&amp;num</code>、<code>&amp;ch</code>），而 <code>__list_del__</code> 销毁时对每个槽位的 <code>data</code> 做了 <code>free</code>——<code>free</code> 一个不是 <code>malloc</code> 出来的指针，同样是未定义行为。全局变量住在数据段，根本不在堆上。这个组合当时没炸，不代表它对，只代表那个几百行的 exe 还没复杂到让问题现形。</p>
+<p>正确的姿势得二选一：要么约定”存进来的必须是堆内存”，要么给 <code>glist_note</code> 再配一个 <code>data_free</code> 函数指针，让销毁逻辑也跟着元素走。其实 V1.2 已经给每个元素配了函数指针，顺手再配一个就能把这个坑填了——当时满脑子都是”怎么打印”，没想过”怎么销毁”。这也是这次复盘最大的收获：<strong>设计一个容器，想清楚怎么放进去的同时，就得想清楚怎么请出来。</strong></p>
+<h2 id="尾声：运行期和编译期，两条泛型路"><a href="#尾声：运行期和编译期，两条泛型路" class="headerlink" title="尾声：运行期和编译期，两条泛型路"></a>尾声：运行期和编译期，两条泛型路</h2><p>后来写 Print.h 的时候，我用 <code>_Generic</code> 做过另一版”类型分发”——<a href="/posts/21fb8eaf/">Print.h 开发记（一）V1.0</a> 里，编译器在<strong>编译期</strong>看着表达式的类型挑函数，零运行时开销。glist 走的是另一条路：<code>void*</code> 加函数指针，在<strong>运行期</strong>分发，类型说明书跟着数据走，随插随用。</p>
+<p>两条路没有高下：<code>_Generic</code> 快，但类型集合编译时就冻死了；函数指针慢一拍，换来的是库的门永远开着。C 语言没有泛型语法，但它把实现泛型的零件全都发到了你手上——glist 这三个版本，就是把这些零件一个个捡起来的过程。完整源码在 <a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER/glist">glist</a>（MIT），提交历史就是 V1.0 → V1.1 → V1.2 的三步进化，想对照哪个版本就翻哪个标签。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER">寰宇体</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cosmical-container.github.io/posts/11de485d/">https://cosmical-container.github.io/posts/11de485d/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cosmical-container.github.io" target="_blank">寰宇体的世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C%E8%AF%AD%E8%A8%80/">C语言</a><a class="post-meta__tags" href="/tags/%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88/">函数指针</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a></div><div class="post-share"><div class="social-share" data-image="/img/covers/cover-4-forest.svg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/91c3b2d7/" title="从黑窗口到窗口：我的 Win32 学习轨迹"><img class="cover" src="/img/covers/cover-1-nebula.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post" loading='lazy'><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">从黑窗口到窗口：我的 Win32 学习轨迹</div></div><div class="info-2"><div class="info-item-1">学 C 语言的前半年，我的程序全都活在一个黑窗口里——printf 进，scanf 出。2023 年 2 月，我决定去摸一摸 Windows 真正的样子：窗口、消息、控件、对话框。到 7 月，我已经能在内存里徒手拼出一个对话框、写出一个带菜单和列表视图的课程设计。这篇文章按时间顺序复盘这条轨迹的四个站点：鼠标热身 → 第一个窗口 → 内存里手搓对话框 → 学生考勤管理系统。 热身：做一个鼠标监听器进 Win32 的世界之前，先在控制台里热身。目标很简单：实时显示鼠标坐标、统计左右键点击次数。核心是两个 API——GetAsyncKeyState 查按键状态、GetCursorPos 拿坐标： 鼠标检测.cpp12345678910111213141516171819202122232425262728293031323334#include &lt;windows.h&gt;                			//GetAsyncKeyState所需头文件#include &lt;iostream&gt;#define KEY_DOWN(VK_NONAME) ((GetAsyn...</div></div></div></a><a class="pagination-related" href="/posts/aba8b8e8/" title="C 语言自己也想要函数重载"><img class="cover" src="/img/space.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post" loading='lazy'><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">C 语言自己也想要函数重载</div></div><div class="info-2"><div class="info-item-1"> 📌 更新（2026-09-01）：归档这篇旧笔记，代码用 GCC 15.1.0 复测，输出与当年一致——顺带收获了几枚新编译器对老代码的唠叨，见文内。  C++ 有函数重载，add(int,int) 和 add(float,float) 可以同名共存，编译器按实参类型自动分发。C 没有这个待遇——但 C11 给了一个官方替代品：_Generic 选择宏。根据表达式的类型，在编译期挑一个分支： 123456#define ADD(x,y) _Generic((x),\    /*S:add_stu(x,y),*/\    int:add_int(x,y),\    float:add_float(x,y),\    double:add_float((float)x,(float)y),\    default:unsupport())  _Generic 的第一个参数是”钥匙”，后面是一串 类型: 结果 的锁眼。编译时看钥匙的类型（不是值）挑锁眼，选中的表达式才会被展开，没选中的连求值都不会发生——所以它是零运行时分发的免费午餐。实测三连： 123printf(&quot;%...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/63742fad/" title="任意类型的栈：C 泛型容器的两条路线"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-18</div><div class="info-item-2">任意类型的栈：C 泛型容器的两条路线</div></div><div class="info-2"><div class="info-item-1">教科书上的栈长这样：int stack[MAX]——只能装 int。2022 年 10 月我刚学完数据结构，决定写一个”任意类型都能装”的栈；2024 年 7 月翻出来重写了一遍。两个版本放在一起看特别有意思：一个用 memcpy 把数据拷进容器，一个只存数据的地址——这正是 C 语言里实现泛型容器的两条路线。后来写的通用链表 glist 和计算器的栈，都能在这两条路线里找到自己的位置。  📌 更新（2026-08-31）：为写这篇重新编译复现了两个版本，抓到了 2022 版里的两个老 bug（见复盘一节），实测输出均已录入正文。  2022 版：void* 加 typesize，memcpy 说了算这个版本的完整设计思路，被当年的我用一段英文注释写在了 stack.h 的开头——现在读来简直就是一篇给自己看的教案： 1234567891011121314151617181920// This stack is implemented by void pointer, so it is GENERIC.//// How the void pointer allows assig...</div></div></div></a><a class="pagination-related" href="/posts/30b0ee7b/" title="数电帮你算开发记：真值表、卡诺图和 C 的析构函数"><img class="cover" src="/img/covers/cover-4-forest.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-15</div><div class="info-item-2">数电帮你算开发记：真值表、卡诺图和 C 的析构函数</div></div><div class="info-2"><div class="info-item-1">数字电路课有个绕不开的体力活：画真值表。一个 4 变量的逻辑函数就是 16 行，5 变量 32 行，手写一遍只为验证表达式对不对。2023 年 7 月我先写了个卡诺图绘制的小程序，2024 年 3 月 15 日晚上把它扩成了一个完整的工具——数电帮你算：给任意 2~5 元逻辑函数自动生成全部输入组合，配上函数指针直接打出整张真值表。当天夜里又迭代了一版 V1.1。两个程序的源码都整理在 GitHub 仓库 Digital-Logic-Helper 里，提交历史就是它们的开发顺序。  📌 更新（2026-08-31）：为写这篇重新编译复现了全套流程，并在卡诺图程序里当场抓到并修复了一个 scanf 越界 bug——详见复盘一节。  先说清楚要做什么工具的核心流程三步：  生成测试矢量（test vector）：把 n 个变量的 2ⁿ 种取值组合全部枚举出来； 拿逻辑函数逐行代入，打印出 x1 x2 ... | y 的完整真值表； 顺手把内存收拾干净。  加上之前的卡诺图绘制（输入 16 个输出值，反打最小项表达式 + 格雷码排序的卡诺图网格），数电作业的两大苦力活就都自动化了。 ...</div></div></div></a><a class="pagination-related" href="/posts/6125e204/" title="字符串公式求值器"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-10-05</div><div class="info-item-2">字符串公式求值器</div></div><div class="info-2"><div class="info-item-1">一个有意思的小工具：给它一个字符串，比如 &quot;sin(1+1)+max(2,3)&quot; 这种形式，它能自动找出里面的数学函数调用、解析括号里的表达式，然后调用对应的库函数把结果算出来。全程纯 C，核心用了三个技术点。 一、函数指针”查找表”C 没有反射，怎么把字符串 &quot;sin&quot; 变成 sin() 函数？答案是字符串比较 + 函数指针： 123456789101112typedef double (*math_fun)(double);math_fun get_math_fun(const char *s)&#123;    if (strcmp(s, &quot;sin&quot;) == 0)  return sin;    if (strcmp(s, &quot;cos&quot;) == 0)  return cos;    if (strcmp(s, &quot;tan&quot;) == 0)  return tan;    if (strcmp(s, &quot;sqrt&quot;) == 0) return sqrt;    if...</div></div></div></a><a class="pagination-related" href="/posts/f1369abc/" title="用栈实现四则运算计算器"><img class="cover" src="/img/covers/cover-2-ocean.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-10-06</div><div class="info-item-2">用栈实现四则运算计算器</div></div><div class="info-2"><div class="info-item-1">计算器是栈的教科书级应用。这个项目从 V1.0 迭代到 V1.2，最终版约 1100 行，从”能算 1+2*3“一路做到：+ - * / ^ 五则运算、{} [] () 三种括号混用、小数，甚至 sin(1+sin(1+sin(1))) 这样的嵌套函数调用——全部纯 C 手写。 核心算法：两个栈消灭优先级人脑算 3 + 4 * 2 时知道先乘除后加减，机器靠两个栈来消灭优先级问题：  数字栈：存放操作数 符号栈：存放运算符，利用优先级决定何时计算  整个算法分两步：  中缀转后缀：将 3 + 4 * 2 转为 3 4 2 * +（后缀表达式&#x2F;逆波兰式），后缀表达式不需要任何优先级判断 后缀求值：逐个读 token，数字入栈，运算符弹出两个数计算后与压回，最后栈里剩下的就是答案  先造工具：My_Stack写计算器之前先造轮子。栈用 calloc 分配、realloc 扩容，base&#x2F;top&#x2F;max 三个指针管理一段连续内存： 1234567struct my_Stack&#123;    ll stack_size;    Elemtype* bas...</div></div></div></a><a class="pagination-related" href="/posts/18180a87/" title="C语言静态库实战：字符串查找运算符函数"><img class="cover" src="/img/covers/cover-1-nebula.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-31</div><div class="info-item-2">C语言静态库实战：字符串查找运算符函数</div></div><div class="info-2"><div class="info-item-1">把四则运算做成一个静态库，调用方式很优雅——用字符串找运算符函数： 项目共三个文件：static.h（库的接口声明）、static.c（实现）、main.c（调用示例）。 123456789101112131415#include &quot;static.h&quot;int main()&#123;    double result;    result = getoptFunction(&quot;+&quot;)(1.9, 2);    printf(&quot;%lf\n&quot;, result);    result = getoptFunction(&quot;-&quot;)(1.9, 2);    printf(&quot;%lf\n&quot;, result);    result = getoptFunction(&quot;**&quot;)(1.9, 2);   // 自定义的幂运算    printf(&quot;%lf\n&quot;, result);    return 0;&#125;  getoptFunction 接收运算符字符串，返...</div></div></div></a><a class="pagination-related" href="/posts/a049fc87/" title="C-返回值为函数指针的函数"><img class="cover" src="/img/covers/cover-4-forest.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-25</div><div class="info-item-2">C-返回值为函数指针的函数</div></div><div class="info-2"><div class="info-item-1">返回值为函数指针的函数本质上是一个函数，返回值为函数指针 123456789101112131415#include&lt;stdio.h&gt;int (*drink(void)) (void)&#123;    static int i;    i++;    printf(&quot;(%d)\n&quot;, i);    return (int(*)(void))drink;&#125;int main()&#123;    drink()();    return 0;&#125;  运行结果如下：  那能否实现一直调用下去呢？求大佬写一个能运行 drink()()()()()()()()()()() 的代码 </div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="comment-switch"><span class="first-comment">Giscus</span><span id="switch-btn"></span><span class="second-comment">Twikoo</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#V1-0%EF%BC%9A%E5%85%88%E6%8A%8A%E2%80%9D%E5%AD%98%E2%80%9D%E8%A7%A3%E5%86%B3%E2%80%94%E2%80%94void-%E6%95%B0%E7%BB%84"><span class="toc-text">V1.0：先把”存”解决——void* 数组</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#V1-1%EF%BC%9A%E7%BB%99%E6%AF%8F%E4%B8%AA%E5%85%83%E7%B4%A0%E5%8F%91%E4%B8%80%E5%BC%A0%E2%80%9D%E7%B1%BB%E5%9E%8B%E8%BA%AB%E4%BB%BD%E8%AF%81%E2%80%9D"><span class="toc-text">V1.1：给每个元素发一张”类型身份证”</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#V1-2%EF%BC%9A%E8%AE%A9%E6%95%B0%E6%8D%AE%E8%87%AA%E5%B7%B1%E5%B8%A6%E8%AF%B4%E6%98%8E%E4%B9%A6"><span class="toc-text">V1.2：让数据自己带说明书</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E6%95%88%E6%9E%9C"><span class="toc-text">运行效果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E7%9B%98%EF%BC%9A%E7%8E%B0%E5%9C%A8%E5%9B%9E%E5%A4%B4%E7%9C%8B%EF%BC%8C%E5%9F%8B%E7%9D%80%E4%B8%A4%E4%B8%AA%E5%9D%91"><span class="toc-text">复盘：现在回头看，埋着两个坑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%BE%E5%A3%B0%EF%BC%9A%E8%BF%90%E8%A1%8C%E6%9C%9F%E5%92%8C%E7%BC%96%E8%AF%91%E6%9C%9F%EF%BC%8C%E4%B8%A4%E6%9D%A1%E6%B3%9B%E5%9E%8B%E8%B7%AF"><span class="toc-text">尾声：运行期和编译期，两条泛型路</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io',
+      'data-repo-id': 'R_kgDOHTJxpw',
+      'data-category-id': 'DIC_kwDOHTJxp84DE3Jg',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('/pluginsSrc/twikoo/dist/twikoo.all.min.js?v=1.7.15').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Giscus' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Giscus' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

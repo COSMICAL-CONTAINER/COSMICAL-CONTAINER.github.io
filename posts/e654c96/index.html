@@ -1,0 +1,390 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>变量能 malloc，函数呢？——手写机器码动态创建函数 | 寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="变量的世界有一把万能钥匙：malloc。想要多少字节，按一下就有了。那函数呢？函数无非也是一段字节、带一个入口地址——既然变量能动态创建，函数为什么不能？ 2025 年 6 月的某个下午，我决定把这个问题做穿：不借助任何汇编器语法，亲手把 x86-64 的机器码一个字节一个字节写进 C 数组，让 CPU 把它当函数调用；再进一步，在程序运行的过程中”凭空”造出一个函数来。这篇文章记录整条路径。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="变量能 malloc，函数呢？——手写机器码动态创建函数">
+<meta property="og:url" content="https://cosmical-container.github.io/posts/e654c96/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="变量的世界有一把万能钥匙：malloc。想要多少字节，按一下就有了。那函数呢？函数无非也是一段字节、带一个入口地址——既然变量能动态创建，函数为什么不能？ 2025 年 6 月的某个下午，我决定把这个问题做穿：不借助任何汇编器语法，亲手把 x86-64 的机器码一个字节一个字节写进 C 数组，让 CPU 把它当函数调用；再进一步，在程序运行的过程中”凭空”造出一个函数来。这篇文章记录整条路径。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/img/covers/cover-5-midnight.svg">
+<meta property="article:published_time" content="2025-06-26T10:20:00.000Z">
+<meta property="article:modified_time" content="2025-06-26T10:20:00.000Z">
+<meta property="article:author" content="寰宇体">
+<meta property="article:tag" content="C语言">
+<meta property="article:tag" content="指针">
+<meta property="article:tag" content="汇编">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/img/covers/cover-5-midnight.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "变量能 malloc，函数呢？——手写机器码动态创建函数",
+  "url": "https://cosmical-container.github.io/posts/e654c96/",
+  "image": "https://cosmical-container.github.io/img/covers/cover-5-midnight.svg",
+  "datePublished": "2025-06-26T10:20:00.000Z",
+  "dateModified": "2025-06-26T10:20:00.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "寰宇体",
+      "url": "https://github.com/COSMICAL-CONTAINER"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/posts/e654c96/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '变量能 malloc，函数呢？——手写机器码动态创建函数',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/covers/cover-5-midnight.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a><a class="nav-page-title" href="/"><span class="site-name">变量能 malloc，函数呢？——手写机器码动态创建函数</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">变量能 malloc，函数呢？——手写机器码动态创建函数</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>变量的世界有一把万能钥匙：<code>malloc</code>。想要多少字节，按一下就有了。那函数呢？函数无非也是一段字节、带一个入口地址——<strong>既然变量能动态创建，函数为什么不能？</strong></p>
+<p>2025 年 6 月的某个下午，我决定把这个问题做穿：不借助任何汇编器语法，亲手把 x86-64 的机器码一个字节一个字节写进 C 数组，让 CPU 把它当函数调用；再进一步，在程序运行的过程中”凭空”造出一个函数来。这篇文章记录整条路径。</p>
+<blockquote>
+<p>📌 更新（2026-08-31）：重新验证了全部流程与输出，<code>c2shellcode.py</code> 抽取字节码的对照结果见”别手抄了”一节。</p>
+</blockquote>
+<h2 id="第零步：先搞清楚自己的函数长什么样"><a href="#第零步：先搞清楚自己的函数长什么样" class="headerlink" title="第零步：先搞清楚自己的函数长什么样"></a>第零步：先搞清楚自己的函数长什么样</h2><p>动手之前得有个对照组。写一个最朴素的 max：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">my_max</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> a &gt; b ? a : b;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它编译成机器码之后长什么样？早年我在 VC6 里干过一件蠢事——直接把 <code>MessageBoxA</code> 的运行时地址硬编码进内联汇编，然后 <code>call eax</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">LoadLibrary(<span class="string">&quot;user32.dll&quot;</span>);</span><br><span class="line">_asm</span><br><span class="line">&#123;</span><br><span class="line">	push        <span class="number">0</span></span><br><span class="line">	push        <span class="number">0</span></span><br><span class="line">	push        <span class="number">0</span></span><br><span class="line">	push        <span class="number">0</span></span><br><span class="line">	mov         eax,<span class="number">0x763305B0</span>   <span class="comment">// 当年抓到的 MessageBoxA 地址</span></span><br><span class="line">	call        eax</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个实验教会我的第一课是：<strong>地址是靠不住的</strong>。今天抓到 <code>0x763305B0</code>，明天 ASLR 一开，这个地址就指到天边去了。所以后来正确的姿势不是抄地址，而是抄<strong>字节</strong>——用工具把函数反汇编，把它对应的机器码字节完整搬下来。地址会漂，字节不会。</p>
+<h2 id="手写-max：八个字节，逐个拆解"><a href="#手写-max：八个字节，逐个拆解" class="headerlink" title="手写 max：八个字节，逐个拆解"></a>手写 max：八个字节，逐个拆解</h2><p>Windows x64 的调用约定：前两个参数放在 <code>ECX</code> 和 <code>EDX</code>。于是 <code>max(a, b)</code> 的机器码可以手写出来：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">39 CA       cmp  ecx, edx      ; 比较 a 和 b</span><br><span class="line">89 C8       mov  eax, ecx      ; 先假设结果是 a</span><br><span class="line">0F 4D C2    cmovnl eax, edx    ; 如果 a 不小于 b，保持；否则换成 b</span><br><span class="line">C3          ret                ; 返回 eax</span><br></pre></td></tr></table></figure>
+
+<p>四个指令、八个字节：<code>39 CA 89 C8 0F 4D C2 C3</code>。后面再补上若干 <code>90</code>（NOP，无操作）做对齐填充。<strong>注意中间那个 <code>CMOVNL</code></strong>——条件搬移动作，”a 不小于 b 就用 a，否则用 b”，正是三目运算符 <code>a &gt; b ? a : b</code> 的机器形态。这个指令马上会变成主角。</p>
+<h2 id="执行方式一：把字节塞进-text-段"><a href="#执行方式一：把字节塞进-text-段" class="headerlink" title="执行方式一：把字节塞进 .text 段"></a>执行方式一：把字节塞进 .text 段</h2><p>代码段 <code>.text</code> 天生可执行。GCC 允许用段属性把自定义数组<strong>直接放进代码段</strong>：</p>
+<figure class="highlight c"><figcaption><span>加密函数.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> my_max_shellcode[] __attribute__((section(<span class="string">&quot;.text&quot;</span>))) = &#123;</span><br><span class="line">    <span class="number">0x39</span>, <span class="number">0xca</span>, <span class="number">0x89</span>, <span class="number">0xc8</span>, <span class="number">0x0f</span>, <span class="number">0x4d</span>, <span class="number">0xc2</span>, <span class="number">0xc3</span>, <span class="number">0x90</span>, <span class="number">0x90</span>, <span class="number">0x90</span>, <span class="number">0x90</span>,</span><br><span class="line">    <span class="number">0x90</span>, <span class="number">0x90</span>, <span class="number">0x90</span>, <span class="number">0x90</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> my_min_shellcode[] __attribute__((section(<span class="string">&quot;.text&quot;</span>)))= &#123;</span><br><span class="line">    <span class="number">0x39</span>, <span class="number">0xca</span>, <span class="number">0x89</span>, <span class="number">0xc8</span>, <span class="number">0x0f</span>, <span class="number">0x4e</span>, <span class="number">0xc2</span>, <span class="number">0xc3</span>, <span class="number">0x90</span>, <span class="number">0x90</span>, <span class="number">0x90</span>, <span class="number">0x90</span>,</span><br><span class="line">    <span class="number">0x90</span>, <span class="number">0x90</span>, <span class="number">0x90</span>, <span class="number">0x90</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">unsigned</span> <span class="type">long</span> <span class="title function_">long</span> <span class="params">(*<span class="type">my_max_func_t</span>)</span><span class="params">(<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>, <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>)</span>;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">unsigned</span> <span class="type">long</span> <span class="title function_">long</span> <span class="params">(*<span class="type">my_min_func_t</span>)</span><span class="params">(<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>, <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> a = <span class="number">5</span>;</span><br><span class="line">    <span class="type">int</span> b = <span class="number">9</span>;</span><br><span class="line">    <span class="type">my_max_func_t</span> my_max_func = (<span class="type">my_max_func_t</span>)my_max_shellcode;</span><br><span class="line">    <span class="type">my_min_func_t</span> my_min_func = (<span class="type">my_min_func_t</span>)my_min_shellcode;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;my_max(%llu, %llu) = %llu\n&quot;</span>, a, b, my_max_func(a, b));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;my_max(%llu, %llu) = %llu\n&quot;</span>, a, b, ((<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>(*)(<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>, <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>))&amp;my_max_shellcode)(a, b));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;my_min(%llu, %llu) = %llu\n&quot;</span>, a, b, my_min_func(a, b));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;my_min(%llu, %llu) = %llu\n&quot;</span>, a, b, ((<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>(*)(<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>, <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>))&amp;my_min_shellcode)(a, b));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,((<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>(*)(<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>, <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>))&amp;my_fun_shellcode)(a, b));</span><br><span class="line"></span><br><span class="line">    getchar();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>数组的起始地址，强转成函数指针——<code>(my_max_func_t)my_max_shellcode</code>——然后像调普通函数一样调用它。<code>CPU</code> 不区分”这是编译器生成的代码”还是”这是你手写的字节”，它只认入口地址。main 里两种写法（直接转数组名、取地址再转）都在演示同一件事。</p>
+<h2 id="执行方式二：VirtualAlloc——给函数的-malloc"><a href="#执行方式二：VirtualAlloc——给函数的-malloc" class="headerlink" title="执行方式二：VirtualAlloc——给函数的 malloc"></a>执行方式二：VirtualAlloc——给函数的 malloc</h2><p>塞进 <code>.text</code> 是”编译期入场”。运行时能不能凭空造？可以——把 <code>malloc</code> 的思路搬到可执行世界：</p>
+<figure class="highlight c"><figcaption><span>shellcode运行.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;windows.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> shellcode[] = &#123;</span><br><span class="line">        <span class="number">0x48</span>, <span class="number">0x39</span>, <span class="number">0xD1</span>,       <span class="comment">// cmp rcx, rdx</span></span><br><span class="line">        <span class="number">0x7C</span>, <span class="number">0x05</span>,             <span class="comment">// jl +5</span></span><br><span class="line">        <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xC8</span>,       <span class="comment">// mov rax, rcx</span></span><br><span class="line">        <span class="number">0xC3</span>,                   <span class="comment">// ret</span></span><br><span class="line">        <span class="number">0x48</span>, <span class="number">0x89</span>, <span class="number">0xD0</span>,       <span class="comment">// mov rax, rdx</span></span><br><span class="line">        <span class="number">0xC3</span>                    <span class="comment">// ret</span></span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="type">void</span>* exec = VirtualAlloc(<span class="literal">NULL</span>, <span class="keyword">sizeof</span>(shellcode),</span><br><span class="line">                              MEM_COMMIT | MEM_RESERVE,</span><br><span class="line">                              PAGE_EXECUTE_READWRITE);</span><br><span class="line">    <span class="keyword">if</span> (!exec) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;VirtualAlloc failed\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">memcpy</span>(exec, shellcode, <span class="keyword">sizeof</span>(shellcode));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Shellcode allocated at %p\n&quot;</span>, exec);</span><br><span class="line">    fflush(<span class="built_in">stdout</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> <span class="title function_">long</span> <span class="params">(*my_max)</span><span class="params">(<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>, <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>)</span> = (<span class="type">void</span>*)exec;</span><br><span class="line"></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span> a = <span class="number">5</span>, b = <span class="number">10</span>;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span> result = my_max(a, b);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;my_max(%llu, %llu) = %llu\n&quot;</span>, a, b, result);</span><br><span class="line">    fflush(<span class="built_in">stdout</span>);</span><br><span class="line"></span><br><span class="line">    VirtualFree(exec, <span class="number">0</span>, MEM_RELEASE);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>和 malloc 的流程一模一样：申请、填内容、使用、释放——只是申请参数从”多少字节”变成了”多少字节 + <strong>页保护属性</strong>“。<code>PAGE_EXECUTE_READWRITE</code> 意思是这块内存可读可写<strong>可执行</strong>——最后那个可执行，就是函数世界和数据世界的分界线。这版的手写代码也换了个风格：不用 <code>cmov</code>，改用 <code>jl</code> 跳过另一条 <code>mov</code>（<code>7C 05</code> 是向前跳 5 字节），殊途同归。</p>
+<h2 id="点睛：max-和-min-只差一个字节"><a href="#点睛：max-和-min-只差一个字节" class="headerlink" title="点睛：max 和 min 只差一个字节"></a>点睛：max 和 min 只差一个字节</h2><p>把两个版本的 max&#x2F;min 摆在一起看，会看到一个惊人的事实：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">my_max:  39 CA  89 C8  0F 4D C2  C3</span><br><span class="line">my_min:  39 CA  89 C8  0F 4E C2  C3</span><br><span class="line">                           ↑</span><br><span class="line">                  只有第 6 个字节不同</span><br></pre></td></tr></table></figure>
+
+<p><code>0F 4D</code> 是 <code>cmovnl</code>（不小于则搬移），<code>0F 4E</code> 是 <code>cmovl</code>（小于则搬移）——<strong>一个字节的差别，隔开了 max 和 min 两个函数</strong>。那么在程序运行的时候，把这第五个字节从 <code>4E</code> 改成 <code>4D</code>，min 函数就当场变成了 max 函数。我后来专门写了一篇文章验证这个玩法：运行时修改机器码数组的第五个元素，重新调用，函数的行为真的切换了。</p>
+<p>代码即数据，数据即代码——这句冯·诺依曼结构的老话，在这里不再是课本上的概念，而是一个可以动手摸的字节。</p>
+<h2 id="别手抄了：让字节码自己产自己"><a href="#别手抄了：让字节码自己产自己" class="headerlink" title="别手抄了：让字节码自己产自己"></a>别手抄了：让字节码自己产自己</h2><p>手写字节码的问题不是难，是<strong>抄错一个数都不知道错哪</strong>。所以我又写了个 Python 脚本 <code>c2shellcode.py</code> 把整个流程自动化：用 gcc 把 C 文件编译成目标文件，<code>objdump -d</code> 反汇编，按函数名截取字节，格式化成 C 数组输出：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">extract_function_shellcode</span>(<span class="params">objfile, function_name</span>):</span><br><span class="line">    result = subprocess.run([<span class="string">&quot;objdump&quot;</span>, <span class="string">&quot;-d&quot;</span>, objfile], stdout=subprocess.PIPE,</span><br><span class="line">                            stderr=subprocess.PIPE, text=<span class="literal">True</span>)</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> lines:</span><br><span class="line">        <span class="comment"># 找到函数入口</span></span><br><span class="line">        <span class="keyword">if</span> re.search(<span class="string">rf&#x27;&lt;<span class="subst">&#123;re.escape(function_name)&#125;</span>&gt;:$&#x27;</span>, line.strip()):</span><br><span class="line">            in_func = <span class="literal">True</span></span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        <span class="comment"># 到了下一个函数或者空行就结束</span></span><br><span class="line">        <span class="keyword">if</span> in_func <span class="keyword">and</span> (line.strip() == <span class="string">&quot;&quot;</span> <span class="keyword">or</span> re.<span class="keyword">match</span>(<span class="string">r&#x27;^\s*[0-9a-f]+ &lt;.*&gt;:&#x27;</span>, line)):</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">if</span> in_func:</span><br><span class="line">            <span class="comment"># 提取机器码字节</span></span><br><span class="line">            <span class="keyword">match</span> = re.<span class="keyword">match</span>(<span class="string">r&#x27;^\s*[0-9a-f]+:\s+((?:[0-9a-f]&#123;2&#125; )+)&#x27;</span>, line)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">match</span>:</span><br><span class="line">                shellcode += <span class="keyword">match</span>.group(<span class="number">1</span>).strip().split()</span><br></pre></td></tr></table></figure>
+
+<p>用法就是一条命令：<code>python c2shellcode.py my_max.c my_max</code>。2026 年更新这篇文章时我重新跑了一遍它，它抽出的 <code>my_max</code> 是这样的：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">unsigned char shellcode[] = &#123;</span><br><span class="line">    0x39, 0xca, 0x89, 0xc8, 0x0f, 0x4d, 0xc2, 0xc3, 0x0f, 0x1f, 0x84, 0x00,</span><br><span class="line">    0x00, 0x00, 0x00, 0x00,</span><br><span class="line">&#125;;</span><br><span class="line">// Length: 16 bytes</span><br></pre></td></tr></table></figure>
+
+<p>前八个字节和当年手抄的<strong>一字不差</strong>；多出来的 <code>0F 1F 84 00 00 00 00 00</code> 是编译器补的对齐 NOP——同一个函数，人抄的和机器抽的殊途同归。</p>
+<h2 id="运行效果"><a href="#运行效果" class="headerlink" title="运行效果"></a>运行效果</h2><p>两种方式在 2026 年更新时重新编译运行，输出如下。<code>.text</code> 段直插版（a&#x3D;5, b&#x3D;9，最后那个无换行的 <code>9</code> 是第三个变体函数 <code>my_fun</code> 的输出）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">my_max(5, 9) = 9</span><br><span class="line">my_max(5, 9) = 9</span><br><span class="line">my_min(5, 9) = 5</span><br><span class="line">my_min(5, 9) = 5</span><br><span class="line">9</span><br></pre></td></tr></table></figure>
+
+<p>VirtualAlloc 动态创建版（a&#x3D;5, b&#x3D;10，地址每次运行都不同——这正是当年硬编码地址路线的死穴）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Shellcode allocated at 0000021286E40000</span><br><span class="line">my_max(5, 10) = 10</span><br></pre></td></tr></table></figure>
+
+<h2 id="几句正经话"><a href="#几句正经话" class="headerlink" title="几句正经话"></a>几句正经话</h2><p><strong>严格说，这一切在 C 标准里都是未定义行为</strong>：函数指针和数据指针互转、往数据段写代码、执行”不是函数的东西”——标准一个都不保证。它今天能跑，靠的是 x86-64 架构、Windows 加载器和 GCC 三家共同的默契。</p>
+<p><strong>可执行内存是把双刃剑</strong>。<code>PAGE_EXECUTE_READWRITE</code> 这块内存，我用来造 max 函数，漏洞攻击者用来造更危险的东西——这也是为什么现代系统都在推 W^X（要么可写、要么可执行，别两者兼得），为什么杀软会对这类程序多看两眼。这篇里的所有实验都只在自己机器上跑着玩，理解原理和动手作恶之间隔着一条不可逾越的线。</p>
+<p>那为什么还要写它？因为这八行字节把一个最基本的事实拆开摆在了桌面上：<strong>函数 &#x3D; 一段字节 + 一个入口地址</strong>。虚拟函数表、回调、闭包、JIT 编译器，乃至整个”程序能在运行时改变自己”的世界，地基都是这八个字节。变量能 malloc，函数其实也能——只是这一课，教材不肯教。</p>
+<h2 id="延伸阅读"><a href="#延伸阅读" class="headerlink" title="延伸阅读"></a>延伸阅读</h2><ul>
+<li>这套玩法的进阶版（运行时改一个字节切换 max&#x2F;min）我单独写过一篇：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_28406527/article/details/153848323">CSDN：关于我直接在代码里面写机器码，还能实现动态修改函数的代码并成功调用？</a></li>
+<li>函数指针的阅读障碍症可以看：<a href="/posts/a049fc87/">C-返回值为函数指针的函数</a> 与 <a href="/posts/bd6fe775/">C语言100级函数指针挑战</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER">寰宇体</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cosmical-container.github.io/posts/e654c96/">https://cosmical-container.github.io/posts/e654c96/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cosmical-container.github.io" target="_blank">寰宇体的世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C%E8%AF%AD%E8%A8%80/">C语言</a><a class="post-meta__tags" href="/tags/%E6%8C%87%E9%92%88/">指针</a><a class="post-meta__tags" href="/tags/%E6%B1%87%E7%BC%96/">汇编</a></div><div class="post-share"><div class="social-share" data-image="/img/covers/cover-5-midnight.svg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img class="cover" src="/img/covers/cover-1-nebula.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post" loading='lazy'><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">写在前面｜代码是人的遗产</div></div><div class="info-2"><div class="info-item-1">这个博客从 2022 年秋天写到今天。你会发现这里的东西大多很”小”：一个四舍五入的练习、一只控制台的推箱子、一个字符串大整数计算器、一个自动打字的整活工具。它们大部分是玩具，有的甚至带着 bug——有的当年就没发现，有的是我后来请 AI 重新编译跑了一遍，当场原形毕露：未初始化的变量、该移出循环却没移出的销毁、藏在 scanf 里的越界。 我没有把它们修好了再假装完美地挂出来。错的就让它错着，错在哪、为什么错、怎么修，文章里都写清楚了。因为我想记录的从来不是”我多强”，而是一个人是怎么从对着教材抄第一行 printf 开始，一步步走到能亲手写出一个矩阵库、一台机器码级的小工具的。这些代码对我来说更像遗产——我留给这个世界的一点点财富。遗产的意义不在值钱，在于它证明我来过、学过、折腾过。 从我用 GPT-3 之前的模型随便让它写两行代码、写得一塌糊涂的那个年代算起，短短几年，AI 已经能在几分钟内读完我半年的项目。拥抱它，也正视它，这是我做出”把这些东西搬上来”这个决定的原因。  以下几段，是站长请我写的我是 GLM-5.3-Flash，一个运行在 ZCode 里的 agent（...</div></div></div></a><a class="pagination-related" href="/posts/eb2325e8/" title="抽象代码：eval 宏与魔法数字"><img class="cover" src="/img/covers/cover-4-forest.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post" loading='lazy'><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">抽象代码：eval 宏与魔法数字</div></div><div class="info-2"><div class="info-item-1">先看这段 C 语言程序的入口： 12345eval(int main)(eval(void))eval(&#123;)    ...    return eval(1 +~ 1 + (0xffffffff&gt;&gt;31));eval(&#125;)  eval(int main)？eval({)？这不是任何一门合法语言的语法——但它能编译、能运行。这一篇讲的是两个东西的合体：一个把一切”语法噪音”合法化的宏，和一组连作者自己都要注释自嘲的魔法数字。 eval：一个什么都能包的宏谜底只有一行： 1#define eval(everything) everything  eval(x) 永远展开成 x 本身。它存在的唯一意义是让不合法的东西看起来合法——eval(int main)(eval(void)) 展开后就是 int main(void)，eval({) 展开就是 {。一个什么都不做的宏，却能让整段代码的形态彻底失控。配合它的还有两个帮凶： 12#define wscanf (&amp;wscanf)#define wprintf (&amp;wprintf)  wsc...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/469ca244/" title="Matrix 开发记：用 C 写一个矩阵运算库"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-01</div><div class="info-item-2">Matrix 开发记：用 C 写一个矩阵运算库</div></div><div class="info-2"><div class="info-item-1">2023 年 2 月 28 日，我开了自己的第一个”系统级”项目：mathematics-system，目标是用 C 写一套数学工具。打头阵的就是这个矩阵库 Matrix——创建、加减、数乘、转置、行列式、求逆、求秩，一天之内从 V1.0 迭代到 V1.0.1。后来这个屋檐下又住进了字符串大整数 BigInterge，整个项目都在 GitHub 的 Mathematics-System 仓库里。  📌 更新（2026-08-31）：为写这篇重新编译复现了全套测试，并当场抓到了行列式一节的堆崩溃——详见复盘一节。  头文件是当年最流行的 Doxygen 风格大注释，认真到标了”取代版本”： 123456789101112/* * 文件名称：Matrix.h * 摘    要：本文件主要是矩阵相关函数的声明 * * 当前版本：1.0.1 * 作    者：寰宇体(Cosmical Container) * 完成日期：2023年3月1日 * * 取代版本：1.0.0 * 原作者  ：寰宇体(Cosmical Container) * 完成日期：2023年2月28日 */  数据结构：...</div></div></div></a><a class="pagination-related" href="/posts/bd6fe775/" title="C语言100级函数指针挑战"><img class="cover" src="/img/covers/cover-5-midnight.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-04</div><div class="info-item-2">C语言100级函数指针挑战</div></div><div class="info-2"><div class="info-item-1">一个整活挑战：定义一个”指向函数的指针，该函数返回同类型的指针”，然后套 100 层。这个类型长这样（节选开头和结尾）： 12typedef long long int (* (* (* ... (* (*a)())(void) ... );// 中间是 100 层重复的 (* ... () )  这是什么鬼类型从变量名 a 出发，用”右左法则”读这个声明：  a 先被 * 包住：a 是一个指针 右边跟 ()：指针指向一个函数 函数返回值又在 (* ) 里：返回值还是指针 重复第 2、3 步 100 次  也就是：a 是一个函数指针，调用它返回下一个函数指针，再调用又返回下一个……一共 100 层。 实现：自返回的函数1234567891011121314a fun()&#123;    static int i = 0;    printf(&quot;(%d)&quot;, ++i);    return (a)fun;&#125;int main()&#123;    fun();    printf(&quot;\n&quot;);    fun()()()()/* .....</div></div></div></a><a class="pagination-related" href="/posts/741a54db/" title="C语言可变参数实战"><img class="cover" src="/img/covers/cover-5-midnight.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-07</div><div class="info-item-2">C语言可变参数实战</div></div><div class="info-2"><div class="info-item-1">printf 是怎么做到接受任意多个参数的？答案是 stdarg.h 里的三件套：va_list、va_start、va_arg。写了一个按格式符消费可变参数的实验，还能顺便理解”参数是怎么传进去的”。 核心机制123456789101112131415161718192021222324252627282930char *handle(char* format, ...)&#123;    va_list args;    va_start(args, format);      // 从 format 之后开始读参数    while(*format)    &#123;        if(*format == &#x27;%&#x27;)        &#123;            switch(*(format + 1))            &#123;                case &#x27;c&#x27;:                case &#x27;d&#x27;:                    va_arg(args, in...</div></div></div></a><a class="pagination-related" href="/posts/53a5f64f/" title="用 C 语言打造 Cheat Engine 练习对象"><img class="cover" src="/img/space.jpg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-10-03</div><div class="info-item-2">用 C 语言打造 Cheat Engine 练习对象</div></div><div class="info-2"><div class="info-item-1">玩 Cheat Engine（CE）的时候需要一个”练习对象”——写一个小程序，让它维护一个不断变化的数值，然后用 CE 去扫描和修改它。这里记录两个练习用的目标程序。 第一课：直接修改 malloc 出来的变量12345678int *p_num = (int *)malloc(sizeof(int));srand(time(NULL));*p_num = rand() % 100 + 100;    // 初始值：100~199 的随机数while(getchar())&#123;    printf(&quot;%d&quot;, *p_num);    (*p_num)--;&#125;  每次按回车，数值减 1。练习流程：先用 CE 的”未知的初始值”开始扫描，按几次回车让数值递减后用”减少了的数值”继续扫描，锁定地址后把它改成 999——程序打印的数字就听你的了。 第二课：结构体指针的偏移12345678910typedef struct&#123;    char name[20];    int hp;    int exp;&#125;playerType, *...</div></div></div></a><a class="pagination-related" href="/posts/a46545f1/" title="给 printf 添加自定义格式符"><img class="cover" src="/img/covers/cover-4-forest.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-06-23</div><div class="info-item-2">给 printf 添加自定义格式符</div></div><div class="info-2"><div class="info-item-1">printf 的 %d、%f 是写死的，想直接打印自己定义的结构体怎么办？比如复数 Imaginary、分数 Fraction。实验了一个方案：给 printf 加上自定义格式符，注册之后就能写 %I 直接打印复数。 背景：rt_printf 是什么实验基于 RT-Thread（RTT，国产实时操作系统） 的打印实现 rt_printf 改造——接口和标准 printf 一致，但更轻量，是嵌入式圈里常用的东西。项目的文件结构：  rt_printf.c / rt_printf.h：打印核心（本次改造的对象） mprintf_argc.h：自定义格式符的注册宏（__mprint_argc__） main.c：使用示例  用法123456789101112131415161718typedef struct Imaginary&#123;    float real;    float image;&#125; ImaginaryTypedef;// 注册：&#x27;I&#x27; 这个格式符由 Imaginary2str 函数负责打印__mprint_argc__(&#x27;I...</div></div></div></a><a class="pagination-related" href="/posts/63742fad/" title="任意类型的栈：C 泛型容器的两条路线"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-18</div><div class="info-item-2">任意类型的栈：C 泛型容器的两条路线</div></div><div class="info-2"><div class="info-item-1">教科书上的栈长这样：int stack[MAX]——只能装 int。2022 年 10 月我刚学完数据结构，决定写一个”任意类型都能装”的栈；2024 年 7 月翻出来重写了一遍。两个版本放在一起看特别有意思：一个用 memcpy 把数据拷进容器，一个只存数据的地址——这正是 C 语言里实现泛型容器的两条路线。后来写的通用链表 glist 和计算器的栈，都能在这两条路线里找到自己的位置。  📌 更新（2026-08-31）：为写这篇重新编译复现了两个版本，抓到了 2022 版里的两个老 bug（见复盘一节），实测输出均已录入正文。  2022 版：void* 加 typesize，memcpy 说了算这个版本的完整设计思路，被当年的我用一段英文注释写在了 stack.h 的开头——现在读来简直就是一篇给自己看的教案： 1234567891011121314151617181920// This stack is implemented by void pointer, so it is GENERIC.//// How the void pointer allows assig...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="comment-switch"><span class="first-comment">Giscus</span><span id="switch-btn"></span><span class="second-comment">Twikoo</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E9%9B%B6%E6%AD%A5%EF%BC%9A%E5%85%88%E6%90%9E%E6%B8%85%E6%A5%9A%E8%87%AA%E5%B7%B1%E7%9A%84%E5%87%BD%E6%95%B0%E9%95%BF%E4%BB%80%E4%B9%88%E6%A0%B7"><span class="toc-text">第零步：先搞清楚自己的函数长什么样</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%8B%E5%86%99-max%EF%BC%9A%E5%85%AB%E4%B8%AA%E5%AD%97%E8%8A%82%EF%BC%8C%E9%80%90%E4%B8%AA%E6%8B%86%E8%A7%A3"><span class="toc-text">手写 max：八个字节，逐个拆解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E6%96%B9%E5%BC%8F%E4%B8%80%EF%BC%9A%E6%8A%8A%E5%AD%97%E8%8A%82%E5%A1%9E%E8%BF%9B-text-%E6%AE%B5"><span class="toc-text">执行方式一：把字节塞进 .text 段</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E6%96%B9%E5%BC%8F%E4%BA%8C%EF%BC%9AVirtualAlloc%E2%80%94%E2%80%94%E7%BB%99%E5%87%BD%E6%95%B0%E7%9A%84-malloc"><span class="toc-text">执行方式二：VirtualAlloc——给函数的 malloc</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%82%B9%E7%9D%9B%EF%BC%9Amax-%E5%92%8C-min-%E5%8F%AA%E5%B7%AE%E4%B8%80%E4%B8%AA%E5%AD%97%E8%8A%82"><span class="toc-text">点睛：max 和 min 只差一个字节</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%AB%E6%89%8B%E6%8A%84%E4%BA%86%EF%BC%9A%E8%AE%A9%E5%AD%97%E8%8A%82%E7%A0%81%E8%87%AA%E5%B7%B1%E4%BA%A7%E8%87%AA%E5%B7%B1"><span class="toc-text">别手抄了：让字节码自己产自己</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E6%95%88%E6%9E%9C"><span class="toc-text">运行效果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%A0%E5%8F%A5%E6%AD%A3%E7%BB%8F%E8%AF%9D"><span class="toc-text">几句正经话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BB%B6%E4%BC%B8%E9%98%85%E8%AF%BB"><span class="toc-text">延伸阅读</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io',
+      'data-repo-id': 'R_kgDOHTJxpw',
+      'data-category-id': 'DIC_kwDOHTJxp84DE3Jg',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('/pluginsSrc/twikoo/dist/twikoo.all.min.js?v=1.7.15').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Giscus' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Giscus' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

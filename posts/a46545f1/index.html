@@ -1,0 +1,356 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>给 printf 添加自定义格式符 | 寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="printf 的 %d、%f 是写死的，想直接打印自己定义的结构体怎么办？比如复数 Imaginary、分数 Fraction。实验了一个方案：给 printf 加上自定义格式符，注册之后就能写 %I 直接打印复数。 背景：rt_printf 是什么实验基于 RT-Thread（RTT，国产实时操作系统） 的打印实现 rt_printf 改造——接口和标准 printf 一致，但更轻量，是嵌入式圈">
+<meta property="og:type" content="article">
+<meta property="og:title" content="给 printf 添加自定义格式符">
+<meta property="og:url" content="https://cosmical-container.github.io/posts/a46545f1/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="printf 的 %d、%f 是写死的，想直接打印自己定义的结构体怎么办？比如复数 Imaginary、分数 Fraction。实验了一个方案：给 printf 加上自定义格式符，注册之后就能写 %I 直接打印复数。 背景：rt_printf 是什么实验基于 RT-Thread（RTT，国产实时操作系统） 的打印实现 rt_printf 改造——接口和标准 printf 一致，但更轻量，是嵌入式圈">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/img/covers/cover-4-forest.svg">
+<meta property="article:published_time" content="2024-06-23T08:15:00.000Z">
+<meta property="article:modified_time" content="2024-06-23T08:15:00.000Z">
+<meta property="article:author" content="寰宇体">
+<meta property="article:tag" content="C语言">
+<meta property="article:tag" content="指针">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/img/covers/cover-4-forest.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "给 printf 添加自定义格式符",
+  "url": "https://cosmical-container.github.io/posts/a46545f1/",
+  "image": "https://cosmical-container.github.io/img/covers/cover-4-forest.svg",
+  "datePublished": "2024-06-23T08:15:00.000Z",
+  "dateModified": "2024-06-23T08:15:00.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "寰宇体",
+      "url": "https://github.com/COSMICAL-CONTAINER"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/posts/a46545f1/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '给 printf 添加自定义格式符',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/covers/cover-4-forest.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a><a class="nav-page-title" href="/"><span class="site-name">给 printf 添加自定义格式符</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">给 printf 添加自定义格式符</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2024-06-23T08:15:00.000Z" title="发表于 2024-06-23 16:15:00">2024-06-23</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">453</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>1分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>printf 的 <code>%d</code>、<code>%f</code> 是写死的，想直接打印自己定义的结构体怎么办？比如复数 <code>Imaginary</code>、分数 <code>Fraction</code>。实验了一个方案：<strong>给 printf 加上自定义格式符</strong>，注册之后就能写 <code>%I</code> 直接打印复数。</p>
+<h2 id="背景：rt-printf-是什么"><a href="#背景：rt-printf-是什么" class="headerlink" title="背景：rt_printf 是什么"></a>背景：rt_printf 是什么</h2><p>实验基于 <strong>RT-Thread（RTT，国产实时操作系统）</strong> 的打印实现 <code>rt_printf</code> 改造——接口和标准 printf 一致，但更轻量，是嵌入式圈里常用的东西。项目的文件结构：</p>
+<ul>
+<li><code>rt_printf.c / rt_printf.h</code>：打印核心（本次改造的对象）</li>
+<li><code>mprintf_argc.h</code>：自定义格式符的注册宏（<code>__mprint_argc__</code>）</li>
+<li><code>main.c</code>：使用示例</li>
+</ul>
+<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Imaginary</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">float</span> real;</span><br><span class="line">    <span class="type">float</span> image;</span><br><span class="line">&#125; ImaginaryTypedef;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 注册：&#x27;I&#x27; 这个格式符由 Imaginary2str 函数负责打印</span></span><br><span class="line">__mprint_argc__(<span class="string">&#x27;I&#x27;</span>, Imaginary2str);</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    ImaginaryTypedef ia;</span><br><span class="line">    ia.real = <span class="number">3.3</span>;</span><br><span class="line">    ia.image = <span class="number">2.2</span>;</span><br><span class="line"></span><br><span class="line">    rt_printf(<span class="string">&quot;123%d %.2f %I %I %d\n&quot;</span>, <span class="number">2355</span>, <span class="number">1.253</span>, &amp;ia, &amp;ia, <span class="number">000</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出：<code>1232355 1.25 3.30+2.20i 3.30+2.20i 0</code>——内置格式符和自定义格式符混用无碍。</p>
+<h2 id="实现思路"><a href="#实现思路" class="headerlink" title="实现思路"></a>实现思路</h2><ul>
+<li>每个自定义格式符对应一个<strong>注册项</strong>：字符 + 打印函数（约定接口 <code>char* xxx(void* data)</code>，接收结构体指针，返回格式化好的字符串）</li>
+<li><code>rt_printf</code> 内部遍历格式串时，遇到未注册的内置符走 <code>vsnprintf</code> 的常规路径，遇到<strong>自定义符就查注册表</strong>，用函数指针把结构体转成字符串</li>
+<li>参数按约定全部以指针传入（<code>&amp;ia</code>），函数内部再强转回具体结构体类型</li>
+</ul>
+<h2 id="价值"><a href="#价值" class="headerlink" title="价值"></a>价值</h2><p>这个模式本质是<strong>运行时的多态分发</strong>：打印逻辑和类型解耦。给”不支持的类型扩展打印能力”这个需求，在 C 里的标准答案就是”注册回调 + 分发”，比硬改 printf 源码优雅得多。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER">寰宇体</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cosmical-container.github.io/posts/a46545f1/">https://cosmical-container.github.io/posts/a46545f1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cosmical-container.github.io" target="_blank">寰宇体的世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C%E8%AF%AD%E8%A8%80/">C语言</a><a class="post-meta__tags" href="/tags/%E6%8C%87%E9%92%88/">指针</a></div><div class="post-share"><div class="social-share" data-image="/img/covers/cover-4-forest.svg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/6e9f2a48/" title="Print.h 开发记（六）V1.6"><img class="cover" src="/img/covers/cover-5-midnight.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post" loading='lazy'><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Print.h 开发记（六）V1.6</div></div><div class="info-2"><div class="info-item-1"> 系列导航：上一篇：Print.h 开发记（五）V1.5  打印库成熟之后，最先”吃自己狗粮”的场景就是调试。V1.6 加入了一整套 debug 宏。 debug：打印变量名和它的值调试时最常写的就是 printf(&quot;x = %d\n&quot;, x)——变量名要手打两遍。# 字符串化运算符可以让宏自动完成： 12#define debug_valuename_to_str(value) #value#define debug(obj) print(LIGHT_GREEN(&quot;debug: &quot;), debug_valuename_to_str(obj) &quot; = &quot;, obj, &quot;\n&quot;)  debug(count) 展开后自动输出 debug: count = 10，变量改名也不用同步。 WARN_IF &#x2F; ERR_IF &#x2F; ERR_EXIT_IF三个按条件触发打印的宏，全部用 do { } while(0) 包裹——这是宏定义多语句的标准写法，保证在 if&#x2F;else 里展开不出问...</div></div></div></a><a class="pagination-related" href="/posts/5b7d3e60/" title="Print.h 开发记（五）V1.5：覆盖基础类型"><img class="cover" src="/img/space.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post" loading='lazy'><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Print.h 开发记（五）V1.5：覆盖基础类型</div></div><div class="info-2"><div class="info-item-1">羡慕 Python 的 print() 吗？这个系列记录我用纯 C 实现一个万能 print 库的全过程——项目已开源：  GitHub：https://github.com/COSMICAL-CONTAINER/C_Program-Print.h  V1.5 是一次”夯实基础”的版本，没有新花样，主要做了三件事：补全基础类型与指针类型的打印、规范缓冲区与命名、完善注释。库从这个版本开始有了”正式出品”的样子。 基础类型覆盖：分发表补全_Generic 分发表补上了缺的三种基础类型——unsigned char、unsigned int、long long，各自对应一个新的打印函数： 1234567891011121314void print_uchar(unsigned char num)&#123;    printf(&quot;%c&quot;, num);&#125;void print_uint(unsigned int num)&#123;    printf(&quot;%u&quot;, num);&#125;void print_longlong(long l...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/b1c94d/" title="变参函数及其应用"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-07</div><div class="info-item-2">变参函数及其应用</div></div><div class="info-2"><div class="info-item-1"> 📌 更新（2026-09-01）：整理归档，全部代码用 GCC 15.1.0 重新编译复测，输出与当年一致——另外新编译器对老代码的几处写法有话要说，见正文。  printf 是怎么做到想吃多少参数就吃多少参数的？这个问题的标准答案在 stdarg.h 里：va_list、va_start、va_arg 三件套。机制本身之前在《C 语言可变参数实战》里已经拆解过一次，那篇是机制篇；这一篇是应用篇——同一个文件夹里的三个程序，横跨 2022 年 9 月到 2024 年 4 月，记录了从”会数参数”到”手搓 printf”的完整进化链。 一、先数数，再吃参数：mysum 和 my_max变参函数的第一课：光有 ... 没法干活，因为函数体里根本不知道这次传了几个参数。于是有了最朴素的协议——count-first，第一个参数先报数： 123456789101112131415int mysum(int num, ...)&#123;    va_list valist;    int i;    int sum = 0;    //初始化参数列表    va_start(vali...</div></div></div></a><a class="pagination-related" href="/posts/53a5f64f/" title="用 C 语言打造 Cheat Engine 练习对象"><img class="cover" src="/img/space.jpg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-10-03</div><div class="info-item-2">用 C 语言打造 Cheat Engine 练习对象</div></div><div class="info-2"><div class="info-item-1">玩 Cheat Engine（CE）的时候需要一个”练习对象”——写一个小程序，让它维护一个不断变化的数值，然后用 CE 去扫描和修改它。这里记录两个练习用的目标程序。 第一课：直接修改 malloc 出来的变量12345678int *p_num = (int *)malloc(sizeof(int));srand(time(NULL));*p_num = rand() % 100 + 100;    // 初始值：100~199 的随机数while(getchar())&#123;    printf(&quot;%d&quot;, *p_num);    (*p_num)--;&#125;  每次按回车，数值减 1。练习流程：先用 CE 的”未知的初始值”开始扫描，按几次回车让数值递减后用”减少了的数值”继续扫描，锁定地址后把它改成 999——程序打印的数字就听你的了。 第二课：结构体指针的偏移12345678910typedef struct&#123;    char name[20];    int hp;    int exp;&#125;playerType, *...</div></div></div></a><a class="pagination-related" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img class="cover" src="/img/covers/cover-5-midnight.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-06-26</div><div class="info-item-2">变量能 malloc，函数呢？——手写机器码动态创建函数</div></div><div class="info-2"><div class="info-item-1">变量的世界有一把万能钥匙：malloc。想要多少字节，按一下就有了。那函数呢？函数无非也是一段字节、带一个入口地址——既然变量能动态创建，函数为什么不能？ 2025 年 6 月的某个下午，我决定把这个问题做穿：不借助任何汇编器语法，亲手把 x86-64 的机器码一个字节一个字节写进 C 数组，让 CPU 把它当函数调用；再进一步，在程序运行的过程中”凭空”造出一个函数来。这篇文章记录整条路径。  📌 更新（2026-08-31）：重新验证了全部流程与输出，c2shellcode.py 抽取字节码的对照结果见”别手抄了”一节。  第零步：先搞清楚自己的函数长什么样动手之前得有个对照组。写一个最朴素的 max： 1234int my_max(int a, int b)&#123;	return a &gt; b ? a : b;&#125;  它编译成机器码之后长什么样？早年我在 VC6 里干过一件蠢事——直接把 MessageBoxA 的运行时地址硬编码进内联汇编，然后 call eax： 12345678910LoadLibrary(&quot;user32.dll&quot;...</div></div></div></a><a class="pagination-related" href="/posts/aaae083d/" title="const 也能被修改"><img class="cover" src="/img/covers/cover-1-nebula.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-26</div><div class="info-item-2">const 也能被修改</div></div><div class="info-2"><div class="info-item-1">const 修饰的变量真的不能改吗？用指针强转试试就知道——答案是：至少局部变量可以。 实验1234567const unsigned char const_int = 0;printf(&quot;before :%d\n&quot;, const_int);*(int *)(&amp;const_int) = 10;              // 强转掉 const 再写入printf(&quot;after  :%d\n&quot;, const_int);      // 输出 10！const unsigned char const_array[] = &#123;0x01, 0x02, 0x03, 0x04, 0x05&#125;;*((int *)(&amp;const_array[0] + i)) = 10;   // 数组同理，逐个元素改掉  运行结果 before 是 0，after 变成了 10——const 声明被绕过去了。 原理const 只是编译期的约束，告诉编译器”不允许通过这个名字赋值”，它并不是内存的写保护。局部 const 变量放在栈上，和普...</div></div></div></a><a class="pagination-related" href="/posts/63742fad/" title="任意类型的栈：C 泛型容器的两条路线"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-18</div><div class="info-item-2">任意类型的栈：C 泛型容器的两条路线</div></div><div class="info-2"><div class="info-item-1">教科书上的栈长这样：int stack[MAX]——只能装 int。2022 年 10 月我刚学完数据结构，决定写一个”任意类型都能装”的栈；2024 年 7 月翻出来重写了一遍。两个版本放在一起看特别有意思：一个用 memcpy 把数据拷进容器，一个只存数据的地址——这正是 C 语言里实现泛型容器的两条路线。后来写的通用链表 glist 和计算器的栈，都能在这两条路线里找到自己的位置。  📌 更新（2026-08-31）：为写这篇重新编译复现了两个版本，抓到了 2022 版里的两个老 bug（见复盘一节），实测输出均已录入正文。  2022 版：void* 加 typesize，memcpy 说了算这个版本的完整设计思路，被当年的我用一段英文注释写在了 stack.h 的开头——现在读来简直就是一篇给自己看的教案： 1234567891011121314151617181920// This stack is implemented by void pointer, so it is GENERIC.//// How the void pointer allows assig...</div></div></div></a><a class="pagination-related" href="/posts/741a54db/" title="C语言可变参数实战"><img class="cover" src="/img/covers/cover-5-midnight.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-07</div><div class="info-item-2">C语言可变参数实战</div></div><div class="info-2"><div class="info-item-1">printf 是怎么做到接受任意多个参数的？答案是 stdarg.h 里的三件套：va_list、va_start、va_arg。写了一个按格式符消费可变参数的实验，还能顺便理解”参数是怎么传进去的”。 核心机制123456789101112131415161718192021222324252627282930char *handle(char* format, ...)&#123;    va_list args;    va_start(args, format);      // 从 format 之后开始读参数    while(*format)    &#123;        if(*format == &#x27;%&#x27;)        &#123;            switch(*(format + 1))            &#123;                case &#x27;c&#x27;:                case &#x27;d&#x27;:                    va_arg(args, in...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="comment-switch"><span class="first-comment">Giscus</span><span id="switch-btn"></span><span class="second-comment">Twikoo</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF%EF%BC%9Art-printf-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-text">背景：rt_printf 是什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%B3%95"><span class="toc-text">用法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF"><span class="toc-text">实现思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%B7%E5%80%BC"><span class="toc-text">价值</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io',
+      'data-repo-id': 'R_kgDOHTJxpw',
+      'data-category-id': 'DIC_kwDOHTJxp84DE3Jg',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('/pluginsSrc/twikoo/dist/twikoo.all.min.js?v=1.7.15').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Giscus' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Giscus' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

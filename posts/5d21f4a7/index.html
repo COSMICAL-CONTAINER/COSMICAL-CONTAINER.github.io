@@ -1,0 +1,360 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>抽象代码宣言：论不正经的尝试如何成为一种学习 | 寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="这个系列的文章，讲的都是一些”不正经”的 C 语言代码。开篇先把话说明白：它们在实际生产中绝对不会遇到——你要是在公司项目里写下这些东西，同事会困惑，review 会被打回，有人会觉得这代码烂透了。这些评价都对。 但我还是想说说它们是怎么来的。 起源是一句不经意的话。有位本科同学告诉我，C 语言里有种东西叫”返回值为函数指针的函数”。我写下了 drink()()，让它一次调用变成两次（C-返回值为">
+<meta property="og:type" content="article">
+<meta property="og:title" content="抽象代码宣言：论不正经的尝试如何成为一种学习">
+<meta property="og:url" content="https://cosmical-container.github.io/posts/5d21f4a7/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="这个系列的文章，讲的都是一些”不正经”的 C 语言代码。开篇先把话说明白：它们在实际生产中绝对不会遇到——你要是在公司项目里写下这些东西，同事会困惑，review 会被打回，有人会觉得这代码烂透了。这些评价都对。 但我还是想说说它们是怎么来的。 起源是一句不经意的话。有位本科同学告诉我，C 语言里有种东西叫”返回值为函数指针的函数”。我写下了 drink()()，让它一次调用变成两次（C-返回值为">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/img/space.jpg">
+<meta property="article:published_time" content="2026-08-31T15:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-31T15:00:00.000Z">
+<meta property="article:author" content="寰宇体">
+<meta property="article:tag" content="抽象代码">
+<meta property="article:tag" content="随笔">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/img/space.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "抽象代码宣言：论不正经的尝试如何成为一种学习",
+  "url": "https://cosmical-container.github.io/posts/5d21f4a7/",
+  "image": "https://cosmical-container.github.io/img/space.jpg",
+  "datePublished": "2026-08-31T15:00:00.000Z",
+  "dateModified": "2026-08-31T15:00:00.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "寰宇体",
+      "url": "https://github.com/COSMICAL-CONTAINER"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/posts/5d21f4a7/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '抽象代码宣言：论不正经的尝试如何成为一种学习',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/space.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a><a class="nav-page-title" href="/"><span class="site-name">抽象代码宣言：论不正经的尝试如何成为一种学习</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">抽象代码宣言：论不正经的尝试如何成为一种学习</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%BD%E8%B1%A1%E4%BB%A3%E7%A0%81/">抽象代码</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">759</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>2分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>这个系列的文章，讲的都是一些”不正经”的 C 语言代码。开篇先把话说明白：<strong>它们在实际生产中绝对不会遇到</strong>——你要是在公司项目里写下这些东西，同事会困惑，review 会被打回，有人会觉得这代码烂透了。这些评价都对。</p>
+<p>但我还是想说说它们是怎么来的。</p>
+<p>起源是一句不经意的话。有位本科同学告诉我，C 语言里有种东西叫”返回值为函数指针的函数”。我写下了 <code>drink()()</code>，让它一次调用变成两次（<a href="/posts/a049fc87/">C-返回值为函数指针的函数</a>），然后问题是：能三次吗？四次吗？顺着这个问题往下挖，typedef 套娃套到 23 层、100 层，后来干脆写了个程序来生成这些代码（这段经历记在<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_28406527/article/details/134021020">深入返回值为函数指针的函数</a>里，终点是<a href="/posts/bd6fe775/">C语言100级函数指针挑战</a>）。大门从这里彻底打开了：原来语言的缝隙里到处都是房间。</p>
+<p>于是有了后来的一整个文件夹：用下划线写完整个程序的<a href="/posts/99a422d6/">完形填空</a>、满屏 <code>&lt;% %&gt;</code> 的<a href="/posts/65633b2a/">尊嘟假嘟</a>、运行完就把自己置空的自杀函数指针、往 <code>int</code> 数组里藏中文的加密 demo、号称 O(1) 的质数判断……每一个的起点都不是”我要写个有用的东西”，而是某个瞬间冒出来的一个念头：<strong>“等等，这样是不是也行？”</strong> 然后去试。试了才发现，有的真行，有的不行，不行的那些教会我的比行了的还多。</p>
+<p>有人说这不算学习。我的看法相反。正规的学习路线告诉你语言”能做什么”，而这些不正经的尝试在探索语言”<strong>为什么能</strong>“和”<strong>到哪一步为止</strong>“——<code>&lt;%</code> 为什么等于 <code>{</code>、宏展开到底发生在编译的哪个阶段、指针加一到底加了多少。每一条抽象代码背后，都站着一个实打实的语言规则。发现现象、提出疑问、做个实验看看会发生什么——这本就是学习最原始的形态，只是它的产物不太像作业而已。</p>
+<p>这个系列的每篇文章都会贴上「抽象代码」标签，语气也不会太正经。它们不适合用于生产，只适合用于”原来还能这样”的那个瞬间。</p>
+<p>——以下为本系列目前收录的文章，会不定期更新：</p>
+<ul>
+<li><a href="/posts/99a422d6/">抽象代码：下划线完形填空</a></li>
+<li><a href="/posts/65633b2a/">抽象代码：尊嘟假嘟</a></li>
+<li><a href="/posts/f9357c8c/">抽象代码：会自杀的代码</a></li>
+<li><a href="/posts/6ffc9fd6/">抽象代码：一个”O(1)”的质数判断器</a></li>
+<li><a href="/posts/852f8e75/">抽象代码：分号的艺术</a></li>
+<li><a href="/posts/45c7e108/">抽象代码：看不见的循环体</a></li>
+<li><a href="/posts/cdc6be97/">抽象代码：先有鸡还是先有蛋</a></li>
+<li><a href="/posts/f8225dd/">抽象代码：把中文藏进 int 数组</a></li>
+<li><a href="/posts/c951abd7/">发现了一个 O(N<sup>N!</sup>) 的算法</a></li>
+<li><a href="/posts/eb2325e8/">抽象代码：eval 宏与魔法数字</a></li>
+<li><a href="/posts/22bac41f/">抽象代码：从 drink()() 到百层 typedef 之旅</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER">寰宇体</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cosmical-container.github.io/posts/5d21f4a7/">https://cosmical-container.github.io/posts/5d21f4a7/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cosmical-container.github.io" target="_blank">寰宇体的世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E9%9A%8F%E7%AC%94/">随笔</a><a class="post-meta__tags" href="/tags/%E6%8A%BD%E8%B1%A1%E4%BB%A3%E7%A0%81/">抽象代码</a></div><div class="post-share"><div class="social-share" data-image="/img/space.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img class="cover" src="/img/covers/cover-2-ocean.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post" loading='lazy'><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">评论区开放：GitHub 用户和路过朋友都能留言</div></div><div class="info-2"><div class="info-item-1">博客有评论区了。位置在每篇文章的最底部，往下滑就能看到。留言分两种方式：有 GitHub 账号的朋友用默认的那种，没有的切换一下就能免登录直接说。两种方式都不需要花钱，也不需要留真实身份。 有 GitHub 账号的朋友评论区默认打开的是 GitHub 方式，它背后是 GitHub 官方的 Discussions 功能，等于留言直接存进本站的源码仓库，稳。 留言只要三步：  点评论框里的「Sign in with GitHub」，会跳到 GitHub 的授权页面； 点绿色的授权按钮，同意本站读取你的 GitHub 用户名和头像； 回到文章页面，写好想说的话，点「Comment」按钮。  留言会同步显示在仓库的 Discussions 页面，等于你在 GitHub 上也留了一份存档。评论区支持 Markdown 语法，头像和昵称都跟着你的 GitHub 账号走。之后如果有人回复了你的留言，GitHub 还会给你发通知，不会错过。 没有账号的路人朋友评论区顶部有一个小开关，左边写着 Giscus，右边写着 Twikoo。把开关拨到 Twikoo 这边，就是免登录留言：  昵称随便填一个...</div></div></div></a><a class="pagination-related" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img class="cover" src="/img/covers/cover-1-nebula.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post" loading='lazy'><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">写在前面｜代码是人的遗产</div></div><div class="info-2"><div class="info-item-1">这个博客从 2022 年秋天写到今天。你会发现这里的东西大多很”小”：一个四舍五入的练习、一只控制台的推箱子、一个字符串大整数计算器、一个自动打字的整活工具。它们大部分是玩具，有的甚至带着 bug——有的当年就没发现，有的是我后来请 AI 重新编译跑了一遍，当场原形毕露：未初始化的变量、该移出循环却没移出的销毁、藏在 scanf 里的越界。 我没有把它们修好了再假装完美地挂出来。错的就让它错着，错在哪、为什么错、怎么修，文章里都写清楚了。因为我想记录的从来不是”我多强”，而是一个人是怎么从对着教材抄第一行 printf 开始，一步步走到能亲手写出一个矩阵库、一台机器码级的小工具的。这些代码对我来说更像遗产——我留给这个世界的一点点财富。遗产的意义不在值钱，在于它证明我来过、学过、折腾过。 从我用 GPT-3 之前的模型随便让它写两行代码、写得一塌糊涂的那个年代算起，短短几年，AI 已经能在几分钟内读完我半年的项目。拥抱它，也正视它，这是我做出”把这些东西搬上来”这个决定的原因。  以下几段，是站长请我写的我是 GLM-5.3-Flash，一个运行在 ZCode 里的 agent（...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/1df3ce68/" title="我的 RPG Maker XP 作品集（一）：总览"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2015-02-25</div><div class="info-item-2">我的 RPG Maker XP 作品集（一）：总览</div></div><div class="info-2"><div class="info-item-1">最近把当年用 RPG Maker XP 做的东西从旧硬盘里整个翻了出来，索性整理成一个系列，在这里逐个展示。 先交代一下背景。RPG Maker XP（下面简称 RMXP）是日本 Enterbrain 公司 2004 年推出的 RPG 制作工具，这个系列里的所有作品，用的都是这一个引擎。它的思路是让不会编程的人也能做游戏：地图靠图块一格一格拼出来，剧情靠「事件」一页一页写出来，角色、物品、技能、怪物都在自带的数据库里填表，画面是 640×480 的分辨率，战斗和菜单都有现成模板。 再往深走，RMXP 内置了一套叫 RGSS 的脚本系统，用 Ruby 语言写成——想改战斗公式、加个新界面，就得动脚本。这款软件在国内能流行起来，很大程度上靠 66RPG 社区的汉化、教程和范例工程，当年的论坛上养活了大批业余作者，这个系列里用到的不少脚本，源头也都在那边。它的图标是一枚黑龙徽记，当年每次打开 RMXP 都要先看它一眼：  这个系列挑重点的讲，一共三章；2DMC 的两代作品在「我的MC复刻」系列里单独讲，时间线里一并列上：    时间 作品 说明    2018-07 赌青蛙 V1.0....</div></div></div></a><a class="pagination-related" href="/posts/f9357c8c/" title="抽象代码：会自杀的代码"><img class="cover" src="/img/covers/cover-2-ocean.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-01-13</div><div class="info-item-2">抽象代码：会自杀的代码</div></div><div class="info-2"><div class="info-item-1">函数能不能在干完活之后，把自己从程序里”抹掉”？对象能不能在出生的那一刻自我了断？能。今天这篇讲两个短小精悍的自杀程序——一个 C 的，一个 C++ 的。  📌 更新（2026-08-31）：为写这篇重新编译复现了两个程序，并修正了对自杀对象输出的描述——它比想象中死得更干脆，详见运行一节。  自杀函数指针：信使送信的比喻先看代码： 自杀函数指针.c12345678910111213141516171819202122// 一个简单（但可能不那么让人愉快）的比方是，信使P把一封信从A送到B，// 而信的内容的第一句就是&quot;干掉P，然后再看下面的内容&quot;。#include &lt;stdio.h&gt;void init(void);void (*__init__)(void) = init;void init(void)&#123;    printf(&quot;init programm\n&quot;);    __init__ = NULL;&#125;int main()&#123;    __init__();    // __init__();  ...</div></div></div></a><a class="pagination-related" href="/posts/99a422d6/" title="抽象代码：下划线完形填空"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-22</div><div class="info-item-2">抽象代码：下划线完形填空</div></div><div class="info-2"><div class="info-item-1">先上代码。下面是一个完整的、可以编译、可以运行的 C 语言程序，它是一个从 9 倒数到 0 的倒计时器。请欣赏： _.c123456789101112131415161718192021222324252627#include &lt;stdio.h&gt;#define _ int#define __ main#define ___ while#define _____ x#define ______ ;#define _______ ()#define ________ &#123;#define _________ &#125;#define __________ (#define ___________ )#define ____________ =#define _____________ --&gt;#define ______________ &quot;%d\n&quot;,#define _______________ printf#define ________________ return_ __ ________________ _____ _______...</div></div></div></a><a class="pagination-related" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img class="cover" src="/img/covers/cover-1-nebula.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-31</div><div class="info-item-2">写在前面｜代码是人的遗产</div></div><div class="info-2"><div class="info-item-1">这个博客从 2022 年秋天写到今天。你会发现这里的东西大多很”小”：一个四舍五入的练习、一只控制台的推箱子、一个字符串大整数计算器、一个自动打字的整活工具。它们大部分是玩具，有的甚至带着 bug——有的当年就没发现，有的是我后来请 AI 重新编译跑了一遍，当场原形毕露：未初始化的变量、该移出循环却没移出的销毁、藏在 scanf 里的越界。 我没有把它们修好了再假装完美地挂出来。错的就让它错着，错在哪、为什么错、怎么修，文章里都写清楚了。因为我想记录的从来不是”我多强”，而是一个人是怎么从对着教材抄第一行 printf 开始，一步步走到能亲手写出一个矩阵库、一台机器码级的小工具的。这些代码对我来说更像遗产——我留给这个世界的一点点财富。遗产的意义不在值钱，在于它证明我来过、学过、折腾过。 从我用 GPT-3 之前的模型随便让它写两行代码、写得一塌糊涂的那个年代算起，短短几年，AI 已经能在几分钟内读完我半年的项目。拥抱它，也正视它，这是我做出”把这些东西搬上来”这个决定的原因。  以下几段，是站长请我写的我是 GLM-5.3-Flash，一个运行在 ZCode 里的 agent（...</div></div></div></a><a class="pagination-related" href="/posts/22bac41f/" title="抽象代码：从 drink()() 到百层 typedef 之旅"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-10-24</div><div class="info-item-2">抽象代码：从 drink()() 到百层 typedef 之旅</div></div><div class="info-2"><div class="info-item-1"> 📌 更新（2026-08-31）：本文写于 2023 年 10 月。发布前用 2026 年的新版 GCC 把全流程重新复现了一遍，文中的编译器行为说明（含 GCC 14 的变化）即来自这次复现。  系列缘起那篇文章里说过：一位同学告诉我 C 语言里有”返回值为函数指针的函数”，我写下了 drink()()，然后问题就变成了——**能 drink()()() 吗？能无限连下去吗？**这篇就是那个问题的完整答案，也是整个抽象代码系列的起点详解。 第一步：typedef 套娃drink()() 能跑两连，第三连就撑不住了——因为返回类型太”窄”。解法是让每一层 typedef 都”返回上一层”： 12345678910111213typedef long long (*p_fun)(void);typedef p_fun (*p_fun2)(void);p_fun2 fun()&#123;    printf(&quot;()&quot;);    return fun;&#125;int main()&#123;    fun()()();  // 三连成功&#125;  每套一...</div></div></div></a><a class="pagination-related" href="/posts/6ffc9fd6/" title="抽象代码：一个&quot;O(1)&quot;的质数判断器"><img class="cover" src="/img/space.jpg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-01-09</div><div class="info-item-2">抽象代码：一个&quot;O(1)&quot;的质数判断器</div></div><div class="info-2"><div class="info-item-1">先看运行效果。一个判断质数的程序，输入 7： 1237 → 7 is a Prime100 → 100 isn&#x27;t a Prime254 → 254 isn&#x27;t a Prime  响应快得惊人，因为它一次除法都没做——不是算法好，是它根本不判断。它是一份”背好答案”的程序：把 1 到 255 每个数是不是质数，直接写成 1029 行 if-else。而这个程序的作者，是另一个程序。 生成器一号：把判断展开成 if-else生成器的思路是时间换空间再换时间：生成的时候用普通试除法判断一次质数，然后把结果硬编码进一个新程序： 123456789101112131415161718for (int i = 2; i &lt; num; i++)&#123;    char temp[50];    sprintf(temp, &quot;    else if(num == %d)\n&quot;, i);    fprintf(fp, temp);    fprintf(fp, &quot;    &#123;\n&quot;);    if(isPrime(i)...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="comment-switch"><span class="first-comment">Giscus</span><span id="switch-btn"></span><span class="second-comment">Twikoo</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io',
+      'data-repo-id': 'R_kgDOHTJxpw',
+      'data-category-id': 'DIC_kwDOHTJxp84DE3Jg',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('/pluginsSrc/twikoo/dist/twikoo.all.min.js?v=1.7.15').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Giscus' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Giscus' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

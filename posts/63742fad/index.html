@@ -1,0 +1,423 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>任意类型的栈：C 泛型容器的两条路线 | 寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="教科书上的栈长这样：int stack[MAX]——只能装 int。2022 年 10 月我刚学完数据结构，决定写一个”任意类型都能装”的栈；2024 年 7 月翻出来重写了一遍。两个版本放在一起看特别有意思：一个用 memcpy 把数据拷进容器，一个只存数据的地址——这正是 C 语言里实现泛型容器的两条路线。后来写的通用链表 glist 和计算器的栈，都能在这两条路线里找到自己的位置。  📌">
+<meta property="og:type" content="article">
+<meta property="og:title" content="任意类型的栈：C 泛型容器的两条路线">
+<meta property="og:url" content="https://cosmical-container.github.io/posts/63742fad/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="教科书上的栈长这样：int stack[MAX]——只能装 int。2022 年 10 月我刚学完数据结构，决定写一个”任意类型都能装”的栈；2024 年 7 月翻出来重写了一遍。两个版本放在一起看特别有意思：一个用 memcpy 把数据拷进容器，一个只存数据的地址——这正是 C 语言里实现泛型容器的两条路线。后来写的通用链表 glist 和计算器的栈，都能在这两条路线里找到自己的位置。  📌">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/img/covers/cover-6-ember.svg">
+<meta property="article:published_time" content="2024-07-18T15:35:00.000Z">
+<meta property="article:modified_time" content="2024-07-18T15:35:00.000Z">
+<meta property="article:author" content="寰宇体">
+<meta property="article:tag" content="C语言">
+<meta property="article:tag" content="指针">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/img/covers/cover-6-ember.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "任意类型的栈：C 泛型容器的两条路线",
+  "url": "https://cosmical-container.github.io/posts/63742fad/",
+  "image": "https://cosmical-container.github.io/img/covers/cover-6-ember.svg",
+  "datePublished": "2024-07-18T15:35:00.000Z",
+  "dateModified": "2024-07-18T15:35:00.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "寰宇体",
+      "url": "https://github.com/COSMICAL-CONTAINER"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/posts/63742fad/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '任意类型的栈：C 泛型容器的两条路线',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/covers/cover-6-ember.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a><a class="nav-page-title" href="/"><span class="site-name">任意类型的栈：C 泛型容器的两条路线</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">任意类型的栈：C 泛型容器的两条路线</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2024-07-18T15:35:00.000Z" title="发表于 2024-07-18 23:35:00">2024-07-18</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>教科书上的栈长这样：<code>int stack[MAX]</code>——只能装 int。2022 年 10 月我刚学完数据结构，决定写一个”任意类型都能装”的栈；2024 年 7 月翻出来重写了一遍。两个版本放在一起看特别有意思：<strong>一个用 <code>memcpy</code> 把数据拷进容器，一个只存数据的地址</strong>——这正是 C 语言里实现泛型容器的两条路线。后来写的<a href="/posts/11de485d/">通用链表 glist</a> 和<a href="/posts/f1369abc/">计算器的栈</a>，都能在这两条路线里找到自己的位置。</p>
+<blockquote>
+<p>📌 更新（2026-08-31）：为写这篇重新编译复现了两个版本，抓到了 2022 版里的两个老 bug（见复盘一节），实测输出均已录入正文。</p>
+</blockquote>
+<h2 id="2022-版：void-加-typesize，memcpy-说了算"><a href="#2022-版：void-加-typesize，memcpy-说了算" class="headerlink" title="2022 版：void* 加 typesize，memcpy 说了算"></a>2022 版：void* 加 typesize，memcpy 说了算</h2><p>这个版本的完整设计思路，被当年的我用一段英文注释写在了 stack.h 的开头——现在读来简直就是一篇给自己看的教案：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// This stack is implemented by void pointer, so it is GENERIC.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// How the void pointer allows assignments of different data types:</span></span><br><span class="line"><span class="comment">//    first, a normal pointer is binded to a data type, so it knows the</span></span><br><span class="line"><span class="comment">//    number of bytes of the data it points to. second, it has an address,</span></span><br><span class="line"><span class="comment">//    which is the start-address of the data. so they can tell the compiler</span></span><br><span class="line"><span class="comment">//    where to start and where to stop accessing the data.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//    but void pointer is binded to no data type,it only knows the starting-address.</span></span><br><span class="line"><span class="comment">//    so it can be forcely assigned to any pointers, thus allowing assignments of</span></span><br><span class="line"><span class="comment">//    all data types. so what we do is: when we create the stack, we MALLOC a block</span></span><br><span class="line"><span class="comment">//    of free space, and we take an integer of &#x27;size_t&#x27;, the typesize, which</span></span><br><span class="line"><span class="comment">//    specifies the length of the data. We use the function MEMCPY, which directly</span></span><br><span class="line"><span class="comment">//    access the addresses,to push the data in the stack and pop data out.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// The difference from the definiton:</span></span><br><span class="line"><span class="comment">//    the stack pointer here is different from the definition.</span></span><br><span class="line"><span class="comment">//    when the stack is empty, top == base.</span></span><br><span class="line"><span class="comment">//    when an element is pushed in, top points to the address after the last byte</span></span><br><span class="line"><span class="comment">//    of the element. so the top always points to the next available space.</span></span><br></pre></td></tr></table></figure>
+
+<p>核心思路浓缩成一句话：普通指针绑定了类型，所以知道数据从哪开始到哪结束；<code>void*</code> 只知道起始地址，所以<strong>什么都能指</strong>。那就让容器按字节存取——建栈时额外记下每个元素的 <code>typesize</code>，出入栈全靠 <code>memcpy</code> 搬运字节：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Record</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">void</span> *top;</span><br><span class="line">    <span class="type">void</span> *base;</span><br><span class="line">    <span class="type">int</span> stacksize;</span><br><span class="line">    <span class="type">int</span> typesize;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Record</span> *<span class="title">Stack</span>;</span></span><br><span class="line"></span><br><span class="line">Stack <span class="title function_">CreateStack</span><span class="params">(<span class="type">int</span> stacksize, <span class="type">size_t</span> typesize)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">Push</span><span class="params">(Stack S, <span class="type">void</span> *data)</span>;</span><br><span class="line"><span class="type">void</span> *<span class="title function_">Pop</span><span class="params">(Stack S)</span>;</span><br></pre></td></tr></table></figure>
+
+<p><code>CreateStack(10, sizeof(int))</code> 一口下去：容量 10 个元素、每个元素 4 字节，内部开 <code>10 * 4</code> 字节的连续空间。<code>Push</code> 把调用方数据的 <code>typesize</code> 个字节原样拷进栈顶：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">Push</span><span class="params">( Stack S, <span class="type">void</span> *data)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>( (<span class="type">int</span>)(S-&gt;top - S-&gt;base) + S-&gt;typesize &gt; S-&gt;stacksize )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Out of space to Push.\n&quot;</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">memcpy</span>(S-&gt;top, data, S-&gt;typesize);</span><br><span class="line">    S-&gt;top = (<span class="type">void</span>*)( S-&gt;top + S-&gt;typesize );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>S-&gt;top + S-&gt;typesize</code> 这行有个当年专门查过的知识点：<strong>ANSI C 其实不允许对 <code>void*</code> 做运算</strong>，因为不知道指向的类型有多大；但 GCC 把 void* 当 <code>char*</code> 处理，按字节算。代码上方还留着一段更早的注释，说”先把指针转成 int 再加减，用完转回来”——那就是 ANSI 保守写法的遗迹，后来发现 GCC 直接支持，代码换成了现在这种便利写法，注释没删，正好留下了思路演进的化石。</p>
+<p>这版有个隐藏的设计选择值得注意：<strong>容器拥有数据</strong>。你 push 一个 int，栈里存的是这个 int 的<strong>拷贝</strong>——调用方之后改了自己的变量，栈里不受影响。<code>memcpy</code> 是一次彻底的”过户”。</p>
+<h2 id="复盘：两个潜伏的-bug"><a href="#复盘：两个潜伏的-bug" class="headerlink" title="复盘：两个潜伏的 bug"></a>复盘：两个潜伏的 bug</h2><p>这次为写文章重新编译运行，2022 版当场表演了一下什么叫”能编译不代表对”。</p>
+<p><strong>第一个：容量守卫的单位错配。</strong> 缓冲区是 <code>stacksize * typesize</code> 字节，但守卫条件拿来比较的却是元素个数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( (<span class="type">int</span>)(S-&gt;top - S-&gt;base) + S-&gt;typesize &gt; S-&gt;stacksize )</span><br></pre></td></tr></table></figure>
+
+<p><code>CreateStack(10, sizeof(int))</code> 的意思是”10 个 int”，缓冲区实际有 40 字节；可这个条件在已用 8 字节时就判定”满了”——第三个元素推不进去。2026 年更新时原样编译运行，输出就是当年这个 bug 的现场：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Out of space to Push.</span><br></pre></td></tr></table></figure>
+
+<p>main 里推第三个元素直接退出了，三个 Pop 一个都没跑到。修复只需把比较对象换回字节数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( (<span class="type">int</span>)(S-&gt;top - S-&gt;base) + S-&gt;typesize &gt; S-&gt;stacksize * S-&gt;typesize )</span><br></pre></td></tr></table></figure>
+
+<p>修完再跑，久违的正常输出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">3</span><br><span class="line">2</span><br><span class="line">1</span><br></pre></td></tr></table></figure>
+
+<p><strong>第二个更危险：<code>Pop</code> 里的未初始化指针。</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> * <span class="title function_">Pop</span><span class="params">( Stack S )</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">void</span> * data;</span><br><span class="line">    ...</span><br><span class="line">    S-&gt;top = (<span class="type">void</span>*)( S-&gt;top - S-&gt;typesize);</span><br><span class="line">    <span class="built_in">memcpy</span>(data, S-&gt;top, S-&gt;typesize);</span><br><span class="line">    <span class="keyword">return</span> data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>data</code> 声明时没赋值，是个野指针，<code>memcpy</code> 却往它指向的地方写数据——<strong>往随机地址写内存</strong>，标准教科书级的未定义行为。2022 年它”能跑”，纯粹是那个栈槽里残留的垃圾值恰好指向一块可写内存；换台机器、换个编译选项，可能当场崩掉。修复要顺手回答一个所有权问题：弹出的数据放哪？让 <code>Pop</code> 内部 <code>malloc</code> 再返回，调用方就得负责 free；更稳妥的写法是改签名让调用方自己出缓冲区——<code>void Pop(Stack S, void *out)</code>，容器只管搬运，内存归调用方。</p>
+<h2 id="2024-版：不拷了，只存地址"><a href="#2024-版：不拷了，只存地址" class="headerlink" title="2024 版：不拷了，只存地址"></a>2024 版：不拷了，只存地址</h2><p>两年后重写，思路整个掉了个头：既然拷贝要操心 typesize、容量单位、深浅拷贝……<strong>那就干脆不拷贝，栈里只存地址</strong>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">void</span> **top;   <span class="comment">// 栈顶</span></span><br><span class="line">    <span class="type">void</span> **end;   <span class="comment">// 栈底</span></span><br><span class="line">    <span class="type">size_t</span> count; <span class="comment">// 栈的大小</span></span><br><span class="line">&#125;STACK;</span><br><span class="line"></span><br><span class="line">STACK * <span class="title function_">creatStack</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    STACK *<span class="built_in">stack</span>=(STACK *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(STACK));</span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">stack</span>==<span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">memset</span>(<span class="built_in">stack</span>,<span class="number">0</span>,<span class="keyword">sizeof</span>(STACK));</span><br><span class="line">    <span class="built_in">stack</span>-&gt;top=(<span class="type">void</span> **)<span class="built_in">malloc</span>(STACK_SIZE);</span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">stack</span>-&gt;top==<span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">free</span>(<span class="built_in">stack</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">stack</span>-&gt;count=STACK_SIZE/<span class="number">4</span>;</span><br><span class="line">    <span class="built_in">stack</span>-&gt;end=<span class="built_in">stack</span>-&gt;top;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">stack</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pushbackStack</span><span class="params">(STACK * <span class="built_in">stack</span>,<span class="type">void</span> *data)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>( ! isFullStack(<span class="built_in">stack</span>) )</span><br><span class="line">    &#123;</span><br><span class="line">        *(<span class="built_in">stack</span>-&gt;top)=data;</span><br><span class="line">        <span class="built_in">stack</span>-&gt;top++;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span>* <span class="title function_">popStack</span><span class="params">(STACK *<span class="built_in">stack</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>( ! isEmptyStack(<span class="built_in">stack</span>))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">stack</span>-&gt;top--;</span><br><span class="line">        <span class="keyword">return</span> (<span class="type">void</span>*)(*(<span class="built_in">stack</span>-&gt;top));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意这个结构：<code>top</code> 和 <code>end</code> 都是 <code>void**</code>——<strong>指向”指针”的指针</strong>。栈的内存区里排的不再是数据本体，而是一个个 <code>void*</code> 槽位；<code>pushbackStack</code> 只做一件事：<code>*(stack-&gt;top) = data</code>，把地址塞进槽位，栈顶前移一格。没有 memcpy，没有 typesize——因为根本不需要知道数据长什么样。</p>
+<p>测试程序把三种类型轮番进栈出栈：int、字符串、还有 malloc 出来的结构体：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">char</span> name[<span class="number">20</span>] ;</span><br><span class="line">    <span class="type">int</span> age;</span><br><span class="line">&#125;student;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> number1 = <span class="number">10</span>;</span><br><span class="line"><span class="type">int</span> number2 = <span class="number">20</span>;</span><br><span class="line"><span class="type">int</span> number3 = <span class="number">30</span>;</span><br><span class="line">pushbackStack(<span class="built_in">stack</span>, &amp;number1);</span><br><span class="line">pushbackStack(<span class="built_in">stack</span>, &amp;number2);</span><br><span class="line">pushbackStack(<span class="built_in">stack</span>, &amp;number3);</span><br><span class="line"></span><br><span class="line"><span class="type">char</span>* st1 = <span class="string">&quot;aaa&quot;</span>;</span><br><span class="line">pushbackStack(<span class="built_in">stack</span>, st1);</span><br><span class="line"></span><br><span class="line">student* student1 = (student*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(student));</span><br><span class="line"><span class="built_in">strcpy</span>(student1-&gt;name,<span class="string">&quot;xiaoMing&quot;</span>);</span><br><span class="line">student1-&gt;age = <span class="number">10</span>;</span><br><span class="line">pushbackStack(<span class="built_in">stack</span>, student1);</span><br></pre></td></tr></table></figure>
+
+<h2 id="运行效果"><a href="#运行效果" class="headerlink" title="运行效果"></a>运行效果</h2><p>当年写完时，我把预期输出记在了文件末尾的注释里。这次重新编译运行，控制台打出来的和那条两年前的注释一字不差：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">30</span><br><span class="line">20</span><br><span class="line">10</span><br><span class="line">ccc</span><br><span class="line">bbb</span><br><span class="line">aaa</span><br><span class="line">[name:xiaoBai   age:30]</span><br><span class="line">[name:xiaoHei   age:20]</span><br><span class="line">[name:xiaoMing   age:10]</span><br></pre></td></tr></table></figure>
+
+<p>int 弹出要强转 <code>*(int *)popStack(stack)</code>，结构体弹出要 <code>studentTemp=(student *)popStack(stack)</code>——和 glist 一样，<strong>存地址路线的代价就是：取出来的时候，类型信息由调用方自己负责</strong>。</p>
+<h2 id="两条路线，各自的位置"><a href="#两条路线，各自的位置" class="headerlink" title="两条路线，各自的位置"></a>两条路线，各自的位置</h2><table>
+<thead>
+<tr>
+<th></th>
+<th>拷值（memcpy + typesize）</th>
+<th>存址（void* 槽位）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>容器里有什么</td>
+<td>数据本体的一份拷贝</td>
+<td>指向数据的地址</td>
+</tr>
+<tr>
+<td>需要知道什么</td>
+<td>每个元素的 typesize</td>
+<td>什么都不用知道</td>
+</tr>
+<tr>
+<td>所有权</td>
+<td>容器拥有数据，入栈即过户</td>
+<td>调用方拥有数据，容器只做登记</td>
+</tr>
+<tr>
+<td>生命周期</td>
+<td>调用方变量改了不影响栈里</td>
+<td>原数据一死，栈里的地址变悬空</td>
+</tr>
+<tr>
+<td>典型代表</td>
+<td>这篇的 2022 版、计算器的 My_Stack</td>
+<td>这篇的 2024 版、glist</td>
+</tr>
+</tbody></table>
+<p>拷值路线对<strong>小对象</strong>友好：int、double 这些几字节的东西，拷贝开销忽略不计，还能摆脱对原变量的依赖。存址路线对<strong>大对象和对象池</strong>友好：不用搬运、不用关心大小，代价是必须保证原数据活着。写计算器的时候我给 My_Stack 选了存字符串指针的折中路——本质还是存址。而这两篇合在一起看，C 语言泛型容器的全部秘密其实就是一句话：<strong>你要么替它记住大小，要么替它只记地址。</strong></p>
+<h2 id="完整代码（2022-版）"><a href="#完整代码（2022-版）" class="headerlink" title="完整代码（2022 版）"></a>完整代码（2022 版）</h2><p>2024 版的源文件里一部分中文注释在多年的保存、转码中损坏了，所以只以前文片段的形式出现；下面是 2022 版的完整文件——包括那个容量守卫 bug 和未初始化的 <code>data</code>，原样封存：</p>
+<figure class="highlight c"><figcaption><span>stack.h</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// This stack is implemented by void pointer, so it is GENERIC.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// How the void pointer allows assignments of different data types:</span></span><br><span class="line"><span class="comment">//    first, a normal pointer is binded to a data type, so it knows the</span></span><br><span class="line"><span class="comment">//    number of bytes of the data it points to. second, it has an address,</span></span><br><span class="line"><span class="comment">//    which is the start-address of the data. so they can tell the compiler</span></span><br><span class="line"><span class="comment">//    where to start and where to stop accessing the data.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//    but void pointer is binded to no data type,it only knows the starting-address.</span></span><br><span class="line"><span class="comment">//    so it can be forcely assigned to any pointers, thus allowing assignments of</span></span><br><span class="line"><span class="comment">//    all data types. so what we do is: when we create the stack, we MALLOC a block</span></span><br><span class="line"><span class="comment">//    of free space, and we take an integer of &#x27;size_t&#x27;, the typesize, which</span></span><br><span class="line"><span class="comment">//    specifies the length of the data. We use the function MEMCPY, which directly</span></span><br><span class="line"><span class="comment">//    access the addresses,to push the data in the stack and pop data out.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// The difference from the definiton:</span></span><br><span class="line"><span class="comment">//    the stack pointer here is different from the definition.</span></span><br><span class="line"><span class="comment">//    when the stack is empty, top == base.</span></span><br><span class="line"><span class="comment">//    when an element is pushed in, top points to the address after the last byte</span></span><br><span class="line"><span class="comment">//    of the element. so the top always points to the next available space.</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Record</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">void</span> *top;</span><br><span class="line">    <span class="type">void</span> *base;</span><br><span class="line">    <span class="type">int</span> stacksize;</span><br><span class="line">    <span class="type">int</span> typesize;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Record</span> *<span class="title">Stack</span>;</span></span><br><span class="line"></span><br><span class="line">Stack <span class="title function_">CreateStack</span><span class="params">(<span class="type">int</span> stacksize, <span class="type">size_t</span> typesize)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">Push</span><span class="params">(Stack S, <span class="type">void</span> *data)</span>;</span><br><span class="line"><span class="type">void</span> *<span class="title function_">Pop</span><span class="params">(Stack S)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">IsEmpty</span><span class="params">(Stack S)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">Clear</span><span class="params">(Stack S)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">Destroy</span><span class="params">(Stack S)</span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><figcaption><span>stack.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&quot;stack.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">Stack <span class="title function_">CreateStack</span><span class="params">(<span class="type">int</span> stacksize, <span class="type">size_t</span> typesize)</span></span><br><span class="line">&#123;</span><br><span class="line">    Stack S = (Stack)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> Record));</span><br><span class="line">    S-&gt;base = (<span class="type">void</span> *)<span class="built_in">malloc</span>(stacksize*typesize);</span><br><span class="line">    <span class="keyword">if</span>(!S-&gt;base)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Out of space.\n&quot;</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    S-&gt;top = S-&gt;base;</span><br><span class="line">    S-&gt;stacksize = stacksize;</span><br><span class="line">    S-&gt;typesize = typesize;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> S;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">Push</span><span class="params">( Stack S, <span class="type">void</span> *data)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>( (<span class="type">int</span>)(S-&gt;top - S-&gt;base) + S-&gt;typesize &gt; S-&gt;stacksize )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Out of space to Push.\n&quot;</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">memcpy</span>(S-&gt;top, data, S-&gt;typesize);</span><br><span class="line">    S-&gt;top = (<span class="type">void</span>*)( S-&gt;top + S-&gt;typesize );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// GNU defines the arithmetic of void* equals to char(which is defined as byte).</span></span><br><span class="line">    <span class="comment">// ANSI says we cannot do arithmetic on void* because we don&#x27;t know the type.</span></span><br><span class="line">    <span class="comment">// so when we update the top pointer, first regard it as an int, and convert it</span></span><br><span class="line">    <span class="comment">// back when we are finished.</span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> * <span class="title function_">Pop</span><span class="params">( Stack S )</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">void</span> * data;</span><br><span class="line">    <span class="keyword">if</span>( S-&gt;top == S-&gt;base )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Error:Popping an empty stack.\n&quot;</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    S-&gt;top = (<span class="type">void</span>*)( S-&gt;top - S-&gt;typesize);</span><br><span class="line">    <span class="built_in">memcpy</span>(data, S-&gt;top, S-&gt;typesize);</span><br><span class="line">    <span class="keyword">return</span> data;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">Clear</span><span class="params">(Stack S)</span></span><br><span class="line">&#123;</span><br><span class="line">    S-&gt;top = S-&gt;base;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">IsEmpty</span><span class="params">(Stack S)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> S-&gt;top == S-&gt;base;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">Destroy</span><span class="params">(Stack S)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">free</span>(S-&gt;base);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    Stack my_stack;</span><br><span class="line">    my_stack = CreateStack(<span class="number">10</span>, <span class="keyword">sizeof</span>(<span class="type">int</span>));</span><br><span class="line">    <span class="type">int</span> test1 = <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> test2 = <span class="number">2</span>;</span><br><span class="line">    <span class="type">int</span> test3 = <span class="number">3</span>;</span><br><span class="line">    Push(my_stack,&amp;test1);</span><br><span class="line">    Push(my_stack,&amp;test2);</span><br><span class="line">    Push(my_stack,&amp;test3);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,*(<span class="type">int</span> *)Pop(my_stack));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,*(<span class="type">int</span> *)Pop(my_stack));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,*(<span class="type">int</span> *)Pop(my_stack));</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER">寰宇体</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cosmical-container.github.io/posts/63742fad/">https://cosmical-container.github.io/posts/63742fad/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cosmical-container.github.io" target="_blank">寰宇体的世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C%E8%AF%AD%E8%A8%80/">C语言</a><a class="post-meta__tags" href="/tags/%E6%8C%87%E9%92%88/">指针</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a></div><div class="post-share"><div class="social-share" data-image="/img/covers/cover-6-ember.svg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/4fdba115/" title="统计 __VA_ARGS__ 参数个数"><img class="cover" src="/img/covers/cover-3-sunset.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post" loading='lazy'><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">统计 __VA_ARGS__ 参数个数</div></div><div class="info-2"><div class="info-item-1">可变参数宏 __VA_ARGS__ 有个著名的难题：怎么知道参数有几个？预处理器没有循环、没有计数，但利用”占位符平移”技巧可以完美解决。 技巧原理123#define _PrintMacroArgCount(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,XX,...) XX#define PrintMacroArgCount(...) \        _PrintMacroArgCount(&quot;ignored&quot;, ##__VA_ARGS__,9,8,7,6,5,4,3,2,1,0)  关键在参数的错位对齐：  传 3 个参数时，展开成 _PrintMacroArgCount(&quot;ignored&quot;, 1, 2, 3, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0) _0 吃掉 “ignored”（占位符），_1~&#96;_3 吃掉真实参数，XX&#96; 恰好落在 3 上 传 0 个参数时，XX 落在 0 上，顺便解决了 __VA_ARGS__ 为空时的逗号问题（##__VA_ARGS__ 会吃掉多余的逗号）  应...</div></div></div></a><a class="pagination-related" href="/posts/6e9f2a48/" title="Print.h 开发记（六）V1.6"><img class="cover" src="/img/covers/cover-5-midnight.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post" loading='lazy'><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Print.h 开发记（六）V1.6</div></div><div class="info-2"><div class="info-item-1"> 系列导航：上一篇：Print.h 开发记（五）V1.5  打印库成熟之后，最先”吃自己狗粮”的场景就是调试。V1.6 加入了一整套 debug 宏。 debug：打印变量名和它的值调试时最常写的就是 printf(&quot;x = %d\n&quot;, x)——变量名要手打两遍。# 字符串化运算符可以让宏自动完成： 12#define debug_valuename_to_str(value) #value#define debug(obj) print(LIGHT_GREEN(&quot;debug: &quot;), debug_valuename_to_str(obj) &quot; = &quot;, obj, &quot;\n&quot;)  debug(count) 展开后自动输出 debug: count = 10，变量改名也不用同步。 WARN_IF &#x2F; ERR_IF &#x2F; ERR_EXIT_IF三个按条件触发打印的宏，全部用 do { } while(0) 包裹——这是宏定义多语句的标准写法，保证在 if&#x2F;else 里展开不出问...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/f1369abc/" title="用栈实现四则运算计算器"><img class="cover" src="/img/covers/cover-2-ocean.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-10-06</div><div class="info-item-2">用栈实现四则运算计算器</div></div><div class="info-2"><div class="info-item-1">计算器是栈的教科书级应用。这个项目从 V1.0 迭代到 V1.2，最终版约 1100 行，从”能算 1+2*3“一路做到：+ - * / ^ 五则运算、{} [] () 三种括号混用、小数，甚至 sin(1+sin(1+sin(1))) 这样的嵌套函数调用——全部纯 C 手写。 核心算法：两个栈消灭优先级人脑算 3 + 4 * 2 时知道先乘除后加减，机器靠两个栈来消灭优先级问题：  数字栈：存放操作数 符号栈：存放运算符，利用优先级决定何时计算  整个算法分两步：  中缀转后缀：将 3 + 4 * 2 转为 3 4 2 * +（后缀表达式&#x2F;逆波兰式），后缀表达式不需要任何优先级判断 后缀求值：逐个读 token，数字入栈，运算符弹出两个数计算后与压回，最后栈里剩下的就是答案  先造工具：My_Stack写计算器之前先造轮子。栈用 calloc 分配、realloc 扩容，base&#x2F;top&#x2F;max 三个指针管理一段连续内存： 1234567struct my_Stack&#123;    ll stack_size;    Elemtype* bas...</div></div></div></a><a class="pagination-related" href="/posts/aaae083d/" title="const 也能被修改"><img class="cover" src="/img/covers/cover-1-nebula.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-02-26</div><div class="info-item-2">const 也能被修改</div></div><div class="info-2"><div class="info-item-1">const 修饰的变量真的不能改吗？用指针强转试试就知道——答案是：至少局部变量可以。 实验1234567const unsigned char const_int = 0;printf(&quot;before :%d\n&quot;, const_int);*(int *)(&amp;const_int) = 10;              // 强转掉 const 再写入printf(&quot;after  :%d\n&quot;, const_int);      // 输出 10！const unsigned char const_array[] = &#123;0x01, 0x02, 0x03, 0x04, 0x05&#125;;*((int *)(&amp;const_array[0] + i)) = 10;   // 数组同理，逐个元素改掉  运行结果 before 是 0，after 变成了 10——const 声明被绕过去了。 原理const 只是编译期的约束，告诉编译器”不允许通过这个名字赋值”，它并不是内存的写保护。局部 const 变量放在栈上，和普...</div></div></div></a><a class="pagination-related" href="/posts/53a5f64f/" title="用 C 语言打造 Cheat Engine 练习对象"><img class="cover" src="/img/space.jpg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-10-03</div><div class="info-item-2">用 C 语言打造 Cheat Engine 练习对象</div></div><div class="info-2"><div class="info-item-1">玩 Cheat Engine（CE）的时候需要一个”练习对象”——写一个小程序，让它维护一个不断变化的数值，然后用 CE 去扫描和修改它。这里记录两个练习用的目标程序。 第一课：直接修改 malloc 出来的变量12345678int *p_num = (int *)malloc(sizeof(int));srand(time(NULL));*p_num = rand() % 100 + 100;    // 初始值：100~199 的随机数while(getchar())&#123;    printf(&quot;%d&quot;, *p_num);    (*p_num)--;&#125;  每次按回车，数值减 1。练习流程：先用 CE 的”未知的初始值”开始扫描，按几次回车让数值递减后用”减少了的数值”继续扫描，锁定地址后把它改成 999——程序打印的数字就听你的了。 第二课：结构体指针的偏移12345678910typedef struct&#123;    char name[20];    int hp;    int exp;&#125;playerType, *...</div></div></div></a><a class="pagination-related" href="/posts/b1c94d/" title="变参函数及其应用"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-07</div><div class="info-item-2">变参函数及其应用</div></div><div class="info-2"><div class="info-item-1"> 📌 更新（2026-09-01）：整理归档，全部代码用 GCC 15.1.0 重新编译复测，输出与当年一致——另外新编译器对老代码的几处写法有话要说，见正文。  printf 是怎么做到想吃多少参数就吃多少参数的？这个问题的标准答案在 stdarg.h 里：va_list、va_start、va_arg 三件套。机制本身之前在《C 语言可变参数实战》里已经拆解过一次，那篇是机制篇；这一篇是应用篇——同一个文件夹里的三个程序，横跨 2022 年 9 月到 2024 年 4 月，记录了从”会数参数”到”手搓 printf”的完整进化链。 一、先数数，再吃参数：mysum 和 my_max变参函数的第一课：光有 ... 没法干活，因为函数体里根本不知道这次传了几个参数。于是有了最朴素的协议——count-first，第一个参数先报数： 123456789101112131415int mysum(int num, ...)&#123;    va_list valist;    int i;    int sum = 0;    //初始化参数列表    va_start(vali...</div></div></div></a><a class="pagination-related" href="/posts/11de485d/" title="通用链表 glist 开发记：从 void* 到函数指针"><img class="cover" src="/img/covers/cover-4-forest.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-02</div><div class="info-item-2">通用链表 glist 开发记：从 void* 到函数指针</div></div><div class="info-2"><div class="info-item-1">教科书里的线性表长一个样：int a[MAX]，或者 struct Node { int data; struct Node* next; }——从头到尾只能装一种类型。2023 年 4 月，我决定写一个”什么都能装”的列表：同一个列表里同时放 int、char、float、double，甚至自定义结构体，不光存得进去，还得一个一个打印出来。 这个项目最后叫 glist（general list），从 V1.0 迭代到 V1.2，源码整理在 GitHub 仓库 glist 里，三个版本各占一个标签。三个版本不多，恰好是 C 语言里实现”泛型”的三条思路的进化史：只存地址 → 给类型发身份证 → 让数据自己带说明书。 V1.0：先把”存”解决——void* 数组一切的起点是一个朴素的问题：一个格子不知道自己装的是什么类型，怎么装？ 答案就是 void*。普通指针绑定着类型，所以它知道数据从哪开始、到哪结束；void* 只有起始地址，什么类型都不绑，所以任何指针都能不加转换地赋给它。那 list 就别存数据，存地址： list.h123456789101112131415161718...</div></div></div></a><a class="pagination-related" href="/posts/a46545f1/" title="给 printf 添加自定义格式符"><img class="cover" src="/img/covers/cover-4-forest.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-06-23</div><div class="info-item-2">给 printf 添加自定义格式符</div></div><div class="info-2"><div class="info-item-1">printf 的 %d、%f 是写死的，想直接打印自己定义的结构体怎么办？比如复数 Imaginary、分数 Fraction。实验了一个方案：给 printf 加上自定义格式符，注册之后就能写 %I 直接打印复数。 背景：rt_printf 是什么实验基于 RT-Thread（RTT，国产实时操作系统） 的打印实现 rt_printf 改造——接口和标准 printf 一致，但更轻量，是嵌入式圈里常用的东西。项目的文件结构：  rt_printf.c / rt_printf.h：打印核心（本次改造的对象） mprintf_argc.h：自定义格式符的注册宏（__mprint_argc__） main.c：使用示例  用法123456789101112131415161718typedef struct Imaginary&#123;    float real;    float image;&#125; ImaginaryTypedef;// 注册：&#x27;I&#x27; 这个格式符由 Imaginary2str 函数负责打印__mprint_argc__(&#x27;I...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="comment-switch"><span class="first-comment">Giscus</span><span id="switch-btn"></span><span class="second-comment">Twikoo</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#2022-%E7%89%88%EF%BC%9Avoid-%E5%8A%A0-typesize%EF%BC%8Cmemcpy-%E8%AF%B4%E4%BA%86%E7%AE%97"><span class="toc-text">2022 版：void* 加 typesize，memcpy 说了算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E7%9B%98%EF%BC%9A%E4%B8%A4%E4%B8%AA%E6%BD%9C%E4%BC%8F%E7%9A%84-bug"><span class="toc-text">复盘：两个潜伏的 bug</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2024-%E7%89%88%EF%BC%9A%E4%B8%8D%E6%8B%B7%E4%BA%86%EF%BC%8C%E5%8F%AA%E5%AD%98%E5%9C%B0%E5%9D%80"><span class="toc-text">2024 版：不拷了，只存地址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E6%95%88%E6%9E%9C"><span class="toc-text">运行效果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E6%9D%A1%E8%B7%AF%E7%BA%BF%EF%BC%8C%E5%90%84%E8%87%AA%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="toc-text">两条路线，各自的位置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81%EF%BC%882022-%E7%89%88%EF%BC%89"><span class="toc-text">完整代码（2022 版）</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io',
+      'data-repo-id': 'R_kgDOHTJxpw',
+      'data-category-id': 'DIC_kwDOHTJxp84DE3Jg',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('/pluginsSrc/twikoo/dist/twikoo.all.min.js?v=1.7.15').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Giscus' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Giscus' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

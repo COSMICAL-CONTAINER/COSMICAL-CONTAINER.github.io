@@ -1,0 +1,375 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>抽象代码：eval 宏与魔法数字 | 寰宇体的世界</title><meta name="author" content="寰宇体"><meta name="copyright" content="寰宇体"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="先看这段 C 语言程序的入口： 12345eval(int main)(eval(void))eval(&#123;)    ...    return eval(1 +~ 1 + (0xffffffff&gt;&gt;31));eval(&#125;)  eval(int main)？eval({)？这不是任何一门合法语言的语法——但它能编译、能运行。这一篇讲的是两个东西的合体：一个把一切”语法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="抽象代码：eval 宏与魔法数字">
+<meta property="og:url" content="https://cosmical-container.github.io/posts/eb2325e8/index.html">
+<meta property="og:site_name" content="寰宇体的世界">
+<meta property="og:description" content="先看这段 C 语言程序的入口： 12345eval(int main)(eval(void))eval(&#123;)    ...    return eval(1 +~ 1 + (0xffffffff&gt;&gt;31));eval(&#125;)  eval(int main)？eval({)？这不是任何一门合法语言的语法——但它能编译、能运行。这一篇讲的是两个东西的合体：一个把一切”语法">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cosmical-container.github.io/img/covers/cover-4-forest.svg">
+<meta property="article:published_time" content="2025-03-02T12:19:00.000Z">
+<meta property="article:modified_time" content="2025-03-02T12:19:00.000Z">
+<meta property="article:author" content="寰宇体">
+<meta property="article:tag" content="C语言">
+<meta property="article:tag" content="抽象代码">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cosmical-container.github.io/img/covers/cover-4-forest.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "抽象代码：eval 宏与魔法数字",
+  "url": "https://cosmical-container.github.io/posts/eb2325e8/",
+  "image": "https://cosmical-container.github.io/img/covers/cover-4-forest.svg",
+  "datePublished": "2025-03-02T12:19:00.000Z",
+  "dateModified": "2025-03-02T12:19:00.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "寰宇体",
+      "url": "https://github.com/COSMICAL-CONTAINER"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/64.ico"><link rel="canonical" href="https://cosmical-container.github.io/posts/eb2325e8/index.html"><link rel="preconnect"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css?v=7.3.1"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css?v=6.1.14" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":380,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js?v=4.13.0',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '抽象代码：eval 宏与魔法数字',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css?v=20260901"><link rel="stylesheet" href="/css/comment-guide.css?v=20260905"><link rel="stylesheet" href="/css/tag-group.css?v=20260905"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="寰宇体的世界" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/covers/cover-4-forest.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/images/avatar.png" alt="Logo" loading='lazy'><span class="site-name">寰宇体的世界</span></a><a class="nav-page-title" href="/"><span class="site-name">抽象代码：eval 宏与魔法数字</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/activity/"><i class="fa-fw fas fa-calendar-alt"></i><span> 动态</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user-friends"></i><span> 关于我们</span></a></div><div class="menus_item"><a class="site-page" href="/lab/"><i class="fa-fw fas fa-flask"></i><span> 实验室</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">抽象代码：eval 宏与魔法数字</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2025-03-02T12:19:00.000Z" title="发表于 2025-03-02 20:19:00">2025-03-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%BD%E8%B1%A1%E4%BB%A3%E7%A0%81/">抽象代码</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>4分钟</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>先看这段 C 语言程序的入口：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">eval(<span class="type">int</span> main)(eval(<span class="type">void</span>))</span><br><span class="line">eval(&#123;)</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> eval(<span class="number">1</span> +~ <span class="number">1</span> + (<span class="number">0xffffffff</span>&gt;&gt;<span class="number">31</span>));</span><br><span class="line">eval(&#125;)</span><br></pre></td></tr></table></figure>
+
+<p><code>eval(int main)</code>？<code>eval({)</code>？这不是任何一门合法语言的语法——但它<strong>能编译、能运行</strong>。这一篇讲的是两个东西的合体：一个把一切”语法噪音”合法化的宏，和一组连作者自己都要注释自嘲的<strong>魔法数字</strong>。</p>
+<h2 id="eval：一个什么都能包的宏"><a href="#eval：一个什么都能包的宏" class="headerlink" title="eval：一个什么都能包的宏"></a>eval：一个什么都能包的宏</h2><p>谜底只有一行：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> eval(everything) everything</span></span><br></pre></td></tr></table></figure>
+
+<p><code>eval(x)</code> 永远展开成 <code>x</code> 本身。它存在的唯一意义是<strong>让不合法的东西看起来合法</strong>——<code>eval(int main)(eval(void))</code> 展开后就是 <code>int main(void)</code>，<code>eval({)</code> 展开就是 <code>{</code>。一个什么都不做的宏，却能让整段代码的形态彻底失控。配合它的还有两个帮凶：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> wscanf (&amp;wscanf)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> wprintf (&amp;wprintf)</span></span><br></pre></td></tr></table></figure>
+
+<p><code>wscanf</code> 这个标识符从此在源码里代表”<strong>wscanf 函数的地址</strong>“——为一个后面会震翻天的小把戏埋下伏笔。</p>
+<h2 id="魔法数字：地址算术调函数"><a href="#魔法数字：地址算术调函数" class="headerlink" title="魔法数字：地址算术调函数"></a>魔法数字：地址算术调函数</h2><p>程序的核心逻辑（节选，原文件里的注释已因多次转码损坏，此处省略）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> magic_intArray[] = &#123; <span class="number">23884</span>, (<span class="number">0b0100</span> &lt;&lt; <span class="number">0b0100</span>) | <span class="number">0b0100</span>, <span class="number">0x5730</span>, <span class="number">050545</span>, <span class="number">0123</span>, eval((<span class="type">int</span>)) - <span class="number">0xffffffffa7</span>, <span class="number">0x5F0F</span>, <span class="number">1</span> +~ <span class="number">0</span>, eval((<span class="type">int</span>)) - <span class="number">037777777647</span>, <span class="number">0b0101011111111010</span>, <span class="number">0</span> &#125;;</span><br><span class="line"><span class="type">int</span> magic_num = eval((<span class="type">int</span>)) - <span class="number">037777777770</span>;</span><br><span class="line"><span class="type">unsigned</span> <span class="type">short</span> magic_shortArray[<span class="keyword">sizeof</span>(magic_intArray)];</span><br><span class="line"></span><br><span class="line">setlocale(LC_ALL, <span class="string">&quot;&quot;</span>);</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> magic_i = <span class="number">0</span>; magic_i != <span class="number">10</span>; magic_i += (<span class="number">1</span> &lt;&lt; <span class="number">1</span>) + <span class="number">1</span>, magic_i &gt; <span class="number">10</span> ? magic_i %= <span class="number">10</span> : magic_i)</span><br><span class="line">    magic_shortArray[magic_intArray[(<span class="keyword">sizeof</span>(magic_intArray) &gt;&gt; ((<span class="number">1</span> &gt;&gt; <span class="number">1</span>? <span class="number">0</span> : <span class="number">1</span>) &lt;&lt; eval((<span class="type">int</span>))<span class="number">4294967297</span>)) - <span class="number">1</span>]++] = eval((<span class="type">unsigned</span> <span class="type">short</span>))magic_intArray[magic_i];</span><br><span class="line"></span><br><span class="line">((<span class="type">int</span> (*)(<span class="type">const</span> <span class="type">wchar_t</span> *, ...))(wscanf + magic_num))(<span class="string">L&quot;%ls\n&quot;</span>, magic_shortArray);</span><br></pre></td></tr></table></figure>
+
+<p>拆开看每一层的狠活：</p>
+<ul>
+<li><strong>数据</strong>：<code>magic_intArray</code> 的取值来自<a href="/posts/f8225dd/">上一篇《把中文藏进 int 数组》</a>的同款思路——一组混用五进制书写方式的数字，暗藏一句话的 UTF-16 编码；</li>
+<li><strong>取数下标</strong>：<code>(sizeof(...) &gt;&gt; ((1 &gt;&gt; 1? 0 : 1) &lt;&lt; 4294967297)) - 1</code>，看着像密码，实际恒等于 0——用恒真恒假表达式表演”谁能看懂我在干嘛”；</li>
+<li><strong>步长</strong>：<code>magic_i += (1 &lt;&lt; 1) + 1</code>，加 3 也要写成移位；<code>magic_i &gt; 10 ? magic_i %= 10 : magic_i</code> 的折返（上一篇见过的同款洗牌循环）；</li>
+<li><strong>最疯的一行</strong>：<code>((int (*)(const wchar_t *, ...))(wscanf + magic_num))(L&quot;%ls\n&quot;, ...)</code>——把 <code>wscanf</code> <strong>函数的地址</strong>加上一个魔法偏移，强转成函数指针直接调用。它在干什么？调用的其实是 <code>wprintf</code>。</li>
+</ul>
+<h2 id="魔法数字的物理意义：两个函数之间的距离"><a href="#魔法数字的物理意义：两个函数之间的距离" class="headerlink" title="魔法数字的物理意义：两个函数之间的距离"></a>魔法数字的物理意义：两个函数之间的距离</h2><p><code>wscanf</code> 和 <code>wprintf</code> 住在同一个运行库 DLL 里，它们的地址相差一个<strong>固定偏移</strong>（在特定的编译器和库版本下）。<code>magic_num</code> 就是这个偏移量的补码形式——<code>wscanf 的地址 + magic_num</code> 恰好落到 <code>wprintf</code> 的门口。于是这一行”看不懂的函数指针调用”等效于 <code>wprintf(L&quot;%ls\n&quot;, ...)</code>。</p>
+<p>它为什么吓人？因为<strong>这个偏移不是标准保证的</strong>——换一个编译器版本、换一个 CRT，距离就变了，魔法立即失效。果不其然，为写这篇文章重新编译，程序直接崩了（退出码 127）：新的地址布局里，<code>wscanf + magic_num</code> 不再指向任何有意义的地方。原版 exe（2025 年 3 月编译）还能正常输出，新编译的已经阵亡——<strong>魔法数字是有”工具链指纹”的</strong>。</p>
+<p>作者当年其实心里有数，源码里留了两行诚实的注释（原文已随多次转码损坏，大意如下）：</p>
+<blockquote>
+<p>这些数字不知道怎么来的，恰好契合就能打印出想要的结果。<br>这个代码好像不能随便乱删，比如我删掉下面那行的 wprintf 就什么都不会输出。</p>
+</blockquote>
+<p>——典型的<strong>海森 bug</strong>：一动它就变样，不动态它就装死。</p>
+<h2 id="原版-exe-的运行效果"><a href="#原版-exe-的运行效果" class="headerlink" title="原版 exe 的运行效果"></a>原版 exe 的运行效果</h2><p>用 2025 年 3 月编译的原版 exe 跑，输出两行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">这些魔法数字也不知道怎么来的，反正就这样写就对了</span><br><span class="line">嵌入式基YYDS</span><br></pre></td></tr></table></figure>
+
+<p>第一行是程序自己的吐槽；第二行”嵌入式基YYDS”正是上一篇<a href="/posts/f8225dd/">把中文藏进 int 数组</a>的同款暗语——同一句”嵌入式基地YYDS”，两个程序、两种藏法。</p>
+<h2 id="正经话"><a href="#正经话" class="headerlink" title="正经话"></a>正经话</h2><p>这一篇的”正经话”上一篇说了一半：<strong>函数地址是真实存在的数字</strong>，所以理论上可以从一个函数的地址走到另一个函数——但这依赖链接布局，标准不保证、工具链一升级就崩。eval 宏同理：它证明了宏可以构造出”看起来像另一门语言”的语法，代价是所有读代码的人（包括三个月后的你自己）都要重新学一遍。</p>
+<p>抽象代码的价值从不在于可维护性——在于它逼你回答”这为什么能跑”，而答案往往是半本《链接器与加载器》。</p>
+<p>系列其他文章见<a href="/posts/5d21f4a7/">抽象代码宣言</a>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/COSMICAL-CONTAINER">寰宇体</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cosmical-container.github.io/posts/eb2325e8/">https://cosmical-container.github.io/posts/eb2325e8/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cosmical-container.github.io" target="_blank">寰宇体的世界</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C%E8%AF%AD%E8%A8%80/">C语言</a><a class="post-meta__tags" href="/tags/%E6%8A%BD%E8%B1%A1%E4%BB%A3%E7%A0%81/">抽象代码</a></div><div class="post-share"><div class="social-share" data-image="/img/covers/cover-4-forest.svg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css?v=1.1.6" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js?v=1.1.6" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img class="cover" src="/img/covers/cover-5-midnight.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post" loading='lazy'><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">变量能 malloc，函数呢？——手写机器码动态创建函数</div></div><div class="info-2"><div class="info-item-1">变量的世界有一把万能钥匙：malloc。想要多少字节，按一下就有了。那函数呢？函数无非也是一段字节、带一个入口地址——既然变量能动态创建，函数为什么不能？ 2025 年 6 月的某个下午，我决定把这个问题做穿：不借助任何汇编器语法，亲手把 x86-64 的机器码一个字节一个字节写进 C 数组，让 CPU 把它当函数调用；再进一步，在程序运行的过程中”凭空”造出一个函数来。这篇文章记录整条路径。  📌 更新（2026-08-31）：重新验证了全部流程与输出，c2shellcode.py 抽取字节码的对照结果见”别手抄了”一节。  第零步：先搞清楚自己的函数长什么样动手之前得有个对照组。写一个最朴素的 max： 1234int my_max(int a, int b)&#123;	return a &gt; b ? a : b;&#125;  它编译成机器码之后长什么样？早年我在 VC6 里干过一件蠢事——直接把 MessageBoxA 的运行时地址硬编码进内联汇编，然后 call eax： 12345678910LoadLibrary(&quot;user32.dll&quot;...</div></div></div></a><a class="pagination-related" href="/posts/fa6111b0/" title="不锁屏：谁动鼠标谁锁屏"><img class="cover" src="/img/covers/cover-2-ocean.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post" loading='lazy'><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">不锁屏：谁动鼠标谁锁屏</div></div><div class="info-2"><div class="info-item-1"> 📌 更新（2026-09-01）：归档复测，只编译不运行——理由见正文，这玩意挂在那里，谁的鼠标一动就锁谁的屏。  这个程序要干的事，全写在它的名字里：不锁屏，防止被动鼠标。为什么又要不锁屏、又要防鼠标？因为电脑设成了从不自动锁屏——图的就是人离开一会儿、回来接着用，不用反复输密码。方便是真方便，可人不在的那段时间，屏幕就这么亮着，谁来都能动两下。这个程序就是给这份方便加的保险：把它挂在后台再走，期间只要有谁动了鼠标，屏幕立刻锁上——防的就是这一手。 实现思路一句话：盯住鼠标，谁动谁锁。整个程序的核心循环： 12345678910int main()&#123;    printf(&quot;开始计时\n&quot;);    while (1)    &#123;        Sleep(100);        GetMouseLocation();    &#125;    return 0;&#125;  每 100 毫秒查一次鼠标。查的逻辑在 GetMouseLocation 里：GetCursorPos 拿坐标，交给 isMouseMove 判断，一旦返回 f...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/852f8e75/" title="抽象代码：分号的艺术"><img class="cover" src="/img/covers/cover-2-ocean.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-09-11</div><div class="info-item-2">抽象代码：分号的艺术</div></div><div class="info-2"><div class="info-item-1">C 语言里，分号是语句的句号。规则人人都懂：句子写完，分号收尾。 但分号其实是”语句终止符”，它并没有规定自己必须站在句尾。于是有了下面这个程序——每个分号都搬家搬到了下一行的行首： 用分号作为缩进.c123456789101112#include &lt;stdio.h&gt;int main(int argc, char* arg[])&#123;;;;;int i = 0;;;;while(i &lt; 10)&#123;;;;;;;;;printf(&quot;%d\n&quot;, i);;;;;;;;i++;;;;&#125;;;;;return 0;&#125;  第一眼：int i = 0 后面没有分号，这能编译？——能。真机运行，输出干干净净的 0 到 9： 12345012...9  原理：把分号从句尾搬到句首关键在于理解分号到底”属于谁”。C 编译器眼里，换行就是普通的空白，int i = 0 下一行行首的那四个分号，其中第一个分号恰好补上了上一句缺的句号，剩下三个分号是三条合法的空语句（empty statement，什么都不做）。 也就是说，编译器看到的...</div></div></div></a><a class="pagination-related" href="/posts/f8225dd/" title="抽象代码：把中文藏进 int 数组"><img class="cover" src="/img/covers/cover-5-midnight.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-15</div><div class="info-item-2">抽象代码：把中文藏进 int 数组</div></div><div class="info-2"><div class="info-item-1">先看运行结果——一个 32KB 的 C++ 程序，运行后在屏幕上打出一句话： 1嵌入式基地YYDS  这句话在源代码里一个汉字都没有。它藏在哪？藏在一个 int 数组里，而且数组里的每个数字，用的还是不同的进制。完整源码如下，请注意开头的 #define eval 和数组里反复出现的 eval(...)——后面会讲它们是干嘛的： 加密中文demo.cpp123456789101112131415161718192021222324252627282930313233#include &lt;stdio.h&gt;#include &lt;locale.h&gt;#define eval(everying) everyingint main()&#123;	// int c = 10;	// int d = 5;	// int rs3 = c++ + ++c - --d - ++d + 1 + c--;	// c++ + ++c = 10 + &amp;c = 10 + 12 = 22	// 22 - --d = 22 - 4 = 18	// 18 - ++d = 18 - 5 =...</div></div></div></a><a class="pagination-related" href="/posts/c951abd7/" title="发现了一个 O(N^N!) 的算法"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-12-08</div><div class="info-item-2">发现了一个 O(N^N!) 的算法</div></div><div class="info-2"><div class="info-item-1"> 起因是刷到一张表情包：汤姆猫一脸坏笑——   “突然想到一个 O(NN!) 的算法。” O(NN!)——N 的 N! 次方。这个复杂度夸张到什么程度？N&#x3D;3 时就是 729，N&#x3D;4 直接冲破四百万，再往上数数都没意义了。猫都能”想到”的算法，那我能不能真的把它写出来？于是有了这个程序：不借助任何数论技巧，用最朴素的递归把这道题画出来。完整代码只有 30 行： N^N!算法.c123456789101112131415161718192021222324252627282930313233343536373839#include &lt;stdio.h&gt;long long total_sum = 0;long long factorial(unsigned n)&#123;    if (n == 1)    &#123;        printf(&quot;+1&quot;);        total_sum++;        return 1;    &#125;    long long sum = 0;    for (unsigned ...</div></div></div></a><a class="pagination-related" href="/posts/65633b2a/" title="抽象代码：尊嘟假嘟"><img class="cover" src="/img/covers/cover-6-ember.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-09-15</div><div class="info-item-2">抽象代码：尊嘟假嘟</div></div><div class="info-2"><div class="info-item-1">又是先上完整代码。下面这个程序能编译、能运行，但它看起来像是谁打字的时候手滑了： 抽象-尊嘟假嘟.c1234567891011121314151617181920212223#include &lt;stdio.h&gt;#include &lt;stdlib.h&gt;#include &lt;time.h&gt;char str[][4] = &lt;%&quot;o.o&quot;,&quot;O.O&quot;%&gt;;int fun(int *p)&#123;    printf(&quot;%p\n&quot;, p);    printf(&quot;%p\n&quot;, p+1);&#125;int main()&lt;%    int a;    fun(&amp;a);    srand((time(0)));    printf(&quot;%s\n&quot;, (rand() % 2)[str]);    int b[10] = &#123;0,1,2,3,&#125;;    printf(&quot;%d&quot;, *(&amp;b[0]+1...</div></div></div></a><a class="pagination-related" href="/posts/6ffc9fd6/" title="抽象代码：一个&quot;O(1)&quot;的质数判断器"><img class="cover" src="/img/space.jpg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-01-09</div><div class="info-item-2">抽象代码：一个&quot;O(1)&quot;的质数判断器</div></div><div class="info-2"><div class="info-item-1">先看运行效果。一个判断质数的程序，输入 7： 1237 → 7 is a Prime100 → 100 isn&#x27;t a Prime254 → 254 isn&#x27;t a Prime  响应快得惊人，因为它一次除法都没做——不是算法好，是它根本不判断。它是一份”背好答案”的程序：把 1 到 255 每个数是不是质数，直接写成 1029 行 if-else。而这个程序的作者，是另一个程序。 生成器一号：把判断展开成 if-else生成器的思路是时间换空间再换时间：生成的时候用普通试除法判断一次质数，然后把结果硬编码进一个新程序： 123456789101112131415161718for (int i = 2; i &lt; num; i++)&#123;    char temp[50];    sprintf(temp, &quot;    else if(num == %d)\n&quot;, i);    fprintf(fp, temp);    fprintf(fp, &quot;    &#123;\n&quot;);    if(isPrime(i)...</div></div></div></a><a class="pagination-related" href="/posts/99a422d6/" title="抽象代码：下划线完形填空"><img class="cover" src="/img/covers/cover-3-sunset.svg" alt="cover" loading='lazy'><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-22</div><div class="info-item-2">抽象代码：下划线完形填空</div></div><div class="info-2"><div class="info-item-1">先上代码。下面是一个完整的、可以编译、可以运行的 C 语言程序，它是一个从 9 倒数到 0 的倒计时器。请欣赏： _.c123456789101112131415161718192021222324252627#include &lt;stdio.h&gt;#define _ int#define __ main#define ___ while#define _____ x#define ______ ;#define _______ ()#define ________ &#123;#define _________ &#125;#define __________ (#define ___________ )#define ____________ =#define _____________ --&gt;#define ______________ &quot;%d\n&quot;,#define _______________ printf#define ________________ return_ __ ________________ _____ _______...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div class="comment-switch"><span class="first-comment">Giscus</span><span id="switch-btn"></span><span class="second-comment">Twikoo</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/ loading='lazy'></div><div class="author-info-name">寰宇体</div><div class="author-info-description">never give up</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">25</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/COSMICAL-CONTAINER" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://blog.csdn.net/qq_28406527" target="_blank" title="CSDN"><i class="fas fa-blog" style="color: #fc5531;"></i></a><a class="social-icon" href="https://wakatime.com/@018b0e13-55cf-4bc6-bc0b-a8fdde9b7f14" target="_blank" title="WakaTime"><i class="fas fa-stopwatch" style="color: #6f42c1;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到寰宇体的世界 ✨</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#eval%EF%BC%9A%E4%B8%80%E4%B8%AA%E4%BB%80%E4%B9%88%E9%83%BD%E8%83%BD%E5%8C%85%E7%9A%84%E5%AE%8F"><span class="toc-text">eval：一个什么都能包的宏</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AD%94%E6%B3%95%E6%95%B0%E5%AD%97%EF%BC%9A%E5%9C%B0%E5%9D%80%E7%AE%97%E6%9C%AF%E8%B0%83%E5%87%BD%E6%95%B0"><span class="toc-text">魔法数字：地址算术调函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AD%94%E6%B3%95%E6%95%B0%E5%AD%97%E7%9A%84%E7%89%A9%E7%90%86%E6%84%8F%E4%B9%89%EF%BC%9A%E4%B8%A4%E4%B8%AA%E5%87%BD%E6%95%B0%E4%B9%8B%E9%97%B4%E7%9A%84%E8%B7%9D%E7%A6%BB"><span class="toc-text">魔法数字的物理意义：两个函数之间的距离</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E7%89%88-exe-%E7%9A%84%E8%BF%90%E8%A1%8C%E6%95%88%E6%9E%9C"><span class="toc-text">原版 exe 的运行效果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E7%BB%8F%E8%AF%9D"><span class="toc-text">正经话</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化"><img src="/img/covers/cover-6-ember.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RMXP 工具链开源：把童年游戏的录制流程自动化"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5a2b9c3d/" title="RMXP 工具链开源：把童年游戏的录制流程自动化">RMXP 工具链开源：把童年游戏的录制流程自动化</a><time datetime="2026-09-05T12:30:00.000Z" title="发表于 2026-09-05 20:30:00">2026-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言"><img src="/img/covers/cover-2-ocean.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="评论区开放：GitHub 用户和路过朋友都能留言"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/ea06439e/" title="评论区开放：GitHub 用户和路过朋友都能留言">评论区开放：GitHub 用户和路过朋友都能留言</a><time datetime="2026-09-04T09:00:00.000Z" title="发表于 2026-09-04 17:00:00">2026-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习"><img src="/img/space.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="抽象代码宣言：论不正经的尝试如何成为一种学习"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/5d21f4a7/" title="抽象代码宣言：论不正经的尝试如何成为一种学习">抽象代码宣言：论不正经的尝试如何成为一种学习</a><time datetime="2026-08-31T15:00:00.000Z" title="发表于 2026-08-31 23:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产"><img src="/img/covers/cover-1-nebula.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="写在前面｜代码是人的遗产"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/7c5ae831/" title="写在前面｜代码是人的遗产">写在前面｜代码是人的遗产</a><time datetime="2026-08-31T13:00:00.000Z" title="发表于 2026-08-31 21:00:00">2026-08-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数"><img src="/img/covers/cover-5-midnight.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="变量能 malloc，函数呢？——手写机器码动态创建函数"/ loading='lazy'></a><div class="content"><a class="title" href="/posts/e654c96/" title="变量能 malloc，函数呢？——手写机器码动态创建函数">变量能 malloc，函数呢？——手写机器码动态创建函数</a><time datetime="2025-06-26T10:20:00.000Z" title="发表于 2025-06-26 18:20:00">2025-06-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2019 - 2026 By 寰宇体</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js?v=6.1.14"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'COSMICAL-CONTAINER/COSMICAL-CONTAINER.github.io',
+      'data-repo-id': 'R_kgDOHTJxpw',
+      'data-category-id': 'DIC_kwDOHTJxp84DE3Jg',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://my-twikoo.vercel.app',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('/pluginsSrc/twikoo/dist/twikoo.all.min.js?v=1.7.15').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Giscus' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Giscus' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script src="/js/wakatime-card.js"></script><script src="/js/tag-back.js"></script><script src="/js/enhance.js?v=20260901"></script><script src="/js/custom-search-highlight.js?v=20260901"></script><script src="/js/comment-guide.js?v=20260905"></script><script src="/js/homepage-hero.js?v=20260901"></script><script src="/js/tag-group.js?v=20260905"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>寰宇实验室 · 下落测试</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; }
+  body {
+    background: #05060f;
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    user-select: none;
+  }
+  .bg {
+    position: absolute; inset: 0; z-index: 0;
+    background: url("space.jpg") center / cover no-repeat;
+  }
+  .veil { position: absolute; inset: 0; z-index: 1; background: rgba(3, 5, 15, .35); pointer-events: none; }
+
+  header {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+    padding: 18px 24px; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.8);
+    display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;
+  }
+  header h1 { font-size: 20px; font-weight: 600; letter-spacing: 1px; }
+  header p { font-size: 12px; opacity: .85; }
+  header .back {
+    color: #fff; text-decoration: none; font-size: 13px;
+    border: 1px solid rgba(255,255,255,.3); border-radius: 999px;
+    padding: 5px 14px; background: rgba(10, 14, 30, .4); transition: background .2s;
+  }
+  header .back:hover { background: rgba(255,255,255,.2); }
+
+  .panel {
+    position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 10;
+    display: flex; gap: 10px; align-items: center;
+    background: rgba(10, 14, 30, .55); border: 1px solid rgba(255,255,255,.15);
+    backdrop-filter: blur(8px); border-radius: 999px; padding: 10px 16px;
+  }
+  .panel button {
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08);
+    color: #fff; border-radius: 999px; padding: 6px 16px; font-size: 13px; cursor: pointer;
+    transition: background .2s;
+  }
+  .panel button:hover { background: rgba(255,255,255,.22); }
+  .panel .count { color: #cfd6ff; font-size: 13px; min-width: 64px; text-align: center; }
+
+  .ball {
+    position: absolute; z-index: 5; width: 72px; height: 72px;
+    border-radius: 12px; object-fit: cover; cursor: grab;
+    box-shadow: 0 6px 24px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.25);
+    will-change: transform;
+  }
+  .ball.dragging { cursor: grabbing; box-shadow: 0 14px 34px rgba(0,0,0,.7), 0 0 0 2px rgba(255,255,255,.45); }
+  .hint {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: rgba(255,255,255,.85); font-size: 15px; letter-spacing: 2px;
+    text-shadow: 0 1px 8px rgba(0,0,0,.9); pointer-events: none; transition: opacity .6s;
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="veil"></div>
+
+<header>
+  <h1>寰宇实验室</h1>
+  <p>点击空白处生成 · 拖拽抛出 · 按 Esc 返回博客</p>
+  <a class="back" href="/">← 返回博客</a>
+</header>
+
+<div class="hint" id="hint">点 击 屏 幕 任 意 位 置</div>
+
+<div class="panel">
+  <button id="btnReset">重来</button>
+  <button id="btnGravity">反重力</button>
+  <button id="btnPause">暂停</button>
+  <span class="count" id="count">0 个</span>
+</div>
+
+<script>
+(function () {
+  var IMG = "space.jpg";
+  var MAX = 40;
+  var balls = [];           // {el, x, y, vx, vy, w}
+  var gravity = 2400;       // px/s^2
+  var flipped = false;
+  var paused = false;
+  var dragging = null;      // {b, dx, dy, lx, ly, lt, vx, vy}
+
+  var field = document.body;
+  var countEl = document.getElementById("count");
+  var hintEl = document.getElementById("hint");
+
+  function px(n) { return n + "px"; }
+
+  function updateCount() { countEl.textContent = balls.length + " 个"; }
+
+  function spawn(x, y) {
+    if (balls.length >= MAX) removeBall(balls[0]);
+    var el = document.createElement("img");
+    el.src = IMG;
+    el.className = "ball";
+    el.alt = "";
+    el.draggable = false;
+    var w = 56 + Math.random() * 40;
+    el.style.width = px(w);
+    el.style.height = px(w);
+    field.appendChild(el);
+    var b = { el: el, x: x - w / 2, y: y - w / 2, vx: (Math.random() - 0.5) * 500, vy: 0, w: w };
+    balls.push(b);
+    draw(b);
+    updateCount();
+    return b;
+  }
+
+  function removeBall(b) {
+    b.el.remove();
+    balls.splice(balls.indexOf(b), 1);
+    updateCount();
+  }
+
+  function draw(b) {
+    b.el.style.transform = "translate(" + px(b.x) + "," + px(b.y) + ")";
+  }
+
+  function step(dt) {
+    var W = innerWidth, H = innerHeight;
+    var g = flipped ? -gravity : gravity;
+    balls.forEach(function (b) {
+      b.vy += g * dt;
+      // 空气阻力，防止无限加速
+      b.vx *= 1 - 0.6 * dt; b.vy *= 1 - 0.15 * dt;
+      b.x += b.vx * dt; b.y += b.vy * dt;
+
+      if (b.y > H - b.w) { b.y = H - b.w; b.vy = -Math.abs(b.vy) * 0.62; }
+      if (b.y < 0)       { b.y = 0;       b.vy = Math.abs(b.vy) * 0.62; }
+      if (b.x > W - b.w) { b.x = W - b.w; b.vx = -Math.abs(b.vx) * 0.7; }
+      if (b.x < 0)       { b.x = 0;       b.vx = Math.abs(b.vx) * 0.7; }
+
+      if (Math.abs(b.vy) < 40 && !flipped && b.y >= H - b.w - 1) b.vy = 0;
+      if (Math.abs(b.vx) < 20) b.vx = 0;
+
+      draw(b);
+    });
+  }
+
+  // 主循环
+  var last = performance.now();
+  function loop(now) {
+    var dt = Math.min((now - last) / 1000, 0.033);
+    last = now;
+    if (!paused && !dragging) step(dt);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // 点击空白生成
+  field.addEventListener("pointerdown", function (e) {
+    if (e.target.closest(".panel") || e.target.closest("header")) return;
+    if (e.target.classList.contains("ball")) return;
+    spawn(e.clientX, e.clientY);
+    hintEl.style.opacity = 0;
+  });
+
+  // 拖拽抛出
+  field.addEventListener("pointerdown", function (e) {
+    if (!e.target.classList.contains("ball")) return;
+    var b = null;
+    for (var i = 0; i < balls.length; i++) if (balls[i].el === e.target) { b = balls[i]; break; }
+    if (!b) return;
+    dragging = { b: b, dx: e.clientX - b.x, dy: e.clientY - b.y, lx: e.clientX, ly: e.clientY, lt: performance.now(), vx: 0, vy: 0 };
+    b.el.classList.add("dragging");
+    e.target.setPointerCapture(e.pointerId);
+  });
+  field.addEventListener("pointermove", function (e) {
+    if (!dragging) return;
+    var b = dragging.b, d = dragging;
+    var now = performance.now(), dt = Math.max((now - d.lt) / 1000, 0.001);
+    d.vx = (e.clientX - d.lx) / dt; d.vy = (e.clientY - d.ly) / dt;
+    d.lx = e.clientX; d.ly = e.clientY; d.lt = now;
+    b.x = e.clientX - d.dx; b.y = e.clientY - d.dy;
+    b.vx = 0; b.vy = 0;
+    draw(b);
+  });
+  field.addEventListener("pointerup", function () {
+    if (!dragging) return;
+    var b = dragging.b;
+    b.vx = dragging.vx; b.vy = dragging.vy;   // 抛出速度
+    b.el.classList.remove("dragging");
+    dragging = null;
+  });
+
+  // 控制按钮
+  document.getElementById("btnReset").addEventListener("click", function () {
+    balls.slice().forEach(removeBall);
+    seed();
+  });
+  document.getElementById("btnGravity").addEventListener("click", function () {
+    flipped = !flipped;
+    this.textContent = flipped ? "正常重力" : "反重力";
+  });
+  document.getElementById("btnPause").addEventListener("click", function () {
+    paused = !paused;
+    this.textContent = paused ? "继续" : "暂停";
+  });
+
+  // Esc 返回博客
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") location.href = "/";
+  });
+
+  // 开场：从顶部撒几个
+  function seed() {
+    for (var i = 0; i < 6; i++) {
+      spawn(innerWidth * (0.15 + Math.random() * 0.7), -80 - Math.random() * 200);
+    }
+    hintEl.style.opacity = 1;
+    setTimeout(function () { hintEl.style.opacity = 0; }, 4000);
+  }
+  seed();
+})();
+</script>
+</body>
+</html>
