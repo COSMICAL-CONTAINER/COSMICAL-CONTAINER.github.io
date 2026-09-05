@@ -115,3 +115,26 @@ deploy:
 abbrlink:
   alg: crc32
   rep: hex
+
+# 标签两级分组（父标签 → 子标签；仅展示层，文章 front matter 不用动）
+## scripts/tag-tree.js 构建时生成 /tagmap.json，source/js/tag-group.js 在 /tags/ 页消费
+tag_tree:
+  C语言:
+    - 指针
+    - 函数指针
+    - 字符串
+    - 宏
+    - 算法
+    - 数据结构
+    - GCC
+  C++:
+    - Qt
+  Windows:
+    - Win32
+    - 排查
+  'RPG Maker':
+    - ARPG
+    - Minecraft
+    - 游戏开发
+  数学:
+    - 线性代数

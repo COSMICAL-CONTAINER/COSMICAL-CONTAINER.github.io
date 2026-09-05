@@ -162,6 +162,8 @@ inject:
     - '<link rel="stylesheet" href="/css/custom.css?v=20260901">'
     # 评论区使用指南入口（详见《评论区开放》一文）
     - '<link rel="stylesheet" href="/css/comment-guide.css?v=20260905">'
+    # /tags/ 页两级标签卡片
+    - '<link rel="stylesheet" href="/css/tag-group.css?v=20260905">'
   bottom:
     - '<script src="/js/wakatime-card.js"></script>'
     - '<script src="/js/tag-back.js"></script>'
@@ -172,6 +174,8 @@ inject:
     - '<script src="/js/comment-guide.js?v=20260905"></script>'
     # 首页寄语面板（仅首页显示，替代永久置顶）
     - '<script src="/js/homepage-hero.js?v=20260901"></script>'
+    # /tags/ 页两级标签卡片（脚本内部自限定只在 /tags/ 生效）
+    - '<script src="/js/tag-group.js?v=20260905"></script>'
 
 # ------- CDN -------
 # 第三方库经 hexo-butterfly-extjs 打包到本地，不依赖外网 CDN
