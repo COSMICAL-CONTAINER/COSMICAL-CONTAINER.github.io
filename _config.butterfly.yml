@@ -160,12 +160,16 @@ darkmode:
 inject:
   head:
     - '<link rel="stylesheet" href="/css/custom.css?v=20260901">'
+    # 评论区使用指南入口（详见《评论区开放》一文）
+    - '<link rel="stylesheet" href="/css/comment-guide.css?v=20260905">'
   bottom:
     - '<script src="/js/wakatime-card.js"></script>'
     - '<script src="/js/tag-back.js"></script>'
     - '<script src="/js/enhance.js?v=20260901"></script>'
     # 搜索关键词高亮跳过代码块/标题（详见文件头注释）
     - '<script src="/js/custom-search-highlight.js?v=20260901"></script>'
+    # 评论区使用指南入口（详见《评论区开放》一文）
+    - '<script src="/js/comment-guide.js?v=20260905"></script>'
     # 首页寄语面板（仅首页显示，替代永久置顶）
     - '<script src="/js/homepage-hero.js?v=20260901"></script>'
 
